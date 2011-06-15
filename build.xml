@@ -1,0 +1,102 @@
+<project basedir="." default="compile-all" name="Laverca">
+  <description>
+    Laverca project build file
+  </description>
+  
+  <property location="build" name="build"/>
+  <property location="dist" name="dist"/>
+  <property location="datatypes-src" name="datatypes-src"/>
+  <property location="src" name="src"/>
+  <property location="samples-src" name="samples-src"/>
+  <property location="lib" name="lib"/>
+  <property name="boolean-make-javadoc-files" value="true"/>
+  
+  <fileset dir="${lib}" id="lib.fileset">
+    <include name="axis-1.4.jar"/>
+    <include name="castor-1.3.jar"/>
+    <include name="castor-1.3-core.jar"/>
+    <include name="commons-codec-1.4.jar"/>
+    <include name="commons-discovery-0.4.jar"/>
+    <include name="commons-httpclient-3.1.jar"/>
+    <include name="commons-logging-1.1.jar"/>
+    <include name="jaxrpc-1.1.jar"/>
+    <include name="saaj-1.2.jar"/>
+    <include name="wsdl4j-1.5.1.jar"/>
+    <include name="xercesImpl-2.9.1.jar"/>
+    <include name="bcprov-jdk16-145.jar"/>
+  </fileset>
+  
+  <path id="project.classpath">
+    <fileset refid="lib.fileset"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+  <target name="init">
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target depends="init" name="compile-datatypes">
+    <mkdir dir="${build}/datatypes"/>
+    <javac debug="true" deprecation="true" destdir="${build}/datatypes" encoding="ISO-8859-15">
+      <src path="${datatypes-src}"/>
+      <classpath>
+        <path refid="project.classpath"/>
+      </classpath>
+      <include name="**/**.java"/>
+    </javac>
+    <jar jarfile="${build}/laverca-datatypes.jar">
+      <fileset dir="${build}/datatypes">
+        <include name="**"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <target depends="init" name="compile-laverca">
+    <mkdir dir="${build}/laverca"/>
+    <javac debug="true" deprecation="true" destdir="${build}/laverca" encoding="ISO-8859-15">
+      <src path="${src}"/>
+      <classpath>
+        <path refid="project.classpath"/>
+        <fileset dir="build" includes="laverca-datatypes.jar"/>
+      </classpath>
+      <include name="**/**.java"/>
+    </javac>
+    <copy file="${src}/client-config.wsdd" todir="${build}/laverca"/>
+    <jar jarfile="${build}/laverca.jar">
+      <fileset dir="${build}/laverca">
+        <include name="**"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <target depends="init" name="compile-samples">
+    <mkdir dir="${build}/samples"/>
+    <javac debug="true" deprecation="true" destdir="${build}/samples" encoding="ISO-8859-15">
+      <src path="${samples-src}"/>
+      <classpath>
+        <path refid="project.classpath"/>
+        <fileset dir="build" includes="laverca-datatypes.jar"/>
+        <fileset dir="build" includes="laverca.jar"/>
+      </classpath>
+      <include name="**/**.java"/>
+    </javac>
+    <jar jarfile="${build}/laverca-samples.jar">
+      <fileset dir="${build}/samples">
+        <include name="**"/>
+      </fileset>
+    </jar>
+  </target>
+
+  <target depends="init, compile-datatypes, compile-laverca, compile-samples" name="compile-all">
+  </target>
+
+  <target if="boolean-make-javadoc-files" name="make-javadoc">
+    <!-- make javadocs of mssapi to customer referenceclient src package -->
+    <javadoc classpath="${build}/mssapi.jar" classpathref="project.classpath" destdir="${reference.client.src.dest}/doc/javadoc" encoding="ISO-8859-15" excludepackagenames="fi.methics.mssapi.test.*, fi.methics.axis, fi.methics.www.*" packagenames="fi.methics.*,oasis.names.tc.SAML.*" public="true" sourcepath="${src}/mssapi;${castordir}"></javadoc>
+  </target>
+
+</project>
