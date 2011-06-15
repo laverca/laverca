@@ -224,7 +224,7 @@ public class FiComClient {
                     long deadline = System.currentTimeMillis() + timeout;
 
                     MSS_StatusResp statResp = null;
-                    int waitPeriod = 1 * 1000; // initial wait 20 s as per FiCom, section 5.1
+                    int waitPeriod = 20 * 1000; // initial wait 20 s as per FiCom, section 5.1
                     LOOP: while(true) {
                         Thread.sleep(waitPeriod);
                         waitPeriod = 5 * 1000; // subsequent wait 5 s as per FiCom, section 5.1
