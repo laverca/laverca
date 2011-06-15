@@ -1,0 +1,22 @@
+Laverca
+=======
+April 2011
+
+Laverca is an open-source implementation of the ETSI TS 102 204
+SOAP interface for Application Providers. In addition to the 
+standard ETSI features, Laverca includes the FiCom 2.0 
+features specified in Finland.
+
+To build
+$ ant
+
+To run
+$ java -cp 'lib/*:build/*:src/*' fi.laverca.samples.FiComSigReqCaller
+
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (c) Laverca project. 
+
+Apache License Version 2.0
