@@ -9,6 +9,7 @@
   <property location="src" name="src"/>
   <property location="samples-src" name="samples-src"/>
   <property location="lib" name="lib"/>
+  <property location="etc" name="etc"/>
   <property name="boolean-make-javadoc-files" value="true"/>
   
   <fileset dir="${lib}" id="lib.fileset">
@@ -90,8 +91,32 @@
       </fileset>
     </jar>
   </target>
+	
+  <target depends="init" name="copy-library">
+  	<mkdir dir="${build}/lib"/>
+  	<copy todir="${build}/lib">
+  	      <fileset dir="${lib}" includes="**/*.jar"/>
+  	</copy>
+  </target>
+	
+  <target depends="init" name="copy-etc">
+    <mkdir dir="${build}/etc"/>
+	<copy todir="${build}/etc">
+	  <fileset dir="${etc}" includes="**/laverca*"/>
+	</copy>
+  </target>
+	
+  <target depends="init" name="copy-start-scripts">
+	<copy todir="${build}">
+	  <fileset dir="." includes="*.bat"/>
+	  <fileset dir="." includes="*.sh"/>
+	</copy>
+  </target>
+	
+  <target depends="copy-library, copy-etc, copy-start-scripts" name="copy-all">
+  </target>
 
-  <target depends="init, compile-datatypes, compile-laverca, compile-samples" name="compile-all">
+  <target depends="init, compile-datatypes, compile-laverca, compile-samples, copy-all" name="compile-all">
   </target>
 
   <target if="boolean-make-javadoc-files" name="make-javadoc">
