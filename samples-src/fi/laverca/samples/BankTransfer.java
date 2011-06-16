@@ -79,34 +79,36 @@ public class BankTransfer {
         try {
             log.info("calling consent");
             fiComClient.consent(apTransId, 
-            							 textToBeConsentedTo, 
-                                         phoneNumber, 
-                                         noSpamService, 
-                                         null, 
-                                         new FiComResponseHandler() {
-                                             @Override
-                                             public void onResponse(FiComRequest req, FiComResponse resp) {
-                                                 log.info("got resp");
-                                                 try {
-                                                	 responseBox.setText("MSS Signature: " + 
-                                                			 new String(Base64.encode(resp.getMSS_StatusResp().
-                                                					 getMSS_Signature().getBase64Signature()), "ASCII") +
-                                                					 "\n\n" + responseBox.getText());
-                                                 } catch (UnsupportedEncodingException e) {
-                                                	 log.info("Unsupported encoding", e);
-                                                 }
-                                                 responseBox.setText("User allowed transfer from " + fromTxt + 
-                                                		 " to " + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
-                                             }
-
-                                             @Override
-                                             public void onError(FiComRequest req, Throwable throwable) {
-                                                 log.info("got error", throwable);
-                                                 responseBox.setText("User did not allow transfer from " + 
-                                                		 fromTxt + " to " + toTxt + ", " + amountTxt + "\n" + 
-                                                		 responseBox.getText());
-                                             }
-                                         });
+            		textToBeConsentedTo, 
+            		phoneNumber, 
+            		noSpamService, 
+            		null, 
+            		new FiComResponseHandler() {
+		            	@Override
+		            	public void onResponse(FiComRequest req, FiComResponse resp) {
+		            		log.info("got resp");
+		            		
+		            		try {
+		            			responseBox.setText("MSS Signature: " + 
+		            					new String(Base64.encode(resp.getMSS_StatusResp().
+		            					getMSS_Signature().getBase64Signature()), "ASCII") +
+		            					"\n\n" + responseBox.getText());
+		            		} catch (UnsupportedEncodingException e) {
+		            			log.info("Unsupported encoding", e);
+		            		}
+		            		
+		            		responseBox.setText("User allowed transfer from " + fromTxt + 
+		            				" to " + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
+		            	}
+		
+		            	@Override
+		            	public void onError(FiComRequest req, Throwable throwable) {
+		            		log.info("got error", throwable);
+		            		responseBox.setText("User did not allow transfer from " + 
+		            				fromTxt + " to " + toTxt + ", " + amountTxt + "\n" + 
+		            				responseBox.getText());
+		            	}
+		            });
         }
         catch (IOException e) {
             log.info("error establishing connection", e);

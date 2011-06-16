@@ -71,48 +71,53 @@ public class Authentication {
 
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
-        LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
+        LinkedList<String> attributeNames = new LinkedList<String>(); 
+ 
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
-        //attributeNames.add(FiComAdditionalServices.PERSON_ID_GIVENNAME);
-        //attributeNames.add(FiComAdditionalServices.PERSON_ID_SURNAME);
-        //attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
-        //attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_EMAIL);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_AGE);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_SUBJECT);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_SURNAME);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_GIVENNAME);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
         Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
         additionalServices.add(personIdService);
         
         try {
             log.info("calling authenticate");
             fiComClient.authenticate(apTransId, 
-                                         authnChallenge, 
-                                         phoneNumber, 
-                                         noSpamService, 
-                                         additionalServices, 
-                                         new FiComResponseHandler() {
-                                             @Override
-                                             public void onResponse(FiComRequest req, FiComResponse resp) {
-                                                 log.info("got resp");
-                                                 log.info(resp.getPkcs7Signature().getSignerCn());
-                                                 try {
-                                                	 responseBox.setText("MSS Signature: " + 
-                                                			 new String(Base64.encode(resp.getMSS_StatusResp().
-                                                					 getMSS_Signature().getBase64Signature()), "ASCII") +
-                                                					 "\n\n" + responseBox.getText());
-                                                 } catch (UnsupportedEncodingException e) {
-                                                	 log.info("Unsupported encoding", e);
-                                                 }
-                                                 for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-                                                	 log.info(a.getName() + " " + a.getStringValue());
-                                                	 responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-                                                 }
-                                             }
-
-                                             @Override
-                                             public void onError(FiComRequest req, Throwable throwable) {
-                                                 log.info("got error", throwable);
-                                                 responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
-                                             }
-                                         });
+            		authnChallenge, 
+            		phoneNumber, 
+            		noSpamService, 
+            		additionalServices, 
+            		new FiComResponseHandler() {
+		            	@Override
+		            	public void onResponse(FiComRequest req, FiComResponse resp) {
+		            		log.info("got resp");
+		            		log.info(resp.getPkcs7Signature().getSignerCn());
+		            		
+		            		try {
+		            			responseBox.setText("MSS Signature: " + 
+		            					new String(Base64.encode(resp.getMSS_StatusResp().
+		            					getMSS_Signature().getBase64Signature()), "ASCII") +
+		            					"\n\n" + responseBox.getText());
+		            		} catch (UnsupportedEncodingException e) {
+		            			log.info("Unsupported encoding", e);
+		            		}
+		            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+		            			log.info(a.getName() + " " + a.getStringValue());
+		            			responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+		            		}
+		            	}
+		
+		            	@Override
+		            	public void onError(FiComRequest req, Throwable throwable) {
+		            		log.info("got error", throwable);
+		            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
+		            	}
+		            });
             
         }
         catch (IOException e) {
