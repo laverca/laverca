@@ -86,43 +86,45 @@ public class SignData {
         additionalServices.add(personIdService);
         
         try {
-            log.info("calling signData");
-            req = 
-            	fiComClient.signData(apTransId, 
-            							 output, 
-                                         phoneNumber, 
-                                         noSpamService, 
-                                         additionalServices, 
-                                         new FiComResponseHandler() {
-							            	@Override
-							            	public void onResponse(FiComRequest req, FiComResponse resp) {
-							            		log.info("got resp");
-							            		printSHA1(output);
-							            		responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
-							            				+ "\n" + responseBox.getText());
-							            		try {
-							            			responseBox.setText("MSS Signature: " + 
-							            					new String(Base64.encode(resp.getMSS_StatusResp().
-							            							getMSS_Signature().getBase64Signature()), "ASCII") +
-							            							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
-							            							"\n" + responseBox.getText());
-	                                                for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-	                                                    log.info(a.getName() + " " + a.getStringValue());
-	                                                    responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-	                                                }
-	                                            } catch (UnsupportedEncodingException e) {
-							            			log.info("Unsupported encoding", e);
-							            		} catch (NullPointerException e){
-							            			log.info("PersonIDAttributes = null", e);
-							            		}
-
-							            	}
-
-							            	@Override
-							            	public void onError(FiComRequest req, Throwable throwable) {
-							            		log.info("got error", throwable);
-							            	}
-                                         });
+        	log.info("calling signData");
+        	req = 
+        		fiComClient.signData(apTransId, 
+        				output, 
+        				phoneNumber, 
+        				noSpamService, 
+        				additionalServices, 
+        				new FiComResponseHandler() {
+		        			@Override
+		        			public void onResponse(FiComRequest req, FiComResponse resp) {
+		        				log.info("got resp");
+		        				printSHA1(output);
+		        				
+		        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
+		        						+ "\n" + responseBox.getText());
+		        				
+		        				try {
+		        					responseBox.setText("MSS Signature: " + 
+		        							new String(Base64.encode(resp.getMSS_StatusResp().
+		        							getMSS_Signature().getBase64Signature()), "ASCII") +
+		        							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
+		        							"\n" + responseBox.getText());
+		        					for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+		        						log.info(a.getName() + " " + a.getStringValue());
+		        						responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+		        					}
+		        				} catch (UnsupportedEncodingException e) {
+		        					log.info("Unsupported encoding", e);
+		        				} catch (NullPointerException e){
+		        					log.info("PersonIDAttributes = null", e);
+		        				}
+		
+		        			}
+		
+		        			@Override
+		        			public void onError(FiComRequest req, Throwable throwable) {
+		        				log.info("got error", throwable);
+		        			}
+		        		});
         }
         catch (IOException e) {
             log.info("error establishing connection", e);

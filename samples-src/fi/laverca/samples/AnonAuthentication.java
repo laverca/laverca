@@ -79,27 +79,28 @@ public class AnonAuthentication {
         try {
             log.info("calling authenticateAnon");
             fiComClient.authenticateAnon(apTransId, 
-                                         authnChallenge, 
-                                         phoneNumber, 
-                                         noSpamService, 
-                                         additionalServices, 
-                                         new FiComResponseHandler() {
-                                             @Override
-                                             public void onResponse(FiComRequest req, FiComResponse resp) {
-                                                 log.info("got resp");
-                                                 responseBox.setText("\n" + responseBox.getText());
-                                                 for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-                                                     log.info(a.getStringValue());
-                                                     responseBox.setText(a.getStringValue() + " " + responseBox.getText());
-                                                 }
-                                             }
-
-                                             @Override
-                                             public void onError(FiComRequest req, Throwable throwable) {
-                                                 log.info("got error", throwable);
-                                                 responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
-                                             }
-                                         });
+            		authnChallenge, 
+            		phoneNumber, 
+            		noSpamService, 
+            		additionalServices, 
+            		new FiComResponseHandler() {
+		            	@Override
+		            	public void onResponse(FiComRequest req, FiComResponse resp) {
+		            		log.info("got resp");
+		            		responseBox.setText("\n" + responseBox.getText());
+		            		
+		            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+		            			log.info(a.getStringValue());
+		            			responseBox.setText(a.getStringValue() + " " + responseBox.getText());
+		            		}
+		            	}
+		
+		            	@Override
+		            	public void onError(FiComRequest req, Throwable throwable) {
+		            		log.info("got error", throwable);
+		            		responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
+		            	}
+		            });
         }
         catch (IOException e) {
             log.info("error establishing connection", e);
