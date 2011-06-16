@@ -39,7 +39,7 @@ import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 public class SignData {
 	
 	private static final Log log = LogFactory.getLog(SignData.class);
-	
+	private static FiComRequest req;
 	private static JTextArea responseBox = new JTextArea();
 	
 	/**
@@ -87,7 +87,8 @@ public class SignData {
         
         try {
             log.info("calling signData");
-            fiComClient.signData(apTransId, 
+            req = 
+            	fiComClient.signData(apTransId, 
             							 output, 
                                          phoneNumber, 
                                          noSpamService, 
@@ -148,14 +149,24 @@ public class SignData {
 		});
 		fc.showOpenDialog(frame);
 		
-		JButton browse = new JButton("Browse");
+		/*JButton browse = new JButton("Browse");
 		browse.setPreferredSize(new Dimension(80, 10));
 		browse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				fc.showOpenDialog(frame);
 			}
 		});
-		pane.add(browse, BorderLayout.WEST);
+		pane.add(browse, BorderLayout.WEST);*/
+		
+		JButton cancel = new JButton("Cancel");
+		cancel.setPreferredSize(new Dimension(80, 10));
+		cancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+				responseBox.setText("Canceled\n" + responseBox.getText());
+			}
+		});
+		pane.add(cancel, BorderLayout.WEST);
 		
 		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
 		final JTextField number = new JTextField("+35847001001");
