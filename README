@@ -7,11 +7,48 @@ SOAP interface for Application Providers. In addition to the
 standard ETSI features, Laverca includes the FiCom 2.0 
 features specified in Finland.
 
-To build
-$ ant
 
-To run
-$ java -cp 'lib/*:build/*:src/*' fi.laverca.samples.FiComSigReqCaller
+ -- REQUIREMENTS --
+ 
+JDK 6
+Ant (Tested with v1.8.1)
+
+Download Ant
+http://ant.apache.org/bindownload.cgi
+
+Ant manual
+http://ant.apache.org/manual/index.html
+
+JDK SE
+http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
+
+
+ -- INSTALLATION --
+
+To create distribution
+(Run in laverca folder.)
+ant
+ OR
+ant dist
+
+
+To compile
+ant compile-all
+
+
+
+ -- USAGE --
+
+To run distributed sample
+run dist/start-scripts/FiComSigReqCaller.(bat/sh)
+Most samples require GUI.
+
+
+To run compiled sample
+java -cp 'lib/*:build/*:src/*' fi.laverca.samples.FiComSigReqCaller
+
+
 
 
 
