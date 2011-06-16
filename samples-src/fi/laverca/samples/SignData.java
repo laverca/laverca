@@ -40,7 +40,6 @@ public class SignData {
 	
 	private static final Log log = LogFactory.getLog(SignData.class);
 	private static FiComRequest req;
-	private static JTextArea responseBox = new JTextArea();
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -139,53 +138,54 @@ public class SignData {
 	 */
 	public static void main(String[] args) {
 		
-		final JFrame frame = new JFrame("Sign data");
-		Container pane = frame.getContentPane();
-		frame.setSize(380, 380);
-		
-		final JFileChooser fc = new JFileChooser();
-		fc.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				printSHA1(generateSHA1(fc.getSelectedFile()));
-			}
-		});
-		fc.showOpenDialog(frame);
-		
-		/*JButton browse = new JButton("Browse");
-		browse.setPreferredSize(new Dimension(80, 10));
-		browse.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				fc.showOpenDialog(frame);
-			}
-		});
-		pane.add(browse, BorderLayout.WEST);*/
-		
-		JButton cancel = new JButton("Cancel");
-		cancel.setPreferredSize(new Dimension(80, 10));
-		cancel.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				req.cancel();
-				responseBox.setText("Canceled\n" + responseBox.getText());
-			}
-		});
-		pane.add(cancel, BorderLayout.WEST);
-		
-		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
-		final JTextField number = new JTextField("+35847001001");
-		number.setPreferredSize(new Dimension(230, 10));
-		pane.add(number, BorderLayout.CENTER);
-		JButton send = new JButton("Send");
-		send.setPreferredSize(new Dimension(70, 10));
-		pane.add(send, BorderLayout.EAST);
-		responseBox.setPreferredSize(new Dimension(200, 300));
-		send.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				estamblishConnection(number.getText(), fc.getSelectedFile());
-			}
-		});
-		pane.add(responseBox, BorderLayout.PAGE_END);
-		frame.setVisible(true);		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		initComponents();
+//		final JFrame frame = new JFrame("Sign data");
+//		Container pane = frame.getContentPane();
+//		frame.setSize(380, 380);
+//		
+//		final JFileChooser fc = new JFileChooser();
+//		fc.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				printSHA1(generateSHA1(fc.getSelectedFile()));
+//			}
+//		});
+//		fc.showOpenDialog(frame);
+//		
+//		/*JButton browse = new JButton("Browse");
+//		browse.setPreferredSize(new Dimension(80, 10));
+//		browse.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				fc.showOpenDialog(frame);
+//			}
+//		});
+//		pane.add(browse, BorderLayout.WEST);*/
+//		
+//		JButton cancel = new JButton("Cancel");
+//		cancel.setPreferredSize(new Dimension(80, 10));
+//		cancel.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				req.cancel();
+//				responseBox.setText("Canceled\n" + responseBox.getText());
+//			}
+//		});
+//		pane.add(cancel, BorderLayout.WEST);
+//		
+//		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
+//		final JTextField number = new JTextField("+35847001001");
+//		number.setPreferredSize(new Dimension(230, 10));
+//		pane.add(number, BorderLayout.CENTER);
+//		JButton send = new JButton("Send");
+//		send.setPreferredSize(new Dimension(70, 10));
+//		pane.add(send, BorderLayout.EAST);
+//		responseBox.setPreferredSize(new Dimension(200, 300));
+//		send.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				estamblishConnection(number.getText(), fc.getSelectedFile());
+//			}
+//		});
+//		pane.add(responseBox, BorderLayout.PAGE_END);
+//		frame.setVisible(true);		
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	/**
@@ -235,4 +235,124 @@ public class SignData {
         }
         responseBox.setText("SHA1: " + shaTmp + "\n\n" + responseBox.getText());
     }
+	
+    private static void initComponents() {
+    	frame = new javax.swing.JFrame();
+        pane = new javax.swing.JPanel();
+        lblNumber = new javax.swing.JLabel();
+        number = new javax.swing.JTextField();
+        sendButton = new javax.swing.JButton();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        cancelButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        responseBox = new javax.swing.JTextArea();
+        
+		final JFileChooser fc = new JFileChooser();
+		fc.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				printSHA1(generateSHA1(fc.getSelectedFile()));
+			}
+		});
+		fc.showOpenDialog(frame);
+        
+        
+        browseButton = new javax.swing.JButton();
+        browseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				fc.showOpenDialog(frame);
+			}
+		});
+
+        frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        lblNumber.setText("Phone number");
+
+        number.setText("+35847001001");
+
+        sendButton.setText("Send");
+        sendButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				estamblishConnection(number.getText(), fc.getSelectedFile());
+			}
+		});
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+			}
+		});
+        
+        responseBox.setColumns(20);
+        responseBox.setRows(5);
+        jScrollPane1.setViewportView(responseBox);
+
+        browseButton.setText("Browse...");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
+        pane.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(number, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                            .addComponent(lblNumber))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(sendButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(lblNumber)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                    .addComponent(sendButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(22, 22, 22))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
+        frame.getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        frame.pack();
+    }
+    
+    // Variables declaration - do not modify
+    private static javax.swing.JFrame frame;
+    private static javax.swing.JButton sendButton;
+    private static javax.swing.JButton cancelButton;
+    private static javax.swing.JButton browseButton;
+    private static javax.swing.JLabel lblNumber;
+    private static javax.swing.JPanel pane;
+    private static javax.swing.JProgressBar jProgressBar1;
+    private static javax.swing.JScrollPane jScrollPane1;
+    private static javax.swing.JTextArea responseBox;
+    private static javax.swing.JTextField number;
+    // End of variables declaration
 }
