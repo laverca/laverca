@@ -24,6 +24,7 @@ import fi.laverca.DTBS;
 import fi.laverca.FiComAdditionalServices;
 import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.FiComClient;
+import fi.laverca.FiComException;
 import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
@@ -75,7 +76,6 @@ public class Authentication {
  
         attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_EMAIL);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_AGE);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_SUBJECT);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_SURNAME);
@@ -102,13 +102,55 @@ public class Authentication {
 		            			responseBox.setText("MSS Signature: " + 
 		            					new String(Base64.encode(resp.getMSS_StatusResp().
 		            					getMSS_Signature().getBase64Signature()), "ASCII") +
-		            					"\n\n" + responseBox.getText());
+		            					"\n\n");
 		            		} catch (UnsupportedEncodingException e) {
 		            			log.info("Unsupported encoding", e);
 		            		}
+		            		responseBox.setText("AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID()
+		            				+ "   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD()
+		            				+ "   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n" + responseBox.getText());
+		            		
+//		            		responseBox.setText("MSS   StatusMessage: " + resp.getMSS_StatusResp().getStatus().getStatusMessage() 
+//		            				+ "   MajorVersion: " + resp.getMSS_StatusResp().getMajorVersion()
+//		            				+ "   MinorVersion: " + resp.getMSS_StatusResp().getMinorVersion()
+//		            				+ "   URI: " + resp.getMSS_StatusResp().getMSSP_Info().getMSSP_ID().getURI()
+//		            				+ "\n" + responseBox.getText());
+		            		
+		            		responseBox.setText("MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN()
+		            				+ "\n" + responseBox.getText());
+		            		
+		            		try {
+		            			responseBox.setText("Pkcs7" + "\n"
+		            					+ "   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
+		            					+ "   Type: " + resp.getPkcs7Signature().getSignerCert().getType()
+		            					+ "   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName()
+		            					+ "   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
+		            					+ "   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n"
+		            					+ "   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n"
+		            					+ "   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n"
+//		            					+ "   PublicKey: " + resp.getPkcs7Signature().getSignerCert().getPublicKey()
+		            					+ "\n" + responseBox.getText());
+
+		            			for (String oid : resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs()) {
+		            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
+		            			}
+		            			responseBox.setText("NonCriticalExtensionOIDs:" + "\n" + responseBox.getText());
+		            			
+		            			for (String oid : resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs()) {
+		            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
+		            			}
+		            			responseBox.setText("CriticalExtensionOIDs:" + "\n" + responseBox.getText());
+
+		            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());
+
+
+		            		} catch (FiComException e1) {
+								e1.printStackTrace();
+							}
 		            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
 		            			log.info(a.getName() + " " + a.getStringValue());
-		            			responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+		            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
+		            					+ "\n" + responseBox.getText());
 		            		}
 		            	}
 		
@@ -134,7 +176,7 @@ public class Authentication {
 	public static void main(String[] args) {
 		
 		JFrame frame = new JFrame("Authentication");
-		frame.setSize(300, 380);
+		frame.setSize(900, 800);
 		
 		Container pane = frame.getContentPane();
 		
@@ -152,7 +194,7 @@ public class Authentication {
 			}
 		});
 		
-		responseBox.setPreferredSize(new Dimension(200, 300));
+		responseBox.setPreferredSize(new Dimension(900, 725));
 		pane.add(responseBox, BorderLayout.PAGE_END);
 		
 		frame.setVisible(true);		
