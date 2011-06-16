@@ -30,7 +30,7 @@ import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 public class AnonAuthentication {
 
 	private static final Log log = LogFactory.getLog(AnonAuthentication.class);
-	
+	private static FiComRequest req;
 	private static JTextArea responseBox = new JTextArea();
 	
 	/**
@@ -78,29 +78,30 @@ public class AnonAuthentication {
         
         try {
             log.info("calling authenticateAnon");
-            fiComClient.authenticateAnon(apTransId, 
-            		authnChallenge, 
-            		phoneNumber, 
-            		noSpamService, 
-            		additionalServices, 
-            		new FiComResponseHandler() {
-		            	@Override
-		            	public void onResponse(FiComRequest req, FiComResponse resp) {
-		            		log.info("got resp");
-		            		responseBox.setText("\n" + responseBox.getText());
-		            		
-		            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-		            			log.info(a.getStringValue());
-		            			responseBox.setText(a.getStringValue() + " " + responseBox.getText());
-		            		}
-		            	}
-		
-		            	@Override
-		            	public void onError(FiComRequest req, Throwable throwable) {
-		            		log.info("got error", throwable);
-		            		responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
-		            	}
-		            });
+            req = 
+	            fiComClient.authenticateAnon(apTransId, 
+	            		authnChallenge, 
+	            		phoneNumber, 
+	            		noSpamService, 
+	            		additionalServices, 
+	            		new FiComResponseHandler() {
+			            	@Override
+			            	public void onResponse(FiComRequest req, FiComResponse resp) {
+			            		log.info("got resp");
+			            		responseBox.setText("\n" + responseBox.getText());
+			            		
+			            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+			            			log.info(a.getStringValue());
+			            			responseBox.setText(a.getStringValue() + " " + responseBox.getText());
+			            		}
+			            	}
+			
+			            	@Override
+			            	public void onError(FiComRequest req, Throwable throwable) {
+			            		log.info("got error", throwable);
+			            		responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
+			            	}
+			            });
         }
         catch (IOException e) {
             log.info("error establishing connection", e);
@@ -117,7 +118,7 @@ public class AnonAuthentication {
 	public static void main(String[] args) {
 		
 		JFrame frame = new JFrame("Anonyme Authentication");
-		frame.setSize(300, 380);
+		frame.setSize(350, 380);
 		
 		Container pane = frame.getContentPane();
 		
@@ -134,6 +135,16 @@ public class AnonAuthentication {
 				estamblishConnection(number.getText());
 			}
 		});
+		
+		JButton cancel = new JButton("Cancel");
+		cancel.setPreferredSize(new Dimension(80, 10));
+		cancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+				responseBox.setText("Canceled\n" + responseBox.getText());
+			}
+		});
+		pane.add(cancel, BorderLayout.WEST);
 		
 		responseBox.setPreferredSize(new Dimension(200, 300));
 		pane.add(responseBox, BorderLayout.PAGE_END);

@@ -1,5 +1,6 @@
 package fi.laverca.samples;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -32,7 +33,7 @@ import fi.laverca.JvmSsl;
 public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
-	
+	private static FiComRequest req;
 	private static JTextArea responseBox = new JTextArea();
 	
 	/**
@@ -80,40 +81,41 @@ public class SignText {
         
         try {
         	log.info("calling signText");
-        	fiComClient.signText(apTransId, 
-        			textToBeSigned, 
-        			phoneNumber, 
-        			noSpamService, 
-        			additionalServices, 
-        			new FiComResponseHandler() {
-		        		@Override
-		        		public void onResponse(FiComRequest req, FiComResponse resp) {
-		        			log.info("got resp");
-		        			
-		        			try {
-		        				responseBox.setText("MSS Signature: " + 
-		        						new String(Base64.encode(resp.getMSS_StatusResp().
-		        						getMSS_Signature().getBase64Signature()), "ASCII") +
-		        						"\n\n" + responseBox.getText());
-		        			} catch (UnsupportedEncodingException e) {
-		        				log.info("Unsupported encoding", e);
-		        			}
-		        			
-		        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-		        				log.info(a.getName() + " " + a.getStringValue());
-		        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-		        			}
-		        			
-		        			responseBox.setText(textToBeSigned + "\n" + responseBox.getText());
-		        		}
-		
-		        		@Override
-		        		public void onError(FiComRequest req, Throwable throwable) {
-		        			log.info("got error", throwable);
-		        			responseBox.setText("ERROR, " + phoneNumber + "\n" +
-		        					responseBox.getText());
-		        		}
-        			});
+        	req = 
+	        	fiComClient.signText(apTransId, 
+	        			textToBeSigned, 
+	        			phoneNumber, 
+	        			noSpamService, 
+	        			additionalServices, 
+	        			new FiComResponseHandler() {
+			        		@Override
+			        		public void onResponse(FiComRequest req, FiComResponse resp) {
+			        			log.info("got resp");
+			        			
+			        			try {
+			        				responseBox.setText("MSS Signature: " + 
+			        						new String(Base64.encode(resp.getMSS_StatusResp().
+			        						getMSS_Signature().getBase64Signature()), "ASCII") +
+			        						"\n\n" + responseBox.getText());
+			        			} catch (UnsupportedEncodingException e) {
+			        				log.info("Unsupported encoding", e);
+			        			}
+			        			
+			        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+			        				log.info(a.getName() + " " + a.getStringValue());
+			        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+			        			}
+			        			
+			        			responseBox.setText(textToBeSigned + "\n" + responseBox.getText());
+			        		}
+			
+			        		@Override
+			        		public void onError(FiComRequest req, Throwable throwable) {
+			        			log.info("got error", throwable);
+			        			responseBox.setText("ERROR, " + phoneNumber + "\n" +
+			        					responseBox.getText());
+			        		}
+	        			});
         }
         catch (IOException e) {
             log.info("error establishing connection", e);
@@ -155,10 +157,19 @@ public class SignText {
 			}
 		});
 		
+		JButton cancel = new JButton("Cancel");
+		cancel.setPreferredSize(new Dimension(80, 10));
+		cancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+				responseBox.setText("Canceled\n" + responseBox.getText());
+			}
+		});
+		
 		responseBox.setPreferredSize(new Dimension(800, 600));
 
 		hGroup.addGroup(layout.createParallelGroup().addComponent(lblNumber).addComponent(number).
-				addComponent(lblTxtToBeSigned).addComponent(textToBeSigned).addComponent(send).addComponent(responseBox));
+				addComponent(lblTxtToBeSigned).addComponent(textToBeSigned).addComponent(send).addComponent(cancel).addComponent(responseBox));
 		
 		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
 				addComponent(lblNumber));
@@ -172,6 +183,8 @@ public class SignText {
 		
 		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
 				addComponent(send));
+		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+				addComponent(cancel));
 		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
 				addComponent(responseBox));
 		
