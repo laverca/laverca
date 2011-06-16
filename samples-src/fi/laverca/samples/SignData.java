@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
+import java.util.LinkedList;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -33,6 +34,7 @@ import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
+import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 
 public class SignData {
 	
@@ -77,6 +79,11 @@ public class SignData {
         
         String apTransId = "A"+System.currentTimeMillis();
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
+        LinkedList<Service> additionalServices = new LinkedList<Service>();
+        LinkedList<String> attributeNames = new LinkedList<String>();
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+        additionalServices.add(personIdService);
         
         try {
             log.info("calling signData");
@@ -84,7 +91,7 @@ public class SignData {
             							 output, 
                                          phoneNumber, 
                                          noSpamService, 
-                                         null, 
+                                         additionalServices, 
                                          new FiComResponseHandler() {
 							            	@Override
 							            	public void onResponse(FiComRequest req, FiComResponse resp) {
@@ -98,9 +105,16 @@ public class SignData {
 							            							getMSS_Signature().getBase64Signature()), "ASCII") +
 							            							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
 							            							"\n" + responseBox.getText());
-							            		} catch (UnsupportedEncodingException e) {
+	                                                for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+	                                                    log.info(a.getName() + " " + a.getStringValue());
+	                                                    responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+	                                                }
+	                                            } catch (UnsupportedEncodingException e) {
 							            			log.info("Unsupported encoding", e);
+							            		} catch (NullPointerException e){
+							            			log.info("PersonIDAttributes = null", e);
 							            		}
+
 							            	}
 
 							            	@Override
