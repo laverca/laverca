@@ -33,7 +33,6 @@ public class BankTransfer {
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
 	private static FiComRequest req;
-	private static JTextArea responseBox = new JTextArea();
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -43,7 +42,7 @@ public class BankTransfer {
 	 * @param amountTxt
 	 */
 	
-	private void estamblishConnection(String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
+	private static void estamblishConnection(String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
 		
 		log.info("setting up ssl");
 		JvmSsl.setSSL("etc/laverca-truststore",
@@ -90,7 +89,7 @@ public class BankTransfer {
 		            		log.info("got resp");
 		            		
 		            		try {
-		            			responseBox.setText("MSS Signature: " + 
+		            			responseBox.setText("\nMSS Signature: " + 
 		            					new String(Base64.encode(resp.getMSS_StatusResp().
 		            					getMSS_Signature().getBase64Signature()), "ASCII") +
 		            					"\n\n" + responseBox.getText());
@@ -99,14 +98,14 @@ public class BankTransfer {
 		            		}
 		            		
 		            		responseBox.setText("User allowed transfer from " + fromTxt + 
-		            				" to " + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
+		            				" to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
 		            	}
 		
 		            	@Override
 		            	public void onError(FiComRequest req, Throwable throwable) {
 		            		log.info("got error", throwable);
 		            		responseBox.setText("User did not allow transfer from " + 
-		            				fromTxt + " to " + toTxt + ", " + amountTxt + "\n" + 
+		            				fromTxt + " to\n" + toTxt + ", " + amountTxt + "\n" + 
 		            				responseBox.getText());
 		            	}
 		            });
@@ -124,101 +123,250 @@ public class BankTransfer {
 	 */
 	
 	public static void main(String[] args) {
-		new BankTransfer();
+		
+		initComponents();
+//		JFrame frame = new JFrame("Bank Transfer");
+//		frame.setSize(600, 380);
+//
+//		Container pane = frame.getContentPane();
+//		GroupLayout layout = new GroupLayout(pane);
+//		pane.setLayout(layout);
+//		layout.setAutoCreateGaps(true);
+//		
+//		GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
+//		GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
+//		
+//		JLabel lblNumber = new JLabel("Phone number");
+//		final JTextField number = new JTextField("+35847001001");
+//		number.setPreferredSize(new Dimension(230, 10));
+//		pane.add(number, BorderLayout.CENTER);
+//		
+//		JLabel lblFromTxt = new JLabel("From account");
+//		final JTextField fromTxt = new JTextField();
+//		fromTxt.setPreferredSize(new Dimension(230, 10));
+//		pane.add(fromTxt, BorderLayout.CENTER);
+//		
+//		JLabel lblToTxt = new JLabel("To account");
+//		final JTextField toTxt = new JTextField();
+//		toTxt.setPreferredSize(new Dimension(230, 10));
+//		pane.add(toTxt, BorderLayout.CENTER);
+//		
+//		JLabel lblAmountTxt = new JLabel("Amount");
+//		final JTextField amountTxt = new JTextField();
+//		amountTxt.setPreferredSize(new Dimension(230, 10));
+//		pane.add(amountTxt, BorderLayout.CENTER);
+//		
+//		JButton cancel = new JButton("Cancel");
+//		cancel.setPreferredSize(new Dimension(80, 10));
+//		cancel.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				req.cancel();
+//				responseBox.setText("Canceled\n" + responseBox.getText());
+//			}
+//		});
+//		pane.add(cancel, BorderLayout.CENTER);
+//		
+//		JButton send = new JButton("Send");
+//		send.setPreferredSize(new Dimension(70, 10));
+//		pane.add(send, BorderLayout.EAST);
+//		send.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
+//			}
+//		});
+//		
+//		responseBox.setPreferredSize(new Dimension(200, 600));
+//		pane.add(responseBox, BorderLayout.PAGE_END);
+//		
+//		hGroup.addGroup(layout.createParallelGroup().addComponent(lblNumber).addComponent(number).
+//				addComponent(lblFromTxt).addComponent(fromTxt).addComponent(lblToTxt).addComponent(toTxt).
+//					addComponent(lblAmountTxt).addComponent(amountTxt).
+//				addComponent(send).addComponent(cancel).addComponent(responseBox));
+//		
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(lblNumber));
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(number));
+//		
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(lblFromTxt));
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(fromTxt));
+//		
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(lblToTxt));
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(toTxt));
+//		
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(lblAmountTxt));
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(amountTxt));
+//		
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(send));
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(cancel));
+//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+//				addComponent(responseBox));
+//		
+//		layout.setHorizontalGroup(hGroup);
+//	    layout.setVerticalGroup(vGroup);
+//		
+//		frame.setVisible(true);
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public BankTransfer() {
-		
-		JFrame frame = new JFrame("Bank Transfer");
-		frame.setSize(600, 380);
+    private static void initComponents() {
 
-		Container pane = frame.getContentPane();
-		GroupLayout layout = new GroupLayout(pane);
-		pane.setLayout(layout);
-		layout.setAutoCreateGaps(true);
-		
-		GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
-		GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-		
-		JLabel lblNumber = new JLabel("Phone number");
-		final JTextField number = new JTextField("+35847001001");
-		number.setPreferredSize(new Dimension(230, 10));
-		pane.add(number, BorderLayout.CENTER);
-		
-		JLabel lblFromTxt = new JLabel("From account");
-		final JTextField fromTxt = new JTextField();
-		fromTxt.setPreferredSize(new Dimension(230, 10));
-		pane.add(fromTxt, BorderLayout.CENTER);
-		
-		JLabel lblToTxt = new JLabel("To account");
-		final JTextField toTxt = new JTextField();
-		toTxt.setPreferredSize(new Dimension(230, 10));
-		pane.add(toTxt, BorderLayout.CENTER);
-		
-		JLabel lblAmountTxt = new JLabel("Amount");
-		final JTextField amountTxt = new JTextField();
-		amountTxt.setPreferredSize(new Dimension(230, 10));
-		pane.add(amountTxt, BorderLayout.CENTER);
-		
-		JButton cancel = new JButton("Cancel");
-		cancel.setPreferredSize(new Dimension(80, 10));
-		cancel.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				req.cancel();
-				responseBox.setText("Canceled\n" + responseBox.getText());
-			}
-		});
-		pane.add(cancel, BorderLayout.CENTER);
-		
-		JButton send = new JButton("Send");
-		send.setPreferredSize(new Dimension(70, 10));
-		pane.add(send, BorderLayout.EAST);
-		send.addActionListener(new ActionListener() {
+    	frame = new javax.swing.JFrame("Bank Transfer");
+        pane = new javax.swing.JPanel();
+        lblNumber = new javax.swing.JLabel();
+        number = new javax.swing.JTextField();
+        sendButton = new javax.swing.JButton();
+        callStateProgressBar = new javax.swing.JProgressBar();
+        cancelButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        responseBox = new javax.swing.JTextArea();
+        lblFromTxt = new javax.swing.JLabel();
+        lblToTxt = new javax.swing.JLabel();
+        fromTxt = new javax.swing.JTextField();
+        toTxt = new javax.swing.JTextField();
+        lblAmountTxt = new javax.swing.JLabel();
+        amountTxt = new javax.swing.JTextField();
+
+        frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+
+        lblNumber.setText("Phone number");
+
+        number.setText("+35847001001");
+
+        sendButton.setText("Send");
+        sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
 			}
 		});
 		
-		responseBox.setPreferredSize(new Dimension(200, 600));
-		pane.add(responseBox, BorderLayout.PAGE_END);
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+				responseBox.setText("Canceled\n" + responseBox.getText());
+			}
+		});
 		
-		hGroup.addGroup(layout.createParallelGroup().addComponent(lblNumber).addComponent(number).
-				addComponent(lblFromTxt).addComponent(fromTxt).addComponent(lblToTxt).addComponent(toTxt).
-					addComponent(lblAmountTxt).addComponent(amountTxt).
-				addComponent(send).addComponent(cancel).addComponent(responseBox));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(lblNumber));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(number));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(lblFromTxt));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(fromTxt));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(lblToTxt));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(toTxt));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(lblAmountTxt));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(amountTxt));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(send));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(cancel));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(responseBox));
-		
-		layout.setHorizontalGroup(hGroup);
-	    layout.setVerticalGroup(vGroup);
-		
-		frame.setVisible(true);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
+        responseBox.setColumns(20);
+        responseBox.setRows(5);
+        jScrollPane1.setViewportView(responseBox);
+
+        lblFromTxt.setText("From account");
+
+        lblToTxt.setText("To account");
+
+        fromTxt.setText("Bank account 1");
+
+        toTxt.setText("Bank account 2");
+
+        lblAmountTxt.setText("Amount");
+
+        amountTxt.setText("50 eur");
+
+        javax.swing.GroupLayout paneLayout = new javax.swing.GroupLayout(pane);
+        pane.setLayout(paneLayout);
+        paneLayout.setHorizontalGroup(
+            paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(paneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                    .addGroup(paneLayout.createSequentialGroup()
+                        .addComponent(sendButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton))
+                    .addGroup(paneLayout.createSequentialGroup()
+                        .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(number, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                            .addComponent(lblNumber, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(paneLayout.createSequentialGroup()
+                                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(lblFromTxt)
+                                    .addComponent(fromTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                                    .addComponent(amountTxt))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblToTxt)
+                                    .addComponent(toTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(85, 85, 85))
+                    .addComponent(lblAmountTxt))
+                .addContainerGap())
+        );
+        paneLayout.setVerticalGroup(
+            paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(paneLayout.createSequentialGroup()
+                .addComponent(lblNumber)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblFromTxt)
+                    .addComponent(lblToTxt))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fromTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblAmountTxt)
+                .addGap(3, 3, 3)
+                .addComponent(amountTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                    .addComponent(sendButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
+        frame.getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        frame.pack();
+    }
 	
+    // Variables declaration - do not modify
+    private static javax.swing.JFrame frame;
+    private static javax.swing.JTextField amountTxt;
+    private static javax.swing.JProgressBar callStateProgressBar;
+    private static javax.swing.JButton cancelButton;
+    private static javax.swing.JTextField fromTxt;
+    private static javax.swing.JPanel pane;
+    private static javax.swing.JScrollPane jScrollPane1;
+    private static javax.swing.JLabel lblAmountTxt;
+    private static javax.swing.JLabel lblFromTxt;
+    private static javax.swing.JLabel lblNumber;
+    private static javax.swing.JLabel lblToTxt;
+    private static javax.swing.JTextField number;
+    private static javax.swing.JTextArea responseBox;
+    private static javax.swing.JButton sendButton;
+    private static javax.swing.JTextField toTxt;
+    // End of variables declaration
+    
 }
