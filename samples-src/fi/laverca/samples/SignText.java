@@ -1,21 +1,10 @@
 package fi.laverca.samples;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
-
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,8 +23,6 @@ public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
 	private static FiComRequest req;
-	private static JTextArea responseBox = new JTextArea();
-	
 	/**
 	 * Connects to MSSP using SSL and waits for response
 	 * @param phoneNumber
@@ -129,69 +116,125 @@ public class SignText {
 	 * @param args
 	 */	
 	public static void main(String[] args) {
-		
-		JFrame frame = new JFrame("Sign Text");
-		frame.setSize(800, 380);
-		
-		Container pane = frame.getContentPane();
-		GroupLayout layout = new GroupLayout(pane);
-		pane.setLayout(layout);
-		layout.setAutoCreateGaps(true);
-		
-		GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
-		GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-		
-		JLabel lblNumber = new JLabel("Phone number");
-		final JTextField number = new JTextField("+35847001001");
-		number.setPreferredSize(new Dimension(800, 10));
-		
-		JLabel lblTxtToBeSigned = new JLabel("Text to be signed");
-		final JTextArea textToBeSigned = new JTextArea();
-		textToBeSigned.setPreferredSize(new Dimension(800, 10));
-		
-		JButton send = new JButton("Send");
-		send.setPreferredSize(new Dimension(70, 10));
-		send.addActionListener(new ActionListener() {
+		initComponents();
+	}
+	
+	// SWING UI
+	
+    private static void initComponents() {
+    	jFrame1 = new javax.swing.JFrame();
+        jPanel1 = new javax.swing.JPanel();
+        lblTxtToBeSigned = new javax.swing.JLabel();
+        lblNumber = new javax.swing.JLabel();
+        number = new javax.swing.JTextField();
+        textToBeSigned = new javax.swing.JTextField();
+        sendButton = new javax.swing.JButton();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        cancelButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        responseBox = new javax.swing.JTextArea();
+
+        jFrame1.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        jFrame1.setVisible(true);
+        
+        lblNumber.setText("Phone number");
+
+        number.setText("+35847001001");
+
+        lblTxtToBeSigned.setText("Text to be signed");
+
+        textToBeSigned.setText("Sample text");
+
+        sendButton.setText("Send");
+        sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				estamblishConnection(number.getText(), textToBeSigned.getText());
 			}
 		});
-		
-		JButton cancel = new JButton("Cancel");
-		cancel.setPreferredSize(new Dimension(80, 10));
-		cancel.addActionListener(new ActionListener() {
+        
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
-				responseBox.setText("Canceled\n" + responseBox.getText());
 			}
 		});
-		
-		responseBox.setPreferredSize(new Dimension(800, 600));
+        responseBox.setColumns(20);
+        responseBox.setRows(5);
+        jScrollPane1.setViewportView(responseBox);
 
-		hGroup.addGroup(layout.createParallelGroup().addComponent(lblNumber).addComponent(number).
-				addComponent(lblTxtToBeSigned).addComponent(textToBeSigned).addComponent(send).addComponent(cancel).addComponent(responseBox));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(lblNumber));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(number));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(lblTxtToBeSigned));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(textToBeSigned));
-		
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(send));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(cancel));
-		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-				addComponent(responseBox));
-		
-		layout.setHorizontalGroup(hGroup);
-	    layout.setVerticalGroup(vGroup);
-		
-		frame.setVisible(true);	
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+               .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(textToBeSigned, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(number, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                                .addComponent(lblNumber)
+                                .addComponent(lblTxtToBeSigned)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(sendButton)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jProgressBar1, 0, 0, Short.MAX_VALUE)))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(cancelButton))))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(cancelButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lblNumber)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblTxtToBeSigned)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(textToBeSigned, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                            .addComponent(sendButton))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
+        jFrame1.getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        jFrame1.pack();
+    }
+    
+    // Variables declaration - do not modify
+    private static javax.swing.JFrame jFrame1;
+    private static javax.swing.JButton sendButton;
+    private static javax.swing.JButton cancelButton;
+    private static javax.swing.JLabel lblNumber;
+    private static javax.swing.JLabel lblTxtToBeSigned;
+    private static javax.swing.JPanel jPanel1;
+    private static javax.swing.JProgressBar jProgressBar1;
+    private static javax.swing.JScrollPane jScrollPane1;
+    private static javax.swing.JTextArea responseBox;
+    private static javax.swing.JTextField number;
+    private static javax.swing.JTextField textToBeSigned;
+    // End of variables declaration
+	
 }
