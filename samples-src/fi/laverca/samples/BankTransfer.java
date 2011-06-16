@@ -32,7 +32,7 @@ public class BankTransfer {
 
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
-	
+	private static FiComRequest req;
 	private static JTextArea responseBox = new JTextArea();
 	
 	/**
@@ -77,8 +77,9 @@ public class BankTransfer {
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         
         try {
-            log.info("calling consent");
-            fiComClient.consent(apTransId, 
+           log.info("calling consent");
+           req =
+           fiComClient.consent(apTransId, 
             		textToBeConsentedTo, 
             		phoneNumber, 
             		noSpamService, 
@@ -159,6 +160,16 @@ public class BankTransfer {
 		amountTxt.setPreferredSize(new Dimension(230, 10));
 		pane.add(amountTxt, BorderLayout.CENTER);
 		
+		JButton cancel = new JButton("Cancel");
+		cancel.setPreferredSize(new Dimension(80, 10));
+		cancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+				responseBox.setText("Canceled\n" + responseBox.getText());
+			}
+		});
+		pane.add(cancel, BorderLayout.CENTER);
+		
 		JButton send = new JButton("Send");
 		send.setPreferredSize(new Dimension(70, 10));
 		pane.add(send, BorderLayout.EAST);
@@ -174,7 +185,7 @@ public class BankTransfer {
 		hGroup.addGroup(layout.createParallelGroup().addComponent(lblNumber).addComponent(number).
 				addComponent(lblFromTxt).addComponent(fromTxt).addComponent(lblToTxt).addComponent(toTxt).
 					addComponent(lblAmountTxt).addComponent(amountTxt).
-				addComponent(send).addComponent(responseBox));
+				addComponent(send).addComponent(cancel).addComponent(responseBox));
 		
 		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
 				addComponent(lblNumber));
@@ -198,6 +209,8 @@ public class BankTransfer {
 		
 		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
 				addComponent(send));
+		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
+				addComponent(cancel));
 		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
 				addComponent(responseBox));
 		
