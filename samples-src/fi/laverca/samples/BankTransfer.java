@@ -1,20 +1,9 @@
 package fi.laverca.samples;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +22,8 @@ public class BankTransfer {
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
 	private static FiComRequest req;
+	public static BankTransferProggerssBarUpdater callStateProgressBarUpdater = new BankTransferProggerssBarUpdater();
+	public static int amountOfCalls = 0;
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -87,6 +78,7 @@ public class BankTransfer {
 		            	@Override
 		            	public void onResponse(FiComRequest req, FiComResponse resp) {
 		            		log.info("got resp");
+		            		amountOfCalls--;
 		            		
 		            		try {
 		            			responseBox.setText("\nMSS Signature: " + 
@@ -103,6 +95,7 @@ public class BankTransfer {
 		
 		            	@Override
 		            	public void onError(FiComRequest req, Throwable throwable) {
+		            		amountOfCalls--;
 		            		log.info("got error", throwable);
 		            		responseBox.setText("User did not allow transfer from " + 
 		            				fromTxt + " to\n" + toTxt + ", " + amountTxt + "\n" + 
@@ -123,103 +116,13 @@ public class BankTransfer {
 	 */
 	
 	public static void main(String[] args) {
-		
 		initComponents();
-//		JFrame frame = new JFrame("Bank Transfer");
-//		frame.setSize(600, 380);
-//
-//		Container pane = frame.getContentPane();
-//		GroupLayout layout = new GroupLayout(pane);
-//		pane.setLayout(layout);
-//		layout.setAutoCreateGaps(true);
-//		
-//		GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
-//		GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-//		
-//		JLabel lblNumber = new JLabel("Phone number");
-//		final JTextField number = new JTextField("+35847001001");
-//		number.setPreferredSize(new Dimension(230, 10));
-//		pane.add(number, BorderLayout.CENTER);
-//		
-//		JLabel lblFromTxt = new JLabel("From account");
-//		final JTextField fromTxt = new JTextField();
-//		fromTxt.setPreferredSize(new Dimension(230, 10));
-//		pane.add(fromTxt, BorderLayout.CENTER);
-//		
-//		JLabel lblToTxt = new JLabel("To account");
-//		final JTextField toTxt = new JTextField();
-//		toTxt.setPreferredSize(new Dimension(230, 10));
-//		pane.add(toTxt, BorderLayout.CENTER);
-//		
-//		JLabel lblAmountTxt = new JLabel("Amount");
-//		final JTextField amountTxt = new JTextField();
-//		amountTxt.setPreferredSize(new Dimension(230, 10));
-//		pane.add(amountTxt, BorderLayout.CENTER);
-//		
-//		JButton cancel = new JButton("Cancel");
-//		cancel.setPreferredSize(new Dimension(80, 10));
-//		cancel.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				req.cancel();
-//				responseBox.setText("Canceled\n" + responseBox.getText());
-//			}
-//		});
-//		pane.add(cancel, BorderLayout.CENTER);
-//		
-//		JButton send = new JButton("Send");
-//		send.setPreferredSize(new Dimension(70, 10));
-//		pane.add(send, BorderLayout.EAST);
-//		send.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
-//			}
-//		});
-//		
-//		responseBox.setPreferredSize(new Dimension(200, 600));
-//		pane.add(responseBox, BorderLayout.PAGE_END);
-//		
-//		hGroup.addGroup(layout.createParallelGroup().addComponent(lblNumber).addComponent(number).
-//				addComponent(lblFromTxt).addComponent(fromTxt).addComponent(lblToTxt).addComponent(toTxt).
-//					addComponent(lblAmountTxt).addComponent(amountTxt).
-//				addComponent(send).addComponent(cancel).addComponent(responseBox));
-//		
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(lblNumber));
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(number));
-//		
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(lblFromTxt));
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(fromTxt));
-//		
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(lblToTxt));
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(toTxt));
-//		
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(lblAmountTxt));
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(amountTxt));
-//		
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(send));
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(cancel));
-//		vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE).
-//				addComponent(responseBox));
-//		
-//		layout.setHorizontalGroup(hGroup);
-//	    layout.setVerticalGroup(vGroup);
-//		
-//		frame.setVisible(true);
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		callStateProgressBarUpdater.start();
 	}
 	
     private static void initComponents() {
-
     	frame = new javax.swing.JFrame("Bank Transfer");
+    	frame.setResizable(false);
         pane = new javax.swing.JPanel();
         lblNumber = new javax.swing.JLabel();
         number = new javax.swing.JTextField();
@@ -245,6 +148,7 @@ public class BankTransfer {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				amountOfCalls++;
 				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
 			}
 		});
@@ -254,6 +158,7 @@ public class BankTransfer {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
 				responseBox.setText("Canceled\n" + responseBox.getText());
+				amountOfCalls--;
 			}
 		});
 		
@@ -354,7 +259,7 @@ public class BankTransfer {
     // Variables declaration - do not modify
     private static javax.swing.JFrame frame;
     private static javax.swing.JTextField amountTxt;
-    private static javax.swing.JProgressBar callStateProgressBar;
+    public static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JButton cancelButton;
     private static javax.swing.JTextField fromTxt;
     private static javax.swing.JPanel pane;
@@ -369,4 +274,25 @@ public class BankTransfer {
     private static javax.swing.JTextField toTxt;
     // End of variables declaration
     
+}
+
+class BankTransferProggerssBarUpdater extends Thread {
+	
+	public BankTransferProggerssBarUpdater() {}
+	
+	public void run() {
+		while (true) {
+			if (BankTransfer.amountOfCalls > 0) {
+				int value = BankTransfer.callStateProgressBar.getValue() > 90 ? 10 : BankTransfer.callStateProgressBar.getValue()+10;
+				BankTransfer.callStateProgressBar.setValue(value);
+			} else {
+				BankTransfer.callStateProgressBar.setValue(0);
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
