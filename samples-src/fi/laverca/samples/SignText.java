@@ -23,6 +23,9 @@ public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
 	private static FiComRequest req;
+	public static ProggerssBarUpdater callStateProgressBarUpdater;
+	public static int amountOfCalls = 0; 
+	
 	/**
 	 * Connects to MSSP using SSL and waits for response
 	 * @param phoneNumber
@@ -78,6 +81,7 @@ public class SignText {
 			        		@Override
 			        		public void onResponse(FiComRequest req, FiComResponse resp) {
 			        			log.info("got resp");
+			        			amountOfCalls--;
 			        			
 			        			try {
 			        				responseBox.setText("MSS Signature: " + 
@@ -98,6 +102,7 @@ public class SignText {
 			
 			        		@Override
 			        		public void onError(FiComRequest req, Throwable throwable) {
+			        			amountOfCalls--;
 			        			log.info("got error", throwable);
 			        			responseBox.setText("ERROR, " + phoneNumber + "\n" +
 			        					responseBox.getText());
@@ -117,25 +122,27 @@ public class SignText {
 	 */	
 	public static void main(String[] args) {
 		initComponents();
+		callStateProgressBarUpdater = new ProggerssBarUpdater();
+		callStateProgressBarUpdater.start();
 	}
 	
 	// SWING UI
 	
     private static void initComponents() {
-    	jFrame1 = new javax.swing.JFrame();
-        jPanel1 = new javax.swing.JPanel();
+    	frame = new javax.swing.JFrame("Sign Text");
+        pane = new javax.swing.JPanel();
         lblTxtToBeSigned = new javax.swing.JLabel();
         lblNumber = new javax.swing.JLabel();
         number = new javax.swing.JTextField();
         textToBeSigned = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        callStateProgressBar = new javax.swing.JProgressBar(0, 100);
         cancelButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         responseBox = new javax.swing.JTextArea();
 
-        jFrame1.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        jFrame1.setVisible(true);
+        frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
         
         lblNumber.setText("Phone number");
 
@@ -148,6 +155,7 @@ public class SignText {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				amountOfCalls++;
 				estamblishConnection(number.getText(), textToBeSigned.getText());
 			}
 		});
@@ -156,14 +164,15 @@ public class SignText {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
+				amountOfCalls--;
 			}
 		});
         responseBox.setColumns(20);
         responseBox.setRows(5);
         jScrollPane1.setViewportView(responseBox);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
+        pane.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -180,7 +189,7 @@ public class SignText {
                                 .addGroup(jPanel1Layout.createSequentialGroup()
                                     .addComponent(sendButton)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jProgressBar1, 0, 0, Short.MAX_VALUE)))
+                                    .addComponent(callStateProgressBar, 0, 0, Short.MAX_VALUE)))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(cancelButton))))
                 .addContainerGap())
@@ -202,39 +211,60 @@ public class SignText {
                         .addComponent(textToBeSigned, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                            .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
                             .addComponent(sendButton))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
-        jFrame1.getContentPane().setLayout(layout);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
+        frame.getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jFrame1.pack();
+        frame.pack();
     }
     
     // Variables declaration - do not modify
-    private static javax.swing.JFrame jFrame1;
+    private static javax.swing.JFrame frame;
     private static javax.swing.JButton sendButton;
     private static javax.swing.JButton cancelButton;
     private static javax.swing.JLabel lblNumber;
     private static javax.swing.JLabel lblTxtToBeSigned;
-    private static javax.swing.JPanel jPanel1;
-    private static javax.swing.JProgressBar jProgressBar1;
+    private static javax.swing.JPanel pane;
+    public static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JScrollPane jScrollPane1;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JTextField number;
     private static javax.swing.JTextField textToBeSigned;
     // End of variables declaration
 	
+}
+
+class ProggerssBarUpdater extends Thread {
+	
+	ProggerssBarUpdater() {}
+	
+	public void run() {
+		while (true) {
+			if (SignText.amountOfCalls > 0) {
+				int value = SignText.callStateProgressBar.getValue() > 90 ? 0 : SignText.callStateProgressBar.getValue()+10;
+				SignText.callStateProgressBar.setValue(value);
+			} else {
+				SignText.callStateProgressBar.setValue(0);
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
