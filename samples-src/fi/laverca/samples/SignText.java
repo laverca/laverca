@@ -23,7 +23,7 @@ public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
 	private static FiComRequest req;
-	public static ProggerssBarUpdater callStateProgressBarUpdater;
+	public static SignTextProggerssBarUpdater callStateProgressBarUpdater = new SignTextProggerssBarUpdater();
 	public static int amountOfCalls = 0; 
 	
 	/**
@@ -122,7 +122,6 @@ public class SignText {
 	 */	
 	public static void main(String[] args) {
 		initComponents();
-		callStateProgressBarUpdater = new ProggerssBarUpdater();
 		callStateProgressBarUpdater.start();
 	}
 	
@@ -130,6 +129,7 @@ public class SignText {
 	
     private static void initComponents() {
     	frame = new javax.swing.JFrame("Sign Text");
+    	frame.setResizable(false);
         pane = new javax.swing.JPanel();
         lblTxtToBeSigned = new javax.swing.JLabel();
         lblNumber = new javax.swing.JLabel();
@@ -248,14 +248,14 @@ public class SignText {
 	
 }
 
-class ProggerssBarUpdater extends Thread {
+class SignTextProggerssBarUpdater extends Thread {
 	
-	ProggerssBarUpdater() {}
+	SignTextProggerssBarUpdater() {}
 	
 	public void run() {
 		while (true) {
 			if (SignText.amountOfCalls > 0) {
-				int value = SignText.callStateProgressBar.getValue() > 90 ? 0 : SignText.callStateProgressBar.getValue()+10;
+				int value = SignText.callStateProgressBar.getValue() > 90 ? 10 : SignText.callStateProgressBar.getValue()+10;
 				SignText.callStateProgressBar.setValue(value);
 			} else {
 				SignText.callStateProgressBar.setValue(0);
