@@ -32,6 +32,8 @@ public class SignData {
 	
 	private static final Log log = LogFactory.getLog(SignData.class);
 	private static FiComRequest req;
+	protected static SignDataProggerssBarUpdater callStateProgressBarUpdater = new SignDataProggerssBarUpdater();
+	protected static int amountOfCalls = 0;
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -88,6 +90,7 @@ public class SignData {
 		        			@Override
 		        			public void onResponse(FiComRequest req, FiComResponse resp) {
 		        				log.info("got resp");
+		        				amountOfCalls--;
 		        				printSHA1(output);
 		        				
 		        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
@@ -114,6 +117,7 @@ public class SignData {
 		        			@Override
 		        			public void onError(FiComRequest req, Throwable throwable) {
 		        				log.info("got error", throwable);
+		        				amountOfCalls--;
 		        			}
 		        		});
         }
@@ -130,6 +134,7 @@ public class SignData {
 	 */
 	public static void main(String[] args) {		
 		initComponents();
+		callStateProgressBarUpdater.start();
 	}
 	
 	/**
@@ -181,12 +186,12 @@ public class SignData {
     }
 	
     private static void initComponents() {
-    	frame = new javax.swing.JFrame();
+    	frame = new javax.swing.JFrame("Sign Data");
         pane = new javax.swing.JPanel();
         lblNumber = new javax.swing.JLabel();
         number = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        callStateProgressBar = new javax.swing.JProgressBar();
         cancelButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         responseBox = new javax.swing.JTextArea();
@@ -216,6 +221,7 @@ public class SignData {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				amountOfCalls++;
 				estamblishConnection(number.getText(), fc.getSelectedFile());
 			}
 		});
@@ -224,6 +230,7 @@ public class SignData {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
+				amountOfCalls--;
 			}
 		});
         
@@ -250,7 +257,7 @@ public class SignData {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(sendButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton)))
                 .addContainerGap())
@@ -266,7 +273,7 @@ public class SignData {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                    .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
                     .addComponent(sendButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -293,8 +300,27 @@ public class SignData {
     private static javax.swing.JButton browseButton;
     private static javax.swing.JLabel lblNumber;
     private static javax.swing.JPanel pane;
-    private static javax.swing.JProgressBar jProgressBar1;
+    protected static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JScrollPane jScrollPane1;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JTextField number;
+}
+
+class SignDataProggerssBarUpdater extends Thread {
+	
+	public void run() {
+		while (true) {
+			if (SignData.amountOfCalls > 0) {
+				int value = SignData.callStateProgressBar.getValue() > 90 ? 10 : SignData.callStateProgressBar.getValue()+10;
+				SignData.callStateProgressBar.setValue(value);
+			} else {
+				SignData.callStateProgressBar.setValue(0);
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
