@@ -22,8 +22,12 @@ import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 
 public class Authentication {
+	
 	private static final Log log = LogFactory.getLog(Authentication.class);
-	private static FiComRequest req;	
+	private static FiComRequest req;
+	public static AuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AuthenticationProggerssBarUpdater();
+	public static int amountOfCalls = 0; 
+	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
 	 * @param phoneNumber
@@ -86,6 +90,7 @@ public class Authentication {
 			            	@Override
 			            	public void onResponse(FiComRequest req, FiComResponse resp) {
 			            		log.info("got resp");
+			            		amountOfCalls--;
 			            		log.info(resp.getPkcs7Signature().getSignerCn());
 			            		
 			            		try {
@@ -147,6 +152,7 @@ public class Authentication {
 			            	@Override
 			            	public void onError(FiComRequest req, Throwable throwable) {
 			            		log.info("got error", throwable);
+			            		amountOfCalls--;
 			            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
 			            	}
 			            });
@@ -164,33 +170,8 @@ public class Authentication {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
 		initComponents();
-		
-//		JFrame frame = new JFrame("Authentication");
-//		frame.setSize(900, 800);
-//		
-//		Container pane = frame.getContentPane();
-//		
-//		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
-//		final JTextField number = new JTextField("+35847001001");
-//		number.setPreferredSize(new Dimension(230, 10));
-//		pane.add(number, BorderLayout.CENTER);
-//		
-//		JButton send = new JButton("Send");
-//		send.setPreferredSize(new Dimension(70, 10));
-//		pane.add(send, BorderLayout.EAST);
-//		send.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				estamblishConnection(number.getText());
-//			}
-//		});
-//		
-//		responseBox.setPreferredSize(new Dimension(900, 725));
-//		pane.add(responseBox, BorderLayout.PAGE_END);
-//		
-//		frame.setVisible(true);		
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		callStateProgressBarUpdater.start();
 	}
 	
     private static void initComponents() {
@@ -215,6 +196,7 @@ public class Authentication {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				amountOfCalls++;
 				estamblishConnection(number.getText());
 			}
 		});
@@ -223,6 +205,7 @@ public class Authentication {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
+				amountOfCalls--;
 				responseBox.setText("Canceled\n" + responseBox.getText());
 			}
 		});
@@ -287,9 +270,8 @@ public class Authentication {
         frame.pack();
     }
     
-    // Variables declaration - do not modify
     private static javax.swing.JFrame frame;
-    private static javax.swing.JProgressBar callStateProgressBar;
+    public static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JButton cancelButton;
     private static javax.swing.JPanel pane;
     private static javax.swing.JScrollPane scrollPane;
@@ -297,5 +279,25 @@ public class Authentication {
     private static javax.swing.JTextField number;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JButton sendButton;
-    // End of variables declaration
+}
+
+class AuthenticationProggerssBarUpdater extends Thread {
+	
+	AuthenticationProggerssBarUpdater() {}
+	
+	public void run() {
+		while (true) {
+			if (Authentication.amountOfCalls > 0) {
+				int value = Authentication.callStateProgressBar.getValue() > 90 ? 10 : Authentication.callStateProgressBar.getValue()+10;
+				Authentication.callStateProgressBar.setValue(value);
+			} else {
+				Authentication.callStateProgressBar.setValue(0);
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

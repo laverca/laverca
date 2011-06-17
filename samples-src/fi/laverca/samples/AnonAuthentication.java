@@ -1,18 +1,9 @@
 package fi.laverca.samples;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.LinkedList;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,17 +11,19 @@ import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
 import fi.laverca.FiComAdditionalServices;
+import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.FiComClient;
 import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
-import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 
 public class AnonAuthentication {
 
 	private static final Log log = LogFactory.getLog(AnonAuthentication.class);
 	private static FiComRequest req;
+	protected static AnonAuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AnonAuthenticationProggerssBarUpdater();
+	protected static int amountOfCalls = 0;
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -87,6 +80,7 @@ public class AnonAuthentication {
 			            	@Override
 			            	public void onResponse(FiComRequest req, FiComResponse resp) {
 			            		log.info("got resp");
+			            		amountOfCalls--;
 			            		responseBox.setText("\n" + responseBox.getText());
 			            		
 			            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
@@ -98,6 +92,7 @@ public class AnonAuthentication {
 			            	@Override
 			            	public void onError(FiComRequest req, Throwable throwable) {
 			            		log.info("got error", throwable);
+			            		amountOfCalls--;
 			            		responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
 			            	}
 			            });
@@ -116,6 +111,7 @@ public class AnonAuthentication {
 	 */
 	public static void main(String[] args) {	
 		initComponents();
+		callStateProgressBarUpdater.start();
 	}
 	
 	   private static void initComponents() {
@@ -141,6 +137,7 @@ public class AnonAuthentication {
 		   sendButton.setText("Send");
 		   sendButton.addActionListener(new ActionListener() {
 			   public void actionPerformed(ActionEvent e) {
+				   amountOfCalls++;
 				   estamblishConnection(number.getText());
 			   }
 		   });
@@ -149,6 +146,7 @@ public class AnonAuthentication {
 		   cancelButton.addActionListener(new ActionListener() {
 			   public void actionPerformed(ActionEvent e) {
 				   req.cancel();
+				   amountOfCalls++;
 			   }
 		   });
 		   responseBox.setColumns(20);
@@ -212,7 +210,7 @@ public class AnonAuthentication {
 	   }
 
 	   private static javax.swing.JFrame frame;
-	   private static javax.swing.JProgressBar callStateProgressBar;
+	   protected static javax.swing.JProgressBar callStateProgressBar;
 	   private static javax.swing.JButton cancelButton;
 	   private static javax.swing.JPanel pane;
 	   private static javax.swing.JScrollPane jScrollPane1;
@@ -220,4 +218,23 @@ public class AnonAuthentication {
 	   private static javax.swing.JTextField number;
 	   private static javax.swing.JTextArea responseBox;
 	   private static javax.swing.JButton sendButton;
+}
+
+class AnonAuthenticationProggerssBarUpdater extends Thread {
+	
+	public void run() {
+		while (true) {
+			if (AnonAuthentication.amountOfCalls > 0) {
+				int value = AnonAuthentication.callStateProgressBar.getValue() > 90 ? 10 : AnonAuthentication.callStateProgressBar.getValue()+10;
+				AnonAuthentication.callStateProgressBar.setValue(value);
+			} else {
+				AnonAuthentication.callStateProgressBar.setValue(0);
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
