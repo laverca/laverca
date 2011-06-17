@@ -27,7 +27,7 @@ http://www.oracle.com/technetwork/java/javase/downloads/index.html
  -- INSTALLATION --
 
 To create distribution
-(Run in laverca folder.)
+(Run in Laverca folder.)
 ant
  OR
 ant dist
@@ -45,10 +45,51 @@ run dist/start-scripts/FiComSigReqCaller.(bat/sh)
 Most samples require GUI.
 
 
-To run compiled sample
-java -cp 'lib/*:build/*:src/*' fi.laverca.samples.FiComSigReqCaller
+
+ -- DEVELOPMENT --
+  (with eclipse)
+
+Install Eclipse IDE for Java Developers
+http://www.eclipse.org/downloads/
+
+Install Subclipse
+http://subclipse.tigris.org/install.html
+
+///////////////////////////////
+///Step-by-step instructions///
+///////////////////////////////
+
+File -> New -> Other...
+SVN/Checkout Projects from SVN
+Create new repository location:
+https://laverca.svn.sourceforge.net/svnroot/laverca
+
+Select Folder:
+https://laverca.svn.sourceforge.net/svnroot/laverca
+Finish
+
+New project
+Java/Java Project
+
+Set Project name
+Finish
 
 
+Righ click your project folder -> Properties
+Java Build Path -> Source
+Add Folder...
+Select: datatypes-scr and samples-src -> OK
+Java Build Path -> Libraries
+Add JARs...
+Select all JAR files in <Project Name>/lib
+
+You may want to study the samples-src
+and change an initial value of int waitPeriod 
+in fi.laverca.FiComClient to 1*1000 instead of 20*1000
+for development.
+
+///////////////////////////////
+///////////////////////////////
 
 
 
