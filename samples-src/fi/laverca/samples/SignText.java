@@ -23,8 +23,8 @@ public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
 	private static FiComRequest req;
-	public static SignTextProggerssBarUpdater callStateProgressBarUpdater = new SignTextProggerssBarUpdater();
-	public static int amountOfCalls = 0; 
+	protected static SignTextProggerssBarUpdater callStateProgressBarUpdater = new SignTextProggerssBarUpdater();
+	protected static int amountOfCalls = 0; 
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response
@@ -236,7 +236,7 @@ public class SignText {
     private static javax.swing.JLabel lblNumber;
     private static javax.swing.JLabel lblTxtToBeSigned;
     private static javax.swing.JPanel pane;
-    public static javax.swing.JProgressBar callStateProgressBar;
+    protected static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JScrollPane jScrollPane1;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JTextField number;
