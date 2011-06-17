@@ -1,19 +1,10 @@
 package fi.laverca.samples;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,9 +23,7 @@ import fi.laverca.JvmSsl;
 
 public class Authentication {
 	private static final Log log = LogFactory.getLog(Authentication.class);
-	
-	private static JTextArea responseBox = new JTextArea();
-	
+	private static FiComRequest req;	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
 	 * @param phoneNumber
@@ -87,79 +76,80 @@ public class Authentication {
         
         try {
             log.info("calling authenticate");
-            fiComClient.authenticate(apTransId, 
-            		authnChallenge, 
-            		phoneNumber, 
-            		noSpamService, 
-            		additionalServices, 
-            		new FiComResponseHandler() {
-		            	@Override
-		            	public void onResponse(FiComRequest req, FiComResponse resp) {
-		            		log.info("got resp");
-		            		log.info(resp.getPkcs7Signature().getSignerCn());
-		            		
-		            		try {
-		            			responseBox.setText("MSS Signature: " + 
-		            					new String(Base64.encode(resp.getMSS_StatusResp().
-		            					getMSS_Signature().getBase64Signature()), "ASCII") +
-		            					"\n\n");
-		            		} catch (UnsupportedEncodingException e) {
-		            			log.info("Unsupported encoding", e);
-		            		}
-		            		responseBox.setText("AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID()
-		            				+ "   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD()
-		            				+ "   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n" + responseBox.getText());
-		            		
-//		            		responseBox.setText("MSS   StatusMessage: " + resp.getMSS_StatusResp().getStatus().getStatusMessage() 
-//		            				+ "   MajorVersion: " + resp.getMSS_StatusResp().getMajorVersion()
-//		            				+ "   MinorVersion: " + resp.getMSS_StatusResp().getMinorVersion()
-//		            				+ "   URI: " + resp.getMSS_StatusResp().getMSSP_Info().getMSSP_ID().getURI()
-//		            				+ "\n" + responseBox.getText());
-		            		
-		            		responseBox.setText("MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN()
-		            				+ "\n" + responseBox.getText());
-		            		
-		            		try {
-		            			responseBox.setText("Pkcs7" + "\n"
-		            					+ "   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
-		            					+ "   Type: " + resp.getPkcs7Signature().getSignerCert().getType()
-		            					+ "   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName()
-		            					+ "   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
-		            					+ "   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n"
-		            					+ "   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n"
-		            					+ "   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n"
-//		            					+ "   PublicKey: " + resp.getPkcs7Signature().getSignerCert().getPublicKey()
-		            					+ "\n" + responseBox.getText());
-
-		            			for (String oid : resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs()) {
-		            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
-		            			}
-		            			responseBox.setText("NonCriticalExtensionOIDs:" + "\n" + responseBox.getText());
-		            			
-		            			for (String oid : resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs()) {
-		            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
-		            			}
-		            			responseBox.setText("CriticalExtensionOIDs:" + "\n" + responseBox.getText());
-
-		            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());
-
-
-		            		} catch (FiComException e1) {
-								e1.printStackTrace();
-							}
-		            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-		            			log.info(a.getName() + " " + a.getStringValue());
-		            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
-		            					+ "\n" + responseBox.getText());
-		            		}
-		            	}
-		
-		            	@Override
-		            	public void onError(FiComRequest req, Throwable throwable) {
-		            		log.info("got error", throwable);
-		            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
-		            	}
-		            });
+            req = 
+	            fiComClient.authenticate(apTransId, 
+	            		authnChallenge, 
+	            		phoneNumber, 
+	            		noSpamService, 
+	            		additionalServices, 
+	            		new FiComResponseHandler() {
+			            	@Override
+			            	public void onResponse(FiComRequest req, FiComResponse resp) {
+			            		log.info("got resp");
+			            		log.info(resp.getPkcs7Signature().getSignerCn());
+			            		
+			            		try {
+			            			responseBox.setText("MSS Signature: " + 
+			            					new String(Base64.encode(resp.getMSS_StatusResp().
+			            					getMSS_Signature().getBase64Signature()), "ASCII") +
+			            					"\n\n");
+			            		} catch (UnsupportedEncodingException e) {
+			            			log.info("Unsupported encoding", e);
+			            		}
+			            		responseBox.setText("AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID()
+			            				+ "   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD()
+			            				+ "   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n" + responseBox.getText());
+			            		
+	//		            		responseBox.setText("MSS   StatusMessage: " + resp.getMSS_StatusResp().getStatus().getStatusMessage() 
+	//		            				+ "   MajorVersion: " + resp.getMSS_StatusResp().getMajorVersion()
+	//		            				+ "   MinorVersion: " + resp.getMSS_StatusResp().getMinorVersion()
+	//		            				+ "   URI: " + resp.getMSS_StatusResp().getMSSP_Info().getMSSP_ID().getURI()
+	//		            				+ "\n" + responseBox.getText());
+			            		
+			            		responseBox.setText("MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN()
+			            				+ "\n" + responseBox.getText());
+			            		
+			            		try {
+			            			responseBox.setText("Pkcs7" + "\n"
+			            					+ "   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
+			            					+ "   Type: " + resp.getPkcs7Signature().getSignerCert().getType()
+			            					+ "   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName()
+			            					+ "   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
+			            					+ "   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n"
+			            					+ "   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n"
+			            					+ "   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n"
+	//		            					+ "   PublicKey: " + resp.getPkcs7Signature().getSignerCert().getPublicKey()
+			            					+ "\n" + responseBox.getText());
+	
+			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs()) {
+			            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
+			            			}
+			            			responseBox.setText("NonCriticalExtensionOIDs:" + "\n" + responseBox.getText());
+			            			
+			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs()) {
+			            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
+			            			}
+			            			responseBox.setText("CriticalExtensionOIDs:" + "\n" + responseBox.getText());
+	
+			            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());
+	
+	
+			            		} catch (FiComException e1) {
+									e1.printStackTrace();
+								}
+			            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+			            			log.info(a.getName() + " " + a.getStringValue());
+			            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
+			            					+ "\n" + responseBox.getText());
+			            		}
+			            	}
+			
+			            	@Override
+			            	public void onError(FiComRequest req, Throwable throwable) {
+			            		log.info("got error", throwable);
+			            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
+			            	}
+			            });
             
         }
         catch (IOException e) {
@@ -175,29 +165,137 @@ public class Authentication {
 	 */
 	public static void main(String[] args) {
 		
-		JFrame frame = new JFrame("Authentication");
-		frame.setSize(900, 800);
+		initComponents();
 		
-		Container pane = frame.getContentPane();
-		
-		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
-		final JTextField number = new JTextField("+35847001001");
-		number.setPreferredSize(new Dimension(230, 10));
-		pane.add(number, BorderLayout.CENTER);
-		
-		JButton send = new JButton("Send");
-		send.setPreferredSize(new Dimension(70, 10));
-		pane.add(send, BorderLayout.EAST);
-		send.addActionListener(new ActionListener() {
+//		JFrame frame = new JFrame("Authentication");
+//		frame.setSize(900, 800);
+//		
+//		Container pane = frame.getContentPane();
+//		
+//		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
+//		final JTextField number = new JTextField("+35847001001");
+//		number.setPreferredSize(new Dimension(230, 10));
+//		pane.add(number, BorderLayout.CENTER);
+//		
+//		JButton send = new JButton("Send");
+//		send.setPreferredSize(new Dimension(70, 10));
+//		pane.add(send, BorderLayout.EAST);
+//		send.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				estamblishConnection(number.getText());
+//			}
+//		});
+//		
+//		responseBox.setPreferredSize(new Dimension(900, 725));
+//		pane.add(responseBox, BorderLayout.PAGE_END);
+//		
+//		frame.setVisible(true);		
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
+    private static void initComponents() {
+    	frame = new javax.swing.JFrame("Authentication");
+        pane = new javax.swing.JPanel();
+        lblNumber = new javax.swing.JLabel();
+        number = new javax.swing.JTextField();
+        sendButton = new javax.swing.JButton();
+        callStateProgressBar = new javax.swing.JProgressBar();
+        cancelButton = new javax.swing.JButton();
+        scrollPane = new javax.swing.JScrollPane();
+        responseBox = new javax.swing.JTextArea();
+
+        frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        frame.setResizable(false);
+
+        lblNumber.setText("Phone number");
+
+        number.setText("+35847001001");
+
+        sendButton.setText("Send");
+        sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				estamblishConnection(number.getText());
 			}
 		});
 		
-		responseBox.setPreferredSize(new Dimension(900, 725));
-		pane.add(responseBox, BorderLayout.PAGE_END);
-		
-		frame.setVisible(true);		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				req.cancel();
+				responseBox.setText("Canceled\n" + responseBox.getText());
+			}
+		});
+        
+        responseBox.setColumns(20);
+        responseBox.setRows(5);
+        scrollPane.setViewportView(responseBox);
+
+        javax.swing.GroupLayout paneLayout = new javax.swing.GroupLayout(pane);
+        pane.setLayout(paneLayout);
+        paneLayout.setHorizontalGroup(
+            paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(paneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                    .addGroup(paneLayout.createSequentialGroup()
+                        .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(number, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                            .addComponent(lblNumber, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(85, 85, 85))
+                    .addGroup(paneLayout.createSequentialGroup()
+                        .addComponent(sendButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton)))
+                .addContainerGap())
+        );
+        paneLayout.setVerticalGroup(
+            paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(paneLayout.createSequentialGroup()
+                .addComponent(lblNumber)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                    .addComponent(sendButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
+        frame.getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        frame.pack();
+    }
+    
+    // Variables declaration - do not modify
+    private static javax.swing.JFrame frame;
+    private static javax.swing.JProgressBar callStateProgressBar;
+    private static javax.swing.JButton cancelButton;
+    private static javax.swing.JPanel pane;
+    private static javax.swing.JScrollPane scrollPane;
+    private static javax.swing.JLabel lblNumber;
+    private static javax.swing.JTextField number;
+    private static javax.swing.JTextArea responseBox;
+    private static javax.swing.JButton sendButton;
+    // End of variables declaration
 }
