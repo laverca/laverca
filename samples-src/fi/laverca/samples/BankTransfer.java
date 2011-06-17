@@ -22,8 +22,8 @@ public class BankTransfer {
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
 	private static FiComRequest req;
-	public static BankTransferProggerssBarUpdater callStateProgressBarUpdater = new BankTransferProggerssBarUpdater();
-	public static int amountOfCalls = 0;
+	protected static BankTransferProggerssBarUpdater callStateProgressBarUpdater = new BankTransferProggerssBarUpdater();
+	protected static int amountOfCalls = 0;
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -255,11 +255,10 @@ public class BankTransfer {
 
         frame.pack();
     }
-	
-    // Variables declaration - do not modify
+    
     private static javax.swing.JFrame frame;
     private static javax.swing.JTextField amountTxt;
-    public static javax.swing.JProgressBar callStateProgressBar;
+    protected static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JButton cancelButton;
     private static javax.swing.JTextField fromTxt;
     private static javax.swing.JPanel pane;
@@ -272,13 +271,10 @@ public class BankTransfer {
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JButton sendButton;
     private static javax.swing.JTextField toTxt;
-    // End of variables declaration
     
 }
 
 class BankTransferProggerssBarUpdater extends Thread {
-	
-	public BankTransferProggerssBarUpdater() {}
 	
 	public void run() {
 		while (true) {

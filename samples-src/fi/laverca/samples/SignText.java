@@ -125,8 +125,6 @@ public class SignText {
 		callStateProgressBarUpdater.start();
 	}
 	
-	// SWING UI
-	
     private static void initComponents() {
     	frame = new javax.swing.JFrame("Sign Text");
     	frame.setResizable(false);
@@ -232,7 +230,6 @@ public class SignText {
         frame.pack();
     }
     
-    // Variables declaration - do not modify
     private static javax.swing.JFrame frame;
     private static javax.swing.JButton sendButton;
     private static javax.swing.JButton cancelButton;
@@ -244,13 +241,10 @@ public class SignText {
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JTextField number;
     private static javax.swing.JTextField textToBeSigned;
-    // End of variables declaration
 	
 }
 
 class SignTextProggerssBarUpdater extends Thread {
-	
-	SignTextProggerssBarUpdater() {}
 	
 	public void run() {
 		while (true) {
