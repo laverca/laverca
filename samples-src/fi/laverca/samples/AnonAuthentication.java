@@ -31,7 +31,6 @@ public class AnonAuthentication {
 
 	private static final Log log = LogFactory.getLog(AnonAuthentication.class);
 	private static FiComRequest req;
-	private static JTextArea responseBox = new JTextArea();
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -115,41 +114,110 @@ public class AnonAuthentication {
 	 * Eg. used to check maturity of the user.
 	 * @param args
 	 */
-	public static void main(String[] args) {
-		
-		JFrame frame = new JFrame("Anonyme Authentication");
-		frame.setSize(350, 380);
-		
-		Container pane = frame.getContentPane();
-		
-		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
-		final JTextField number = new JTextField("+35847001001");
-		number.setPreferredSize(new Dimension(230, 10));
-		pane.add(number, BorderLayout.CENTER);
-		
-		JButton send = new JButton("Send");
-		send.setPreferredSize(new Dimension(70, 10));
-		pane.add(send, BorderLayout.EAST);
-		send.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				estamblishConnection(number.getText());
-			}
-		});
-		
-		JButton cancel = new JButton("Cancel");
-		cancel.setPreferredSize(new Dimension(80, 10));
-		cancel.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				req.cancel();
-				responseBox.setText("Canceled\n" + responseBox.getText());
-			}
-		});
-		pane.add(cancel, BorderLayout.WEST);
-		
-		responseBox.setPreferredSize(new Dimension(200, 300));
-		pane.add(responseBox, BorderLayout.PAGE_END);
-		
-		frame.setVisible(true);		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public static void main(String[] args) {	
+		initComponents();
 	}
+	
+	   private static void initComponents() {
+		   
+		   frame = new javax.swing.JFrame();
+		   pane = new javax.swing.JPanel();
+		   lblNumber = new javax.swing.JLabel();
+		   number = new javax.swing.JTextField();
+		   sendButton = new javax.swing.JButton();
+		   callStateProgressBar = new javax.swing.JProgressBar();
+		   cancelButton = new javax.swing.JButton();
+		   jScrollPane1 = new javax.swing.JScrollPane();
+		   responseBox = new javax.swing.JTextArea();
+
+		   frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+		   frame.setVisible(true);
+		   frame.setResizable(false);
+
+		   lblNumber.setText("Phone number");
+
+		   number.setText("+35847001001");
+	
+		   sendButton.setText("Send");
+		   sendButton.addActionListener(new ActionListener() {
+			   public void actionPerformed(ActionEvent e) {
+				   estamblishConnection(number.getText());
+			   }
+		   });
+		   
+		   cancelButton.setText("Cancel");
+		   cancelButton.addActionListener(new ActionListener() {
+			   public void actionPerformed(ActionEvent e) {
+				   req.cancel();
+			   }
+		   });
+		   responseBox.setColumns(20);
+		   responseBox.setRows(5);
+		   jScrollPane1.setViewportView(responseBox);
+
+		   javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
+		   pane.setLayout(jPanel1Layout);
+		   jPanel1Layout.setHorizontalGroup(
+				   jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				   .addGroup(jPanel1Layout.createSequentialGroup()
+						   .addContainerGap()
+						   .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+								   .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+								   .addGroup(jPanel1Layout.createSequentialGroup()
+										   .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+												   .addComponent(number, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+												   .addComponent(lblNumber, javax.swing.GroupLayout.Alignment.LEADING))
+												   .addGap(85, 85, 85))
+												   .addGroup(jPanel1Layout.createSequentialGroup()
+														   .addComponent(sendButton)
+														   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+														   .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+														   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+														   .addComponent(cancelButton)))
+														   .addContainerGap())
+		   );
+		   jPanel1Layout.setVerticalGroup(
+				   jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				   .addGroup(jPanel1Layout.createSequentialGroup()
+						   .addComponent(lblNumber)
+						   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+						   .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+						   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+						   .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+								   .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
+								   .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+								   .addComponent(sendButton))
+								   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+								   .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
+								   .addContainerGap())
+		   );
+
+		   javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
+		   frame.getContentPane().setLayout(layout);
+		   layout.setHorizontalGroup(
+				   layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				   .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+						   .addContainerGap()
+						   .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						   .addContainerGap())
+		   );
+		   layout.setVerticalGroup(
+				   layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+				   .addGroup(layout.createSequentialGroup()
+						   .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						   .addContainerGap())
+		   );
+
+		   frame.pack();
+	   }
+
+	   private static javax.swing.JFrame frame;
+	   private static javax.swing.JProgressBar callStateProgressBar;
+	   private static javax.swing.JButton cancelButton;
+	   private static javax.swing.JPanel pane;
+	   private static javax.swing.JScrollPane jScrollPane1;
+	   private static javax.swing.JLabel lblNumber;
+	   private static javax.swing.JTextField number;
+	   private static javax.swing.JTextArea responseBox;
+	   private static javax.swing.JButton sendButton;
 }
