@@ -44,7 +44,7 @@
 
   <target depends="init" name="compile-datatypes">
     <mkdir dir="${build}/datatypes"/>
-    <javac debug="true" deprecation="true" destdir="${build}/datatypes" encoding="ISO-8859-15">
+    <javac debug="true" deprecation="true" destdir="${build}/datatypes" encoding="ISO-8859-15" includeantruntime="false">
       <src path="${datatypes-src}"/>
       <classpath>
         <path refid="project.classpath"/>
@@ -60,7 +60,7 @@
 
   <target depends="init" name="compile-laverca">
     <mkdir dir="${build}/laverca"/>
-    <javac debug="true" deprecation="true" destdir="${build}/laverca" encoding="ISO-8859-15">
+    <javac debug="true" deprecation="true" destdir="${build}/laverca" encoding="ISO-8859-15" includeantruntime="false">
       <src path="${src}"/>
       <classpath>
         <path refid="project.classpath"/>
@@ -78,7 +78,7 @@
 
   <target depends="init" name="compile-samples">
     <mkdir dir="${build}/samples"/>
-    <javac debug="true" deprecation="true" destdir="${build}/samples" encoding="ISO-8859-15">
+    <javac debug="true" deprecation="true" destdir="${build}/samples" encoding="ISO-8859-15" includeantruntime="false">
       <src path="${samples-src}"/>
       <classpath>
         <path refid="project.classpath"/>
@@ -113,7 +113,7 @@
   <target depends="init" name="copy-etc">
     <mkdir dir="${dist}/etc"/>
 	<copy todir="${dist}/etc">
-	  <fileset dir="${etc}" includes="**/laverca*"/>
+	  <fileset dir="${etc}" includes="**/*"/>
 	</copy>
   </target>
 	
