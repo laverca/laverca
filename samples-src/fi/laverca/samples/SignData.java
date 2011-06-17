@@ -27,6 +27,7 @@ import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
+import fi.laverca.ProgressUpdate;
 
 public class SignData {
 	
@@ -115,6 +116,13 @@ public class SignData {
 		        			public void onError(FiComRequest req, Throwable throwable) {
 		        				log.info("got error", throwable);
 		        			}
+
+							@Override
+							public void onOutstandingProgress(FiComRequest req,
+									ProgressUpdate prgUpdate) {
+								// TODO Auto-generated method stub
+								
+							}
 		        		});
         }
         catch (IOException e) {
