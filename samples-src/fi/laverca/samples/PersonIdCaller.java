@@ -50,11 +50,15 @@ public class PersonIdCaller {
                                                   msspSignatureUrl, 
                                                   msspStatusUrl, 
                                                   msspReceiptUrl); 
-
-        String apTransId = "A"+System.currentTimeMillis();
+        
+        Long currentTimeMillis = System.currentTimeMillis();
+        String apTransId = "A"+currentTimeMillis;
+        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        
         String phoneNumber = "+35847001001";
         byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
-
+        
+        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
         LinkedList<String> attributeNames = new LinkedList<String>();
@@ -68,7 +72,8 @@ public class PersonIdCaller {
                 fiComClient.authenticate(apTransId, 
                                          authnChallenge, 
                                          phoneNumber, 
-                                         noSpamService, 
+                                         noSpamService,
+                                         eventIdService,
                                          additionalServices, 
                                          new FiComResponseHandler() {
                                              @Override

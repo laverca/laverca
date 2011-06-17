@@ -23,8 +23,6 @@ public class BankTransfer {
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
 	private static FiComRequest req;
-	protected static BankTransferProggerssBarUpdater callStateProgressBarUpdater = new BankTransferProggerssBarUpdater();
-	protected static int amountOfCalls = 0;
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -62,9 +60,13 @@ public class BankTransfer {
                                                   msspStatusUrl, 
                                                   msspReceiptUrl);
         
-        String apTransId = "A"+System.currentTimeMillis();
-        String textToBeConsentedTo = "Do you allow transfer from " + fromTxt + " to " + toTxt + ", " + amountTxt;
+        Long currentTimeMillis = System.currentTimeMillis();
+        String apTransId = "A"+currentTimeMillis;
+        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
         
+        String textToBeConsentedTo = "Do you allow transfer from " + fromTxt + " to " + toTxt + ", " + amountTxt;
+ 
+        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);        
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         
         try {
@@ -73,14 +75,14 @@ public class BankTransfer {
            fiComClient.consent(apTransId, 
             		textToBeConsentedTo, 
             		phoneNumber, 
-            		noSpamService, 
+            		noSpamService,
+            		eventIdService,
             		null, 
             		new FiComResponseHandler() {
 		            	@Override
 		            	public void onResponse(FiComRequest req, FiComResponse resp) {
 		            		log.info("got resp");
-		            		amountOfCalls--;
-		            		
+							callStateProgressBar.setIndeterminate(false);
 		            		try {
 		            			responseBox.setText("\nMSS Signature: " + 
 		            					new String(Base64.encode(resp.getMSS_StatusResp().
@@ -92,21 +94,23 @@ public class BankTransfer {
 		            		
 		            		responseBox.setText("User allowed transfer from " + fromTxt + 
 		            				" to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
+	            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
 		            	}
 		
 		            	@Override
 		            	public void onError(FiComRequest req, Throwable throwable) {
-		            		amountOfCalls--;
 		            		log.info("got error", throwable);
 		            		responseBox.setText("User did not allow transfer from " + 
 		            				fromTxt + " to\n" + toTxt + ", " + amountTxt + "\n" + 
 		            				responseBox.getText());
+							callStateProgressBar.setIndeterminate(false);
+
 		            	}
 
 						@Override
 						public void onOutstandingProgress(FiComRequest req,
 								ProgressUpdate prgUpdate) {
-							// TODO Auto-generated method stub
+							callStateProgressBar.setIndeterminate(true);
 							
 						}
 		            });
@@ -125,7 +129,6 @@ public class BankTransfer {
 	
 	public static void main(String[] args) {
 		initComponents();
-		callStateProgressBarUpdater.start();
 	}
 	
     private static void initComponents() {
@@ -156,8 +159,8 @@ public class BankTransfer {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				amountOfCalls++;
 				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
+				callStateProgressBar.setIndeterminate(true);
 			}
 		});
 		
@@ -166,7 +169,7 @@ public class BankTransfer {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
 				responseBox.setText("Canceled\n" + responseBox.getText());
-				amountOfCalls--;
+				callStateProgressBar.setIndeterminate(false);
 			}
 		});
 		
@@ -280,23 +283,4 @@ public class BankTransfer {
     private static javax.swing.JButton sendButton;
     private static javax.swing.JTextField toTxt;
     
-}
-
-class BankTransferProggerssBarUpdater extends Thread {
-	
-	public void run() {
-		while (true) {
-			if (BankTransfer.amountOfCalls > 0) {
-				int value = BankTransfer.callStateProgressBar.getValue() > 90 ? 10 : BankTransfer.callStateProgressBar.getValue()+10;
-				BankTransfer.callStateProgressBar.setValue(value);
-			} else {
-				BankTransfer.callStateProgressBar.setValue(0);
-			}
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }

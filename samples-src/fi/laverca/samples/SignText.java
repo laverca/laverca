@@ -24,8 +24,6 @@ public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
 	private static FiComRequest req;
-	protected static SignTextProggerssBarUpdater callStateProgressBarUpdater = new SignTextProggerssBarUpdater();
-	protected static int amountOfCalls = 0; 
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response
@@ -61,8 +59,10 @@ public class SignText {
                                                   msspStatusUrl, 
                                                   msspReceiptUrl);
         
-        String apTransId = "A"+System.currentTimeMillis();
-
+        Long currentTimeMillis = System.currentTimeMillis();
+        String apTransId = "A"+currentTimeMillis;
+        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
         LinkedList<String> attributeNames = new LinkedList<String>();
@@ -76,14 +76,14 @@ public class SignText {
 	        	fiComClient.signText(apTransId, 
 	        			textToBeSigned, 
 	        			phoneNumber, 
-	        			noSpamService, 
+	        			noSpamService,
+	        			eventIdService,
 	        			additionalServices, 
 	        			new FiComResponseHandler() {
 			        		@Override
 			        		public void onResponse(FiComRequest req, FiComResponse resp) {
 			        			log.info("got resp");
-			        			amountOfCalls--;
-			        			
+								callStateProgressBar.setIndeterminate(false);
 			        			try {
 			        				responseBox.setText("MSS Signature: " + 
 			        						new String(Base64.encode(resp.getMSS_StatusResp().
@@ -92,19 +92,18 @@ public class SignText {
 			        			} catch (UnsupportedEncodingException e) {
 			        				log.info("Unsupported encoding", e);
 			        			}
-			        			
 			        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
 			        				log.info(a.getName() + " " + a.getStringValue());
 			        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
 			        			}
 			        			
-			        			responseBox.setText(textToBeSigned + "\n" + responseBox.getText());
+			        			responseBox.setText("Event ID: " + eventId + "\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
 			        		}
 			
 			        		@Override
 			        		public void onError(FiComRequest req, Throwable throwable) {
-			        			amountOfCalls--;
 			        			log.info("got error", throwable);
+								callStateProgressBar.setIndeterminate(false);
 			        			responseBox.setText("ERROR, " + phoneNumber + "\n" +
 			        					responseBox.getText());
 			        		}
@@ -112,7 +111,7 @@ public class SignText {
 							@Override
 							public void onOutstandingProgress(FiComRequest req,
 									ProgressUpdate prgUpdate) {
-								// TODO Auto-generated method stub
+									callStateProgressBar.setIndeterminate(true);
 								
 							}
 	        			});
@@ -130,7 +129,6 @@ public class SignText {
 	 */	
 	public static void main(String[] args) {
 		initComponents();
-		callStateProgressBarUpdater.start();
 	}
 	
     private static void initComponents() {
@@ -161,8 +159,8 @@ public class SignText {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				amountOfCalls++;
 				estamblishConnection(number.getText(), textToBeSigned.getText());
+				callStateProgressBar.setIndeterminate(true);
 			}
 		});
         
@@ -170,7 +168,7 @@ public class SignText {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
-				amountOfCalls--;
+				callStateProgressBar.setIndeterminate(false);
 			}
 		});
         responseBox.setColumns(20);
@@ -252,21 +250,3 @@ public class SignText {
 	
 }
 
-class SignTextProggerssBarUpdater extends Thread {
-	
-	public void run() {
-		while (true) {
-			if (SignText.amountOfCalls > 0) {
-				int value = SignText.callStateProgressBar.getValue() > 90 ? 10 : SignText.callStateProgressBar.getValue()+10;
-				SignText.callStateProgressBar.setValue(value);
-			} else {
-				SignText.callStateProgressBar.setValue(0);
-			}
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-}
