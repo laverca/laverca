@@ -20,6 +20,14 @@ import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
+/**
+ * Sample for demonstrating text signing. 
+ * 
+ * @author Jan Mikael Lindlöf
+ * @author Eemeli Miettinen
+ *
+ */
+
 public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
