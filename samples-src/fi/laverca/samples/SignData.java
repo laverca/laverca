@@ -31,106 +31,7 @@ import fi.laverca.ProgressUpdate;
 
 public class SignData {
 	
-	private static final Log log = LogFactory.getLog(SignData.class);
-	private static FiComRequest req;
-	
-	/**
-	 * Connects to MSSP using SSL and waits for response.
-	 * @param phoneNumber
-	 * @param selectedFile
-	 */
-	private static void estamblishConnection(String phoneNumber, final File selectedFile) {
-		
-		log.info("setting up ssl");
-		JvmSsl.setSSL("etc/laverca-truststore",
-                "changeit",
-                "etc/laverca-keystore",
-                "changeit",
-                "JKS");
-		
-		String apId  = "http://laverca-eval.fi";
-        String apPwd = "pfkpfk";
-
-        String aeMsspIdUri = "http://dev-ae.mssp.dna.fi";
-        //TODO: TeliaSonera
-        //TODO: Elisa
-
-        String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
-        String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
-        String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
-
-        log.info("creating FiComClient");
-        FiComClient fiComClient = new FiComClient(apId, 
-                                                  apPwd, 
-                                                  aeMsspIdUri, 
-                                                  msspSignatureUrl, 
-                                                  msspStatusUrl, 
-                                                  msspReceiptUrl);
-        
-        final byte[] output = generateSHA1(selectedFile);
-        
-        String apTransId = "A"+System.currentTimeMillis();
-        Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
-        LinkedList<Service> additionalServices = new LinkedList<Service>();
-        LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
-        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
-        additionalServices.add(personIdService);
-        
-        try {
-        	log.info("calling signData");
-        	req = 
-        		fiComClient.signData(apTransId, 
-        				output, 
-        				phoneNumber, 
-        				noSpamService, 
-        				additionalServices, 
-        				new FiComResponseHandler() {
-		        			@Override
-		        			public void onResponse(FiComRequest req, FiComResponse resp) {
-		        				log.info("got resp");
-		        				printSHA1(output);
-		        				
-		        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
-		        						+ "\n" + responseBox.getText());
-		        				
-		        				try {
-		        					responseBox.setText("MSS Signature: " + 
-		        							new String(Base64.encode(resp.getMSS_StatusResp().
-		        							getMSS_Signature().getBase64Signature()), "ASCII") +
-		        							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
-		        							"\n" + responseBox.getText());
-		        					for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-		        						log.info(a.getName() + " " + a.getStringValue());
-		        						responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-		        					}
-		        				} catch (UnsupportedEncodingException e) {
-		        					log.info("Unsupported encoding", e);
-		        				} catch (NullPointerException e){
-		        					log.info("PersonIDAttributes = null", e);
-		        				}
-		
-		        			}
-		
-		        			@Override
-		        			public void onError(FiComRequest req, Throwable throwable) {
-		        				log.info("got error", throwable);
-		        			}
-
-							@Override
-							public void onOutstandingProgress(FiComRequest req,
-									ProgressUpdate prgUpdate) {
-								// TODO Auto-generated method stub
-								
-							}
-		        		});
-        }
-        catch (IOException e) {
-            log.info("error establishing connection", e);
-        }
-
-        fiComClient.shutdown();
-	}
+	protected final static Log log = LogFactory.getLog(SignData.class);
 	
 	/**
 	 * Generates SHA1 hash from a file and asks for a user to sign it.
@@ -160,11 +61,11 @@ public class SignData {
 			} while (numRead != -1);
 			output = md.digest();
 		} catch (NoSuchAlgorithmException e) {
-			log.info("error finding algorithm", e);
+			SignData.log.info("error finding algorithm", e);
 		} catch (FileNotFoundException e) {
-			log.info("error finding file", e);
+			SignData.log.info("error finding file", e);
 		} catch (IOException e) {
-			log.info("i/o error", e);
+			SignData.log.info("i/o error", e);
 		}
         
         return output;
@@ -174,23 +75,23 @@ public class SignData {
      * Prints SHA1 to the <code>responseBox</code>.
      * @param buf
      */
-	public static void printSHA1(byte[] buf) {
+	public static void printSHA1(byte[] buf, javax.swing.JTextArea textArea) {
         Formatter formatter = new Formatter();
         for (byte b : buf)
             formatter.format("%02x", b);
         
-        // Cuts first 8 characters of the hash.
+        // Cuts first 8 characters of the hash to make the generated hash match the one in the phone.
         String sha1 = formatter.toString().substring(8).toUpperCase();
         String shaTmp = new String();
         for (int i = 0; i < sha1.length()/4; i++){
         	shaTmp += " " + sha1.substring(i*4, i*4+4);
         }
-        hashBox.setText("SHA1: " + shaTmp + "\n" + hashBox.getText());
+        textArea.setText("SHA1: " + shaTmp + "\n" + textArea.getText());
     }
     
     private static void initUI() {
 
-    	dialFrame = new javax.swing.JFrame();
+    	dialFrame = new javax.swing.JFrame("Sign Data");
         dialPanel = new javax.swing.JPanel();
         lblNumber = new javax.swing.JLabel();
         number = new javax.swing.JTextField();
@@ -201,6 +102,7 @@ public class SignData {
 
         dialFrame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         dialFrame.setVisible(true);
+        dialFrame.setResizable(false);
         
 		final JFileChooser fc = new JFileChooser();
 
@@ -220,8 +122,8 @@ public class SignData {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				initResponse();
-				estamblishConnection(number.getText(), fc.getSelectedFile());
+				new ResponseWindow(number.getText(), fc.getSelectedFile());
+				
 			}
 		});
         
@@ -279,32 +181,64 @@ public class SignData {
         dialFrame.pack();
 		fc.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				printSHA1(generateSHA1(fc.getSelectedFile()));
+				printSHA1(generateSHA1(fc.getSelectedFile()), hashBox);
 			}
 		});
 		fc.showOpenDialog(dialFrame);
     }
     
-    private static void initResponse() {
-    	responseFrame = new javax.swing.JFrame();
+    private static javax.swing.JFrame dialFrame;
+    private static javax.swing.JButton sendButton;
+    private static javax.swing.JButton browseButton;
+    private static javax.swing.JLabel lblNumber;
+    private static javax.swing.JPanel dialPanel;
+    private static javax.swing.JScrollPane jScrollPane1;
+    private static javax.swing.JTextArea hashBox;
+    private static javax.swing.JTextField number;
+}
+
+class ResponseWindow {
+	
+	private FiComRequest req;
+	private javax.swing.JTextArea responseBox;
+	private javax.swing.JFrame responseFrame;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JProgressBar callStateProgressBar;
+    private javax.swing.JScrollPane jScrollPane1;
+    private String eventId;
+	
+	public ResponseWindow(String number, File selectedFile) {
+		Long currentTimeMillis = System.currentTimeMillis();
+		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+		initResponse();
+		estamblishConnection(number, selectedFile);
+	}
+
+	public void setCallStateProgressBar(
+			javax.swing.JProgressBar callStateProgressBar) {
+		this.callStateProgressBar = callStateProgressBar;
+	}
+
+	private void initResponse() {
+    	responseFrame = new javax.swing.JFrame(eventId);
         cancelButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         responseBox = new javax.swing.JTextArea();
         callStateProgressBar = new javax.swing.JProgressBar();
 
-        responseFrame.setVisible(true);
-        responseFrame.setResizable(false);
-
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
+				callStateProgressBar.setIndeterminate(false);
+				responseFrame.dispose();
 			}
 		});
         
         responseBox.setColumns(20);
         responseBox.setRows(5);
         jScrollPane1.setViewportView(responseBox);
+        callStateProgressBar.setIndeterminate(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(responseFrame.getContentPane());
         responseFrame.getContentPane().setLayout(layout);
@@ -338,17 +272,109 @@ public class SignData {
         );
 
         responseFrame.pack();
+        responseFrame.setVisible(true);
+        responseFrame.setResizable(false);
     }
-    private static javax.swing.JFrame dialFrame;
-    private static javax.swing.JFrame responseFrame;
-    private static javax.swing.JButton sendButton;
-    private static javax.swing.JButton cancelButton;
-    private static javax.swing.JButton browseButton;
-    private static javax.swing.JLabel lblNumber;
-    private static javax.swing.JPanel dialPanel;
-    private static javax.swing.JProgressBar callStateProgressBar;
-    private static javax.swing.JScrollPane jScrollPane1;
-    private static javax.swing.JTextArea responseBox;
-    private static javax.swing.JTextArea hashBox;
-    private static javax.swing.JTextField number;
+	
+	/**
+	 * Connects to MSSP using SSL and waits for response.
+	 * @param phoneNumber
+	 * @param selectedFile
+	 */
+	protected void estamblishConnection(String phoneNumber, final File selectedFile) {
+		
+		SignData.log.info("setting up ssl");
+		JvmSsl.setSSL("etc/laverca-truststore",
+                "changeit",
+                "etc/laverca-keystore",
+                "changeit",
+                "JKS");
+		
+		String apId  = "http://laverca-eval.fi";
+        String apPwd = "pfkpfk";
+
+        String aeMsspIdUri = "http://dev-ae.mssp.dna.fi";
+        //TODO: TeliaSonera
+        //TODO: Elisa
+
+        String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
+        String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
+        String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
+
+        SignData.log.info("creating FiComClient");
+        FiComClient fiComClient = new FiComClient(apId, 
+                                                  apPwd, 
+                                                  aeMsspIdUri, 
+                                                  msspSignatureUrl, 
+                                                  msspStatusUrl, 
+                                                  msspReceiptUrl);
+        
+        final byte[] output = SignData.generateSHA1(selectedFile);
+        String apTransId = "A"+System.currentTimeMillis();
+        
+        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
+        Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
+        LinkedList<Service> additionalServices = new LinkedList<Service>();
+        LinkedList<String> attributeNames = new LinkedList<String>();
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+        additionalServices.add(personIdService);
+        
+        try {
+        	SignData.log.info("calling signData");
+        	req = 
+        		fiComClient.signData(apTransId, 
+        				output, 
+        				phoneNumber, 
+        				noSpamService, 
+        				eventIdService,
+        				additionalServices, 
+        				new FiComResponseHandler() {
+		        			@Override
+		        			public void onResponse(FiComRequest req, FiComResponse resp) {
+		        				SignData.log.info("got resp");
+		        				callStateProgressBar.setIndeterminate(false);
+		        				SignData.printSHA1(output, responseBox);
+		        				
+		        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
+		        						+ "\n" + responseBox.getText());
+		        				
+		        				try {
+		        					responseBox.setText("MSS Signature: " + 
+		        							new String(Base64.encode(resp.getMSS_StatusResp().
+		        							getMSS_Signature().getBase64Signature()), "ASCII") +
+		        							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
+		        							"\n" + responseBox.getText());
+		        					for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+		        						SignData.log.info(a.getName() + " " + a.getStringValue());
+		        						responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+		        					}
+		        				} catch (UnsupportedEncodingException e) {
+		        					SignData.log.info("Unsupported encoding", e);
+		        				} catch (NullPointerException e){
+		        					SignData.log.info("PersonIDAttributes = null", e);
+		        				}
+		
+		        			}
+		
+		        			@Override
+		        			public void onError(FiComRequest req, Throwable throwable) {
+		        				callStateProgressBar.setIndeterminate(false);
+		        				SignData.log.info("got error", throwable);
+		        			}
+
+							@Override
+							public void onOutstandingProgress(FiComRequest req,
+									ProgressUpdate prgUpdate) {
+								// TODO Auto-generated method stub
+								
+							}
+		        		});
+        }
+        catch (IOException e) {
+        	SignData.log.info("error establishing connection", e);
+        }
+
+        fiComClient.shutdown();
+	}
 }
