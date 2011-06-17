@@ -19,6 +19,14 @@ import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
+/**
+ * Sample for demonstrating anonymous authentication. 
+ * 
+ * @author Jan Mikael Lindlöf
+ * @author Eemeli Miettinen
+ *
+ */
+
 public class AnonAuthentication {
 
 	private static final Log log = LogFactory.getLog(AnonAuthentication.class);
@@ -117,13 +125,17 @@ public class AnonAuthentication {
 	}
 	
 	/**
-	 * Authenticates user and keeps user anonymous. Only allows to request age and sex of the user.
-	 * Eg. used to check maturity of the user.
+	 * Main method
 	 * @param args
 	 */
 	public static void main(String[] args) {	
 		initComponents();
 	}
+	
+	/**
+	 * Initializes the swing GUI
+	 * 
+	 */
 	
 	private static void initComponents() {
 

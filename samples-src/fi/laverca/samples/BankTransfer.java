@@ -18,6 +18,14 @@ import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
+/**
+ * Sample for demonstrating a bank transfer. 
+ * 
+ * @author Jan Mikael Lindlöf
+ * @author Eemeli Miettinen
+ *
+ */
+
 public class BankTransfer {
 
 
