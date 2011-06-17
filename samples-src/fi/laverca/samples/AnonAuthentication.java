@@ -116,7 +116,7 @@ public class AnonAuthentication {
 	
 	   private static void initComponents() {
 		   
-		   frame = new javax.swing.JFrame();
+		   frame = new javax.swing.JFrame("Anon authentication");
 		   pane = new javax.swing.JPanel();
 		   lblNumber = new javax.swing.JLabel();
 		   number = new javax.swing.JTextField();

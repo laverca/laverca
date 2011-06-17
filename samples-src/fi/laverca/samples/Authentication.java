@@ -25,8 +25,8 @@ public class Authentication {
 	
 	private static final Log log = LogFactory.getLog(Authentication.class);
 	private static FiComRequest req;
-	public static AuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AuthenticationProggerssBarUpdater();
-	public static int amountOfCalls = 0; 
+	protected static AuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AuthenticationProggerssBarUpdater();
+	protected static int amountOfCalls = 0; 
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -271,7 +271,7 @@ public class Authentication {
     }
     
     private static javax.swing.JFrame frame;
-    public static javax.swing.JProgressBar callStateProgressBar;
+    protected static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JButton cancelButton;
     private static javax.swing.JPanel pane;
     private static javax.swing.JScrollPane scrollPane;
