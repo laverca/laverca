@@ -27,8 +27,6 @@ public class Authentication {
 	
 	private static final Log log = LogFactory.getLog(Authentication.class);
 	private static FiComRequest req;
-	public static AuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AuthenticationProggerssBarUpdater();
-	public static int amountOfCalls = 0; 
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -62,9 +60,13 @@ public class Authentication {
                                                   msspStatusUrl, 
                                                   msspReceiptUrl);
         
-        String apTransId = "A"+System.currentTimeMillis();
+        Long currentTimeMillis = System.currentTimeMillis();
+        String apTransId = "A"+currentTimeMillis;
+        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        
         byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
 
+        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
         LinkedList<String> attributeNames = new LinkedList<String>(); 
@@ -87,12 +89,14 @@ public class Authentication {
 	            		authnChallenge, 
 	            		phoneNumber, 
 	            		noSpamService, 
+	            		eventIdService,
 	            		additionalServices, 
 	            		new FiComResponseHandler() {
 			            	@Override
 			            	public void onResponse(FiComRequest req, FiComResponse resp) {
 			            		log.info("got resp");
-			            		amountOfCalls--;
+			    				sendButton.setEnabled(true);
+								callStateProgressBar.setIndeterminate(false);
 			            		log.info(resp.getPkcs7Signature().getSignerCn());
 			            		
 			            		try {
@@ -138,9 +142,7 @@ public class Authentication {
 			            			}
 			            			responseBox.setText("CriticalExtensionOIDs:" + "\n" + responseBox.getText());
 	
-			            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());
-	
-	
+			            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());	
 			            		} catch (FiComException e1) {
 									e1.printStackTrace();
 								}
@@ -149,17 +151,20 @@ public class Authentication {
 			            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
 			            					+ "\n" + responseBox.getText());
 			            		}
+		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
 			            	}
 			
 			            	@Override
 			            	public void onError(FiComRequest req, Throwable throwable) {
 			            		log.info("got error", throwable);
-			            		amountOfCalls--;
 			            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
+								callStateProgressBar.setIndeterminate(false);
 			            	}
 
 							@Override
 							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+								
+								callStateProgressBar.setIndeterminate(true);
 								long timePast = prgUpdate.getPastTime();
             					log.info("Time past: " + String.format("%d min, %d sec", 
 									    TimeUnit.MILLISECONDS.toMinutes(timePast),
@@ -190,7 +195,6 @@ public class Authentication {
 	 */
 	public static void main(String[] args) {
 		initComponents();
-		callStateProgressBarUpdater.start();
 	}
 	
     private static void initComponents() {
@@ -215,7 +219,8 @@ public class Authentication {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				amountOfCalls++;
+				callStateProgressBar.setIndeterminate(true);
+				sendButton.setEnabled(false);
 				estamblishConnection(number.getText());
 			}
 		});
@@ -224,7 +229,7 @@ public class Authentication {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
-				amountOfCalls--;
+				sendButton.setEnabled(true);
 				responseBox.setText("Canceled\n" + responseBox.getText());
 			}
 		});
@@ -298,25 +303,4 @@ public class Authentication {
     private static javax.swing.JTextField number;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JButton sendButton;
-}
-
-class AuthenticationProggerssBarUpdater extends Thread {
-	
-	AuthenticationProggerssBarUpdater() {}
-	
-	public void run() {
-		while (true) {
-			if (Authentication.amountOfCalls > 0) {
-				int value = Authentication.callStateProgressBar.getValue() > 90 ? 10 : Authentication.callStateProgressBar.getValue()+10;
-				Authentication.callStateProgressBar.setValue(value);
-			} else {
-				Authentication.callStateProgressBar.setValue(0);
-			}
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }

@@ -58,6 +58,7 @@ public class FiComClient {
                                      final byte[] authnChallenge,
                                      final String phoneNumber,
                                      final Service noSpamService,
+                                     final Service eventIdService,
                                      final List<Service> additionalServices,
                                      final FiComResponseHandler handler) 
     throws IOException
@@ -67,6 +68,7 @@ public class FiComClient {
                     new DTBS(authnChallenge),
                     phoneNumber,
                     noSpamService,
+                    eventIdService,
                     additionalServices,
                     FiComSignatureProfiles.AUTHENTICATION,
                     FiComMSS_Formats.PKCS7,
@@ -78,6 +80,7 @@ public class FiComClient {
                                          final byte[] authnChallenge,
                                          final String phoneNumber,
                                          final Service noSpamService,
+                                         final Service eventIDService,
                                          final List<Service> additionalServices,
                                          final FiComResponseHandler handler) 
     throws IOException
@@ -87,6 +90,7 @@ public class FiComClient {
                     new DTBS(authnChallenge),
                     phoneNumber,
                     noSpamService,
+                    eventIDService,
                     additionalServices,
                     FiComSignatureProfiles.ANONYMOUS,
                     FiComMSS_Formats.PKCS7,
@@ -98,6 +102,7 @@ public class FiComClient {
                                  final String textToBeSigned,
                                  final String phoneNumber,
                                  final Service noSpamService,
+                                 final Service eventIDService,
                                  final List<Service> additionalServices,
                                  final FiComResponseHandler handler) 
     throws IOException
@@ -107,6 +112,7 @@ public class FiComClient {
                     new DTBS(textToBeSigned, "UTF-8"),
                     phoneNumber,
                     noSpamService,
+                    eventIDService,
                     additionalServices,
                     FiComSignatureProfiles.SIGNATURE,
                     FiComMSS_Formats.PKCS7,
@@ -118,6 +124,7 @@ public class FiComClient {
                                  final byte [] digestToBeSigned,
                                  final String phoneNumber,
                                  final Service noSpamService,
+                                 final Service eventIDService,
                                  final List<Service> additionalServices,
                                  final FiComResponseHandler handler) 
     throws IOException
@@ -127,6 +134,7 @@ public class FiComClient {
                     new DTBS(digestToBeSigned, DTBS.MIME_SHA1),
                     phoneNumber,
                     noSpamService,
+                    eventIDService,
                     additionalServices,
                     FiComSignatureProfiles.DIGESTIVE,
                     FiComMSS_Formats.PKCS7,
@@ -138,6 +146,7 @@ public class FiComClient {
                                  final String textToBeConsentedTo,
                                  final String phoneNumber,
                                  final Service noSpamService,
+                                 final Service eventIDService,
                                  final List<Service> additionalServices,
                                  final FiComResponseHandler handler) 
     throws IOException
@@ -147,6 +156,7 @@ public class FiComClient {
                     new DTBS(textToBeConsentedTo, "UTF-8"),
                     phoneNumber,
                     noSpamService,
+                    eventIDService,
                     additionalServices,
                     FiComSignatureProfiles.CONSENT,
                     FiComMSS_Formats.PKCS7,
@@ -159,6 +169,7 @@ public class FiComClient {
                              final DTBS dtbs,
                              final String phoneNumber,
                              final Service noSpamService,
+                             final Service eventIDService,
                              final List<Service> additionalServices,
                              final String signatureProfile,
                              final String mssFormat,

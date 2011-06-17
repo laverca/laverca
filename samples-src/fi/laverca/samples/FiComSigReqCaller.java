@@ -49,10 +49,14 @@ public class FiComSigReqCaller {
                                                   msspStatusUrl, 
                                                   msspReceiptUrl); 
 
-        String apTransId = "A"+System.currentTimeMillis();
+        Long currentTimeMillis = System.currentTimeMillis();
+        String apTransId = "A"+currentTimeMillis;
+        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        
         String phoneNumber = "+35847001001";
         byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
 
+        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         
         try {
@@ -60,7 +64,8 @@ public class FiComSigReqCaller {
                 fiComClient.authenticate(apTransId, 
                                          authnChallenge, 
                                          phoneNumber, 
-                                         noSpamService, 
+                                         noSpamService,
+                                         eventIdService,
                                          null, // additionalServices, 
                                          new FiComResponseHandler() {
                                              @Override
