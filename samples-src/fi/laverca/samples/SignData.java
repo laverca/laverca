@@ -1,8 +1,5 @@
 package fi.laverca.samples;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -16,12 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 import java.util.LinkedList;
 
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,12 +21,12 @@ import org.bouncycastle.util.encoders.Base64;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.FiComAdditionalServices;
+import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.FiComClient;
 import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
-import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 
 public class SignData {
 	
@@ -136,56 +128,8 @@ public class SignData {
 	 * Generates SHA1 hash from a file and asks for a user to sign it.
 	 * @param args
 	 */
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) {		
 		initComponents();
-//		final JFrame frame = new JFrame("Sign data");
-//		Container pane = frame.getContentPane();
-//		frame.setSize(380, 380);
-//		
-//		final JFileChooser fc = new JFileChooser();
-//		fc.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				printSHA1(generateSHA1(fc.getSelectedFile()));
-//			}
-//		});
-//		fc.showOpenDialog(frame);
-//		
-//		/*JButton browse = new JButton("Browse");
-//		browse.setPreferredSize(new Dimension(80, 10));
-//		browse.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				fc.showOpenDialog(frame);
-//			}
-//		});
-//		pane.add(browse, BorderLayout.WEST);*/
-//		
-//		JButton cancel = new JButton("Cancel");
-//		cancel.setPreferredSize(new Dimension(80, 10));
-//		cancel.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				req.cancel();
-//				responseBox.setText("Canceled\n" + responseBox.getText());
-//			}
-//		});
-//		pane.add(cancel, BorderLayout.WEST);
-//		
-//		pane.add(new JLabel("Phone number"), BorderLayout.PAGE_START);
-//		final JTextField number = new JTextField("+35847001001");
-//		number.setPreferredSize(new Dimension(230, 10));
-//		pane.add(number, BorderLayout.CENTER);
-//		JButton send = new JButton("Send");
-//		send.setPreferredSize(new Dimension(70, 10));
-//		pane.add(send, BorderLayout.EAST);
-//		responseBox.setPreferredSize(new Dimension(200, 300));
-//		send.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				estamblishConnection(number.getText(), fc.getSelectedFile());
-//			}
-//		});
-//		pane.add(responseBox, BorderLayout.PAGE_END);
-//		frame.setVisible(true);		
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	/**
@@ -343,7 +287,6 @@ public class SignData {
         frame.pack();
     }
     
-    // Variables declaration - do not modify
     private static javax.swing.JFrame frame;
     private static javax.swing.JButton sendButton;
     private static javax.swing.JButton cancelButton;
@@ -354,5 +297,4 @@ public class SignData {
     private static javax.swing.JScrollPane jScrollPane1;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JTextField number;
-    // End of variables declaration
 }
