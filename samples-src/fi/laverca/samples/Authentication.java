@@ -163,9 +163,8 @@ public class Authentication {
 
 							@Override
 							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-								
 								callStateProgressBar.setIndeterminate(true);
-								long timePast = prgUpdate.getPastTime();
+								long timePast = prgUpdate.getElapsedTime();
             					log.info("Time past: " + String.format("%d min, %d sec", 
 									    TimeUnit.MILLISECONDS.toMinutes(timePast),
 									    TimeUnit.MILLISECONDS.toSeconds(timePast) - 

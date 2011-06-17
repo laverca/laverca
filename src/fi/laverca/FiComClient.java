@@ -229,11 +229,12 @@ public class FiComClient {
                 public FiComResponse call() throws Exception {
                 	
                     long timeout = 5*60*1000; // 5 min = 300 s = 300 000 millis
+                    long currentTimeMillis = System.currentTimeMillis();
                     // note that the transaction generally times out at the server at 180 s 
-                    long deadline = System.currentTimeMillis() + timeout;
+                    long deadline = currentTimeMillis + timeout;
                     
                     FiComResponse fiResp = null;
-                    ProgressUpdate prgUpdate = new ProgressUpdate(timeout);
+                    ProgressUpdate prgUpdate = new ProgressUpdate(timeout, currentTimeMillis);
 
                     MSS_StatusResp statResp = null;
                     int waitPeriod = 20 * 1000; // initial wait 20 s as per FiCom, section 5.1
