@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,13 +21,14 @@ import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
+import fi.laverca.ProgressUpdate;
 
 public class Authentication {
 	
 	private static final Log log = LogFactory.getLog(Authentication.class);
 	private static FiComRequest req;
-	protected static AuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AuthenticationProggerssBarUpdater();
-	protected static int amountOfCalls = 0; 
+	public static AuthenticationProggerssBarUpdater callStateProgressBarUpdater = new AuthenticationProggerssBarUpdater();
+	public static int amountOfCalls = 0; 
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -155,6 +157,23 @@ public class Authentication {
 			            		amountOfCalls--;
 			            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
 			            	}
+
+							@Override
+							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+								long timePast = prgUpdate.getPastTime();
+            					log.info("Time past: " + String.format("%d min, %d sec", 
+									    TimeUnit.MILLISECONDS.toMinutes(timePast),
+									    TimeUnit.MILLISECONDS.toSeconds(timePast) - 
+									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timePast))
+								));
+								long timeLeft = prgUpdate.getTimeLeft();
+            					log.info("Time left: " + String.format("%d min, %d sec", 
+									    TimeUnit.MILLISECONDS.toMinutes(timeLeft),
+									    TimeUnit.MILLISECONDS.toSeconds(timeLeft) - 
+									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft))
+								));
+
+							}
 			            });
             
         }
@@ -271,7 +290,7 @@ public class Authentication {
     }
     
     private static javax.swing.JFrame frame;
-    protected static javax.swing.JProgressBar callStateProgressBar;
+    public static javax.swing.JProgressBar callStateProgressBar;
     private static javax.swing.JButton cancelButton;
     private static javax.swing.JPanel pane;
     private static javax.swing.JScrollPane scrollPane;

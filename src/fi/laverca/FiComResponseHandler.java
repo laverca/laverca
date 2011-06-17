@@ -6,4 +6,6 @@ public interface FiComResponseHandler {
     
     void onResponse(FiComRequest req, FiComResponse resp);
     
+    void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate);
+    
 }

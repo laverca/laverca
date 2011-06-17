@@ -17,6 +17,7 @@ import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
 import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
+import fi.laverca.ProgressUpdate;
 
 public class AnonAuthentication {
 
@@ -95,6 +96,13 @@ public class AnonAuthentication {
 			            		amountOfCalls--;
 			            		responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
 			            	}
+
+							@Override
+							public void onOutstandingProgress(FiComRequest req,
+									ProgressUpdate prgUpdate) {
+								// TODO Auto-generated method stub
+								
+							}
 			            });
         }
         catch (IOException e) {
