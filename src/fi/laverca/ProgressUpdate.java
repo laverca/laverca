@@ -1,24 +1,32 @@
 package fi.laverca;
 
+/**
+ * Information about outstanding transaction.
+ * Sent periodically.
+ * 
+ * @author Jan Mikael Lindlöf
+ * @author Eemeli Miettinen
+ */
 public class ProgressUpdate {
 	
 	long initTime;
 	long timeout;
 	
-	public ProgressUpdate(long timeout) {
-		setInitTime();
+	/**
+	 * 
+	 * @param timeout Maximum time of the progress in milliseconds.
+	 * @param initTime Progress starting time in System.currentTimeMillis() format.
+	 */
+	public ProgressUpdate(long timeout, long initTime) {
+		this.initTime = initTime;
 		setTimeout(timeout);
-	}
-	
-	public void setInitTime() {
-		initTime = System.currentTimeMillis();
 	}
 	
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
 	
-	public long getPastTime() {
+	public long getElapsedTime() {
 		return System.currentTimeMillis() - initTime;
 	}
 	
