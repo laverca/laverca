@@ -8,6 +8,14 @@ standard ETSI features, Laverca includes the FiCom 2.0
 features specified in Finland.
 
 
+
+ -- CHANGELOG --
+
+Version 1.0 - 20/6/2011
+ - Initial release.
+
+
+
  -- REQUIREMENTS --
  
 JDK 6
