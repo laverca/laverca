@@ -3,6 +3,9 @@
     Laverca project build file
   </description>
   
+  <property value="0.1" name="project-version"/>
+  <property value="laverca" name="project-name"/>
+	
   <property location="build" name="build"/>
   <property location="dist" name="dist"/>
   <property location="datatypes-src" name="datatypes-src"/>
@@ -18,6 +21,8 @@
     <include name="castor-1.3.jar"/>
     <include name="castor-1.3-core.jar"/>
     <include name="commons-codec-1.4.jar"/>
+  	<include name="commons-configuration-1.6.jar"/>
+  	<include name="commons-lang-2.6.jar"/>
     <include name="commons-discovery-0.4.jar"/>
     <include name="commons-httpclient-3.1.jar"/>
     <include name="commons-logging-1.1.jar"/>
@@ -78,6 +83,9 @@
 
   <target depends="init" name="compile-samples">
     <mkdir dir="${build}/samples"/>
+  	<copy todir="${build}/samples">
+  	  <fileset dir="${samples-src}" includes="*.xml"/>
+  	</copy>
     <javac debug="true" deprecation="true" destdir="${build}/samples" encoding="ISO-8859-15" includeantruntime="false">
       <src path="${samples-src}"/>
       <classpath>
@@ -126,6 +134,10 @@
   </target>
 	
   <target depends="init, copy-jars, copy-library, copy-etc, copy-start-scripts" name="copy-all">
+  </target>
+	
+  <target name="zip" depends="dist">
+	<zip destfile="${project-name}-${project-version}.zip" basedir="${dist}" includes="**"/>
   </target>
 	
   <target depends="init, compile-all, copy-all" name="dist">
