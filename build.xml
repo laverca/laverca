@@ -173,5 +173,27 @@
 	
   <target depends="init, compile-all, copy-all" name="dist">
   </target>
+	
+  <target name="javadoc"
+          description="Generates Laverca documentation.">
+		  <mkdir dir="doc"/>
+    <javadoc packagenames="fi.laverca.*,fi.ficom.*, org.etsi.*"
+             sourcepath="src;datatypes-src"
+             defaultexcludes="yes"
+             destdir="doc"
+             author="false"
+             version="false"
+             Private="true"
+             use="true"
+             windowtitle="Laverca">
+			 <classpath>
+		       <path refid="project.classpath"/>
+			 </classpath>
+      <doctitle><![CDATA[<h1>Laverca v${project-version}</h1>]]></doctitle>
+      <group title="Core packages" packages="fi.methics.*"/>
+      <group title="ETSI packages" packages="org.etsi.*"/>
+      <group title="FiCom packages" packages="fi.ficom.*"/>
+    </javadoc>
+  </target>
 
 </project>
