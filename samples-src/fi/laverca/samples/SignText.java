@@ -95,6 +95,7 @@ public class SignText {
 			        		@Override
 			        		public void onResponse(FiComRequest req, FiComResponse resp) {
 			        			log.info("got resp");
+			        			sendButton.setEnabled(true);
 								callStateProgressBar.setIndeterminate(false);
 			        			try {
 			        				responseBox.setText("MSS Signature: " + 
@@ -171,6 +172,7 @@ public class SignText {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				sendButton.setEnabled(false);
 				estamblishConnection(number.getText(), textToBeSigned.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
@@ -179,6 +181,7 @@ public class SignText {
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				sendButton.setEnabled(true);
 				req.cancel();
 				callStateProgressBar.setIndeterminate(false);
 			}
