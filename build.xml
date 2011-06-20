@@ -3,7 +3,7 @@
     Laverca project build file
   </description>
   
-  <property value="0.1" name="project-version"/>
+  <property value="1.0" name="project-version"/>
   <property value="laverca" name="project-name"/>
 	
   <property location="build" name="build"/>
@@ -114,7 +114,7 @@
   <target depends="init" name="copy-library">
   	<mkdir dir="${dist}/lib"/>
   	<copy todir="${dist}/lib">
-  	      <fileset dir="${lib}" includes="**/*.jar"/>
+  	      <fileset dir="${lib}" includes="**/*"/>
   	</copy>
   </target>
 	
@@ -122,6 +122,14 @@
     <mkdir dir="${dist}/etc"/>
 	<copy todir="${dist}/etc">
 	  <fileset dir="${etc}" includes="**/*"/>
+	</copy>
+  </target>
+	
+  <target depends="init" name="copy-info">
+    <copy todir="${dist}">
+	  <fileset dir="." includes="LICENSE"/>
+      <fileset dir="." includes="NOTICE"/>
+      <fileset dir="." includes="README"/>
 	</copy>
   </target>
 	
@@ -133,11 +141,15 @@
 	</copy>
   </target>
 	
-  <target depends="init, copy-jars, copy-library, copy-etc, copy-start-scripts" name="copy-all">
+  <target depends="init, copy-jars, copy-library, copy-etc, copy-start-scripts, copy-info" name="copy-all">
   </target>
 	
   <target name="zip" depends="dist">
-	<zip destfile="${project-name}-${project-version}.zip" basedir="${dist}" includes="**"/>
+	<zip destfile="${project-name}-${project-version}.zip" basedir="${dist}"/>
+  </target>
+	
+  <target name="gzip" depends="dist">
+	<tar compression="gzip" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
   </target>
 	
   <target depends="init, compile-all, copy-all" name="dist">
