@@ -15,7 +15,6 @@
   <property location="etc" name="etc"/>
   <property location="docs" name="docs"/>
   <property location="start-scripts" name="start-scripts"/>
-  <property name="boolean-make-javadoc-files" value="true"/>
   
   <fileset dir="${lib}" id="lib.fileset">
     <include name="axis-1.4.jar"/>
@@ -28,9 +27,7 @@
     <include name="commons-httpclient-3.1.jar"/>
     <include name="commons-logging-1.1.jar"/>
     <include name="jaxrpc-1.1.jar"/>
-    <include name="saaj-1.2.jar"/>
     <include name="wsdl4j-1.5.1.jar"/>
-    <include name="xercesImpl-2.9.1.jar"/>
     <include name="bcprov-jdk16-145.jar"/>
   </fileset>
   
@@ -129,6 +126,7 @@
 	  <fileset dir="." includes="LICENSE"/>
       <fileset dir="." includes="NOTICE"/>
       <fileset dir="." includes="README"/>
+      <fileset dir="." includes="build.xml"/>	  
 	</copy>
   </target>
 	
