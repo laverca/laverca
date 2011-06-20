@@ -31,7 +31,6 @@ public class FiComClient {
 
     public FiComClient( String apId,             // AP settings
                         String apPwd, 
-                        String aeMsspIdUri,      // MSSP_ID.URI of the AE
                         String msspSignatureUrl, // AE connection settings
                         String msspStatusUrl,
                         String msspReceiptUrl
@@ -43,7 +42,6 @@ public class FiComClient {
         String msspHandshakeUrl    = "http://localhost";
         this.etsiClient = new EtsiClient(apId, 
                                          apPwd, 
-                                         aeMsspIdUri, 
                                          msspSignatureUrl, 
                                          msspStatusUrl, 
                                          msspReceiptUrl, 
@@ -75,7 +73,7 @@ public class FiComClient {
                     handler);
 
     }
-
+    
     public FiComRequest authenticateAnon(final String apTransId,
                                          final byte[] authnChallenge,
                                          final String phoneNumber,
