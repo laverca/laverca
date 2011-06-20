@@ -94,6 +94,7 @@ public class BankTransfer {
 		            	@Override
 		            	public void onResponse(FiComRequest req, FiComResponse resp) {
 		            		log.info("got resp");
+		            		sendButton.setEnabled(true);
 							callStateProgressBar.setIndeterminate(false);
 		            		try {
 		            			responseBox.setText("\nMSS Signature: " + 
@@ -171,6 +172,7 @@ public class BankTransfer {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				sendButton.setEnabled(false);
 				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
@@ -180,6 +182,7 @@ public class BankTransfer {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
+				sendButton.setEnabled(true);
 				responseBox.setText("Canceled\n" + responseBox.getText());
 				callStateProgressBar.setIndeterminate(false);
 			}

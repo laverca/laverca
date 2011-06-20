@@ -96,6 +96,7 @@ public class AnonAuthentication {
 			            	@Override
 			            	public void onResponse(FiComRequest req, FiComResponse resp) {
 			            		log.info("got resp");
+			    				sendButton.setEnabled(true);
 								callStateProgressBar.setIndeterminate(false);
 			            		responseBox.setText("\n" + responseBox.getText());
 			            		
@@ -164,6 +165,7 @@ public class AnonAuthentication {
 		sendButton.setText("Send");
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				sendButton.setEnabled(false);
 				callStateProgressBar.setIndeterminate(true);
 				estamblishConnection(number.getText());
 			}
@@ -172,6 +174,7 @@ public class AnonAuthentication {
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				sendButton.setEnabled(true);
 				req.cancel();
 				callStateProgressBar.setIndeterminate(false);
 			}
