@@ -23,180 +23,28 @@ import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
+/**
+ * Sample for demonstrating authentication. 
+ * 
+ * @author Jan Mikael Lindlöf
+ * @author Eemeli Miettinen
+ *
+ */
+
 public class Authentication {
 	
 	private static final Log log = LogFactory.getLog(Authentication.class);
 	private static FiComRequest req;
 	
-	/**
-	 * Connects to MSSP using SSL and waits for response.
-	 * @param phoneNumber
-	 */
-	private static void estamblishConnection(final String phoneNumber) {
-		
-		log.info("setting up ssl");
-		JvmSsl.setSSL("etc/laverca-truststore",
-                "changeit",
-                "etc/laverca-keystore",
-                "changeit",
-                "JKS");
-		
-		String apId  = "http://laverca-eval.fi";
-        String apPwd = "pfkpfk";
-
-        String aeMsspIdUri = "http://dev-ae.mssp.dna.fi";
-        //TODO: TeliaSonera
-        //TODO: Elisa
-
-        String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
-        String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
-        String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
-
-        log.info("creating FiComClient");
-        FiComClient fiComClient = new FiComClient(apId, 
-                                                  apPwd, 
-                                                  aeMsspIdUri, 
-                                                  msspSignatureUrl, 
-                                                  msspStatusUrl, 
-                                                  msspReceiptUrl);
-        
-        Long currentTimeMillis = System.currentTimeMillis();
-        String apTransId = "A"+currentTimeMillis;
-        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
-        
-        byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
-
-        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
-        Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
-        LinkedList<Service> additionalServices = new LinkedList<Service>();
-        LinkedList<String> attributeNames = new LinkedList<String>(); 
- 
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_AGE);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_SUBJECT);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_SURNAME);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_GIVENNAME);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
-        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
-        additionalServices.add(personIdService);
-        
-        try {
-            log.info("calling authenticate");
-            req = 
-	            fiComClient.authenticate(apTransId, 
-	            		authnChallenge, 
-	            		phoneNumber, 
-	            		noSpamService, 
-	            		eventIdService,
-	            		additionalServices, 
-	            		new FiComResponseHandler() {
-			            	@Override
-			            	public void onResponse(FiComRequest req, FiComResponse resp) {
-			            		log.info("got resp");
-			    				sendButton.setEnabled(true);
-								callStateProgressBar.setIndeterminate(false);
-			            		log.info(resp.getPkcs7Signature().getSignerCn());
-			            		
-			            		try {
-			            			responseBox.setText("MSS Signature: " + 
-			            					new String(Base64.encode(resp.getMSS_StatusResp().
-			            					getMSS_Signature().getBase64Signature()), "ASCII") +
-			            					"\n\n");
-			            		} catch (UnsupportedEncodingException e) {
-			            			log.info("Unsupported encoding", e);
-			            		}
-			            		responseBox.setText("AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID()
-			            				+ "   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD()
-			            				+ "   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n" + responseBox.getText());
-			            		
-	//		            		responseBox.setText("MSS   StatusMessage: " + resp.getMSS_StatusResp().getStatus().getStatusMessage() 
-	//		            				+ "   MajorVersion: " + resp.getMSS_StatusResp().getMajorVersion()
-	//		            				+ "   MinorVersion: " + resp.getMSS_StatusResp().getMinorVersion()
-	//		            				+ "   URI: " + resp.getMSS_StatusResp().getMSSP_Info().getMSSP_ID().getURI()
-	//		            				+ "\n" + responseBox.getText());
-			            		
-			            		responseBox.setText("MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN()
-			            				+ "\n" + responseBox.getText());
-			            		
-			            		try {
-			            			responseBox.setText("Pkcs7" + "\n"
-			            					+ "   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
-			            					+ "   Type: " + resp.getPkcs7Signature().getSignerCert().getType()
-			            					+ "   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName()
-			            					+ "   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
-			            					+ "   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n"
-			            					+ "   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n"
-			            					+ "   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n"
-	//		            					+ "   PublicKey: " + resp.getPkcs7Signature().getSignerCert().getPublicKey()
-			            					+ "\n" + responseBox.getText());
-	
-			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs()) {
-			            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
-			            			}
-			            			responseBox.setText("NonCriticalExtensionOIDs:" + "\n" + responseBox.getText());
-			            			
-			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs()) {
-			            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
-			            			}
-			            			responseBox.setText("CriticalExtensionOIDs:" + "\n" + responseBox.getText());
-	
-			            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());	
-			            		} catch (FiComException e1) {
-									e1.printStackTrace();
-								}
-			            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-			            			log.info(a.getName() + " " + a.getStringValue());
-			            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
-			            					+ "\n" + responseBox.getText());
-			            		}
-		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
-			            	}
-			
-			            	@Override
-			            	public void onError(FiComRequest req, Throwable throwable) {
-			            		log.info("got error", throwable);
-			            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
-								callStateProgressBar.setIndeterminate(false);
-			            	}
-
-							@Override
-							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-								callStateProgressBar.setIndeterminate(true);
-								long timePast = prgUpdate.getElapsedTime();
-            					log.info("Time past: " + String.format("%d min, %d sec", 
-									    TimeUnit.MILLISECONDS.toMinutes(timePast),
-									    TimeUnit.MILLISECONDS.toSeconds(timePast) - 
-									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timePast))
-								));
-								long timeLeft = prgUpdate.getTimeLeft();
-            					log.info("Time left: " + String.format("%d min, %d sec", 
-									    TimeUnit.MILLISECONDS.toMinutes(timeLeft),
-									    TimeUnit.MILLISECONDS.toSeconds(timeLeft) - 
-									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft))
-								));
-
-							}
-			            });
-            
-        }
-        catch (IOException e) {
-            log.info("error establishing connection", e);
-        }
-
-        fiComClient.shutdown();
-	}
-	
-	/**
-	 * Authenticates user
-	 * @param args
-	 */
 	public static void main(String[] args) {
-		initComponents();
+		new Authentication().initComponents();
 	}
-	
-    private static void initComponents() {
+
+	/**
+	 * Initializes the UI
+	 */
+
+    private void initComponents() {
     	frame = new javax.swing.JFrame("Authentication");
         pane = new javax.swing.JPanel();
         lblNumber = new javax.swing.JLabel();
@@ -218,9 +66,8 @@ public class Authentication {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				new ResponseWindow(number.getText());
 				callStateProgressBar.setIndeterminate(true);
-				sendButton.setEnabled(false);
-				estamblishConnection(number.getText());
 			}
 		});
 		
@@ -228,7 +75,6 @@ public class Authentication {
         cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				req.cancel();
-				sendButton.setEnabled(true);
 				responseBox.setText("Canceled\n" + responseBox.getText());
 			}
 		});
@@ -237,48 +83,34 @@ public class Authentication {
         responseBox.setRows(5);
         scrollPane.setViewportView(responseBox);
 
-        javax.swing.GroupLayout paneLayout = new javax.swing.GroupLayout(pane);
-        pane.setLayout(paneLayout);
-        paneLayout.setHorizontalGroup(
-            paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(paneLayout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
+        pane.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
-                    .addGroup(paneLayout.createSequentialGroup()
-                        .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(number, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                            .addComponent(lblNumber, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(85, 85, 85))
-                    .addGroup(paneLayout.createSequentialGroup()
-                        .addComponent(sendButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton)))
-                .addContainerGap())
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(lblNumber)
+                    .addComponent(sendButton)
+                    .addComponent(number, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
-        paneLayout.setVerticalGroup(
-            paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(paneLayout.createSequentialGroup()
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(lblNumber)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(paneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
-                    .addComponent(sendButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(sendButton)
+                .addContainerGap(43, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
         frame.getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -302,4 +134,251 @@ public class Authentication {
     private static javax.swing.JTextField number;
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JButton sendButton;
+    
+    /**
+     * Creates a response window.
+     * 
+     * @author Jan Mikael Lindlöf
+     * @author Eemeli Miettinen
+     * 
+     */
+    
+    private class ResponseWindow {
+    	
+    	private FiComRequest req;
+    	private javax.swing.JTextArea responseBox;
+    	private javax.swing.JFrame responseFrame;
+        private javax.swing.JButton cancelButton;
+        private javax.swing.JProgressBar callStateProgressBar;
+        private javax.swing.JScrollPane jScrollPane1;
+        private String eventId;
+    	
+        /**
+         * Generates a new window for responses and calls <code>estamblishConnection</code> 
+         * to start the authentication process.
+         * @param number
+         */
+        
+    	public ResponseWindow(String number) {
+    		Long currentTimeMillis = System.currentTimeMillis();
+    		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+    		initResponse();
+    		estamblishConnection(number);
+    	}
+    	
+    	/**
+    	 * Initializes the response box
+    	 */
+    	private void initResponse() {
+        	responseFrame = new javax.swing.JFrame(eventId);
+            cancelButton = new javax.swing.JButton();
+            jScrollPane1 = new javax.swing.JScrollPane();
+            responseBox = new javax.swing.JTextArea();
+            callStateProgressBar = new javax.swing.JProgressBar();
+
+            cancelButton.setText("Cancel");
+            cancelButton.addActionListener(new ActionListener() {
+    			public void actionPerformed(ActionEvent e) {
+    				req.cancel();
+    				callStateProgressBar.setIndeterminate(false);
+    				responseFrame.dispose();
+    			}
+    		});
+            
+            responseBox.setColumns(20);
+            responseBox.setRows(5);
+            jScrollPane1.setViewportView(responseBox);
+            callStateProgressBar.setIndeterminate(true);
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(responseFrame.getContentPane());
+            responseFrame.getContentPane().setLayout(layout);
+            layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(18, 18, 18)
+                    .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(18, 18, 18)
+                    .addComponent(cancelButton)
+                    .addContainerGap(47, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                        .addGap(14, 14, 14)))
+            );
+            layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(callStateProgressBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                        .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(266, 266, 266))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(53, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(21, 21, 21)))
+            );
+
+            responseFrame.pack();
+            responseFrame.setVisible(true);
+            responseFrame.setResizable(false);
+        }
+    	
+    	/**
+    	 * Connects to MSSP using SSL and waits for response.
+    	 * @param phoneNumber
+    	 */
+    	private void estamblishConnection(final String phoneNumber) {
+    		
+    		log.info("setting up ssl");
+    		JvmSsl.setSSL("etc/laverca-truststore",
+                    "changeit",
+                    "etc/laverca-keystore",
+                    "changeit",
+                    "JKS");
+    		
+    		String apId  = "http://laverca-eval.fi";
+            String apPwd = "pfkpfk";
+
+            String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
+            String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
+            String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
+
+            log.info("creating FiComClient");
+            FiComClient fiComClient = new FiComClient(apId, 
+                                                      apPwd, 
+                                                      msspSignatureUrl, 
+                                                      msspStatusUrl, 
+                                                      msspReceiptUrl);
+            
+            Long currentTimeMillis = System.currentTimeMillis();
+            String apTransId = "A"+currentTimeMillis;
+            final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+            
+            byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
+
+            Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
+            Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
+            LinkedList<Service> additionalServices = new LinkedList<Service>();
+            LinkedList<String> attributeNames = new LinkedList<String>(); 
+     
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_AGE);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_SUBJECT);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_SURNAME);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_GIVENNAME);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
+            Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+            additionalServices.add(personIdService);
+            
+            try {
+                log.info("calling authenticate");
+                req = 
+    	            fiComClient.authenticate(apTransId, 
+    	            		authnChallenge, 
+    	            		phoneNumber, 
+    	            		noSpamService, 
+    	            		eventIdService,
+    	            		additionalServices, 
+    	            		new FiComResponseHandler() {
+    			            	@Override
+    			            	public void onResponse(FiComRequest req, FiComResponse resp) {
+    			            		log.info("got resp");
+    								callStateProgressBar.setIndeterminate(false);
+    			            		log.info(resp.getPkcs7Signature().getSignerCn());
+    			            		
+    			            		try {
+    			            			responseBox.setText("MSS Signature: " + 
+    			            					new String(Base64.encode(resp.getMSS_StatusResp().
+    			            					getMSS_Signature().getBase64Signature()), "ASCII") +
+    			            					"\n\n");
+    			            		} catch (UnsupportedEncodingException e) {
+    			            			log.info("Unsupported encoding", e);
+    			            		}
+    			            		responseBox.setText("AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID()
+    			            				+ "   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD()
+    			            				+ "   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n" + responseBox.getText());
+    			            		
+    	//		            		responseBox.setText("MSS   StatusMessage: " + resp.getMSS_StatusResp().getStatus().getStatusMessage() 
+    	//		            				+ "   MajorVersion: " + resp.getMSS_StatusResp().getMajorVersion()
+    	//		            				+ "   MinorVersion: " + resp.getMSS_StatusResp().getMinorVersion()
+    	//		            				+ "   URI: " + resp.getMSS_StatusResp().getMSSP_Info().getMSSP_ID().getURI()
+    	//		            				+ "\n" + responseBox.getText());
+    			            		
+    			            		responseBox.setText("MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN()
+    			            				+ "\n" + responseBox.getText());
+    			            		
+    			            		try {
+    			            			responseBox.setText("Pkcs7" + "\n"
+    			            					+ "   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
+    			            					+ "   Type: " + resp.getPkcs7Signature().getSignerCert().getType()
+    			            					+ "   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName()
+    			            					+ "   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber()
+    			            					+ "   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n"
+    			            					+ "   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n"
+    			            					+ "   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n"
+    	//		            					+ "   PublicKey: " + resp.getPkcs7Signature().getSignerCert().getPublicKey()
+    			            					+ "\n" + responseBox.getText());
+    	
+    			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs()) {
+    			            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
+    			            			}
+    			            			responseBox.setText("NonCriticalExtensionOIDs:" + "\n" + responseBox.getText());
+    			            			
+    			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs()) {
+    			            				responseBox.setText("   " + oid + "\n" + responseBox.getText());
+    			            			}
+    			            			responseBox.setText("CriticalExtensionOIDs:" + "\n" + responseBox.getText());
+    	
+    			            			responseBox.setText(resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n" + responseBox.getText());	
+    			            		} catch (FiComException e1) {
+    									e1.printStackTrace();
+    								}
+    			            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+    			            			log.info(a.getName() + " " + a.getStringValue());
+    			            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
+    			            					+ "\n" + responseBox.getText());
+    			            		}
+    		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
+    			            	}
+    			
+    			            	@Override
+    			            	public void onError(FiComRequest req, Throwable throwable) {
+    			            		log.info("got error", throwable);
+    			            		responseBox.setText("ERROR, " + phoneNumber + "\n\n" + responseBox.getText());
+    								callStateProgressBar.setIndeterminate(false);
+    			            	}
+
+    							@Override
+    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+    								callStateProgressBar.setIndeterminate(true);
+    								long timePast = prgUpdate.getElapsedTime();
+                					log.info("Time past: " + String.format("%d min, %d sec", 
+    									    TimeUnit.MILLISECONDS.toMinutes(timePast),
+    									    TimeUnit.MILLISECONDS.toSeconds(timePast) - 
+    									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timePast))
+    								));
+    								long timeLeft = prgUpdate.getTimeLeft();
+                					log.info("Time left: " + String.format("%d min, %d sec", 
+    									    TimeUnit.MILLISECONDS.toMinutes(timeLeft),
+    									    TimeUnit.MILLISECONDS.toSeconds(timeLeft) - 
+    									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft))
+    								));
+
+    							}
+    			            });
+                
+            }
+            catch (IOException e) {
+                log.info("error establishing connection", e);
+            }
+
+            fiComClient.shutdown();
+    	}
+    }
+    
 }
+

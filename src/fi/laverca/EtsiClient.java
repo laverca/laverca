@@ -84,7 +84,6 @@ public class EtsiClient {
      */
     public EtsiClient( String apId,             // AP settings
                        String apPwd, 
-                       String aeMsspIdUri,      // MSSP_ID.URI of the AE
                        String msspSignatureUrl, // AE connection settings
                        String msspStatusUrl,
                        String msspReceiptUrl,

@@ -52,10 +52,6 @@ public class BankTransfer {
 		String apId  = "http://laverca-eval.fi";
         String apPwd = "pfkpfk";
 
-        String aeMsspIdUri = "http://dev-ae.mssp.dna.fi";
-        //TODO: TeliaSonera
-        //TODO: Elisa
-
         String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
         String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
         String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
@@ -63,7 +59,6 @@ public class BankTransfer {
         log.info("creating FiComClient");
         FiComClient fiComClient = new FiComClient(apId, 
                                                   apPwd, 
-                                                  aeMsspIdUri, 
                                                   msspSignatureUrl, 
                                                   msspStatusUrl, 
                                                   msspReceiptUrl);

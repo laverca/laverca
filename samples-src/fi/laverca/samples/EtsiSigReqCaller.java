@@ -29,8 +29,6 @@ public class EtsiSigReqCaller {
         String apId  = "http://ap1.methics.fi";
         String apPwd = "ap1pass";
         
-        String aeMsspIdUri = "http://ae1.telco.fi";
-        
         //TODO: Use your own addresses
         String msspSignatureUrl    = "http://pavo.methics.fi:50080/soap/services/MSS_SignaturePort";
         String msspStatusUrl       = "http://pavo.methics.fi:50080/soap/services/MSS_StatusQueryPort";
@@ -41,7 +39,6 @@ public class EtsiSigReqCaller {
         
         EtsiClient etsiClient = new EtsiClient(apId, 
                                                apPwd, 
-                                               aeMsspIdUri, 
                                                msspSignatureUrl, 
                                                msspStatusUrl, 
                                                msspReceiptUrl, 
