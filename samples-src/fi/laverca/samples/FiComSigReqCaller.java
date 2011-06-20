@@ -2,6 +2,8 @@ package fi.laverca.samples;
 
 import java.io.IOException;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.Service;
@@ -23,19 +25,26 @@ public class FiComSigReqCaller {
      */
     public static void main(String[] args) {
 
-        log.info("setting up ssl");
-        JvmSsl.setSSL("etc/laverca-truststore",
-                      "changeit",
-                      "etc/laverca-keystore",
-                      "changeit",
-                      "JKS");
+    	XMLConfiguration config = null;
+		try {
+		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+		} catch(ConfigurationException e) {
+		    log.info("configuration file not found", e);
+		}
+		
+		log.info("setting up ssl");
+		JvmSsl.setSSL(config.getString("ssl.trustStore"),
+				config.getString("ssl.trustStorePassword"),
+				config.getString("ssl.keyStore"),
+				config.getString("ssl.keyStorePassword"),
+				config.getString("ssl.keyStoreType"));
+		
+		String apId  = config.getString("ap.apId");
+        String apPwd = config.getString("ap.apPwd");
 
-        String apId  = "http://laverca-eval.fi";
-        String apPwd = "pfkpfk";
-        
-        String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
-        String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
-        String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
+        String msspSignatureUrl    = config.getString("mssp.msspSignatureUrl");
+        String msspStatusUrl       = config.getString("mssp.msspStatusUrl");
+        String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
 
         log.info("creating FiComClient");
         FiComClient fiComClient = new FiComClient(apId, 
