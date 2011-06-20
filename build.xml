@@ -3,7 +3,7 @@
     Laverca project build file
   </description>
   
-  <property value="1.0" name="project-version"/>
+  <property value="0.94" name="project-version"/>
   <property value="laverca" name="project-name"/>
 	
   <property location="build" name="build"/>
@@ -13,6 +13,7 @@
   <property location="samples-src" name="samples-src"/>
   <property location="lib" name="lib"/>
   <property location="etc" name="etc"/>
+  <property location="docs" name="docs"/>
   <property location="start-scripts" name="start-scripts"/>
   <property name="boolean-make-javadoc-files" value="true"/>
   
@@ -83,9 +84,6 @@
 
   <target depends="init" name="compile-samples">
     <mkdir dir="${build}/samples"/>
-  	<copy todir="${build}/samples">
-  	  <fileset dir="${samples-src}" includes="*.xml"/>
-  	</copy>
     <javac debug="true" deprecation="true" destdir="${build}/samples" encoding="ISO-8859-15" includeantruntime="false">
       <src path="${samples-src}"/>
       <classpath>
@@ -95,6 +93,7 @@
       </classpath>
       <include name="**/**.java"/>
     </javac>
+  	<copy file="${samples-src}/fi/laverca/samples/configuration.xml" todir="${build}/samples/fi/laverca/samples"/>
     <jar jarfile="${build}/laverca-samples.jar">
       <fileset dir="${build}/samples">
         <include name="**"/>
@@ -133,6 +132,28 @@
 	</copy>
   </target>
 	
+  <target depends="init" name="copy-docs">
+  	<mkdir dir="${dist}/docs"/>
+  	<copy todir="${dist}/docs">
+  		<fileset dir="${docs}" includes="*"/>
+  	</copy>
+  </target>
+	
+  <target depends="init" name="copy-src">
+    <mkdir dir="${dist}/samples-src"/>
+  	<mkdir dir="${dist}/datatypes-src"/>
+  	<mkdir dir="${dist}/src"/>
+	<copy todir="${dist}/samples-src">
+	  <fileset dir="${samples-src}" includes="**/**.java"/>
+	</copy>
+  	<copy todir="${dist}/datatypes-src">
+      <fileset dir="${datatypes-src}" includes="**/**.java"/>
+    </copy>
+  	<copy todir="${dist}/src">
+  	  <fileset dir="${src}" includes="**/**.java"/>
+    </copy>
+  </target>
+	
   <target depends="init" name="copy-start-scripts">
   	<mkdir dir="${dist}/start-scripts"/>
 	<copy todir="${dist}/start-scripts">
@@ -141,7 +162,7 @@
 	</copy>
   </target>
 	
-  <target depends="init, copy-jars, copy-library, copy-etc, copy-start-scripts, copy-info" name="copy-all">
+  <target depends="init, copy-jars, copy-library, copy-etc, copy-start-scripts, copy-info, copy-docs, copy-src" name="copy-all">
   </target>
 	
   <target name="zip" depends="dist">
@@ -149,15 +170,10 @@
   </target>
 	
   <target name="gzip" depends="dist">
-	<tar compression="gzip" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
+	<tar compression="gzip" longfile="gnu" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
   </target>
 	
   <target depends="init, compile-all, copy-all" name="dist">
-  </target>
-	
-  <target if="boolean-make-javadoc-files" name="make-javadoc">
-    <!-- make javadocs of mssapi to customer referenceclient src package -->
-    <javadoc classpath="${build}/mssapi.jar" classpathref="project.classpath" destdir="${reference.client.src.dest}/doc/javadoc" encoding="ISO-8859-15" excludepackagenames="fi.methics.mssapi.test.*, fi.methics.axis, fi.methics.www.*" packagenames="fi.methics.*,oasis.names.tc.SAML.*" public="true" sourcepath="${src}/mssapi;${castordir}"></javadoc>
   </target>
 
 </project>
