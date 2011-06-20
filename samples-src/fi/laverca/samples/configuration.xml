@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<contact-information>
+  <ssl>
+    <trustStore>etc/laverca-truststore</trustStore>
+    <trustStorePassword>changeit</trustStorePassword>
+    <keyStore>etc/laverca-keystore</keyStore>
+    <keyStorePassword>changeit</keyStorePassword>
+    <keyStoreType>JKS</keyStoreType>
+  </ssl>
+  <ap>
+    <apId>http://laverca-eval.fi</apId>
+    <apPwd>pfkpfk</apPwd>
+  </ap>
+  <mssp>
+    <msspSignatureUrl>https://changeme.com/soap/services/MSS_SignaturePort</msspSignatureUrl>
+    <msspStatusUrl>https://changeme.com/soap/services/MSS_StatusQueryPort</msspStatusUrl>
+    <msspReceiptUrl>https://changeme.com/soap/services/MSS_ReceiptPort</msspReceiptUrl>
+  </mssp>
+</contact-information>

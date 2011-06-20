@@ -26,6 +26,8 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
@@ -312,20 +314,26 @@ public class SignData {
     	 */
     	protected void estamblishConnection(String phoneNumber, final File selectedFile) {
     		
-    		SignData.log.info("setting up ssl");
-    		JvmSsl.setSSL("etc/laverca-truststore",
-                    "changeit",
-                    "etc/laverca-keystore",
-                    "changeit",
-                    "JKS");
+    		XMLConfiguration config = null;
+    		try {
+    		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+    		} catch(ConfigurationException e) {
+    		    log.info("configuration file not found", e);
+    		}
     		
-    		String apId  = "http://laverca-eval.fi";
-            String apPwd = "pfkpfk";
+    		log.info("setting up ssl");
+    		JvmSsl.setSSL(config.getString("ssl.trustStore"),
+    				config.getString("ssl.trustStorePassword"),
+    				config.getString("ssl.keyStore"),
+    				config.getString("ssl.keyStorePassword"),
+    				config.getString("ssl.keyStoreType"));
+    		
+    		String apId  = config.getString("ap.apId");
+            String apPwd = config.getString("ap.apPwd");
 
-
-            String msspSignatureUrl    = "https://dev-ae.mssp.dna.fi/soap/services/MSS_SignaturePort";
-            String msspStatusUrl       = "https://dev-ae.mssp.dna.fi/soap/services/MSS_StatusQueryPort";
-            String msspReceiptUrl      = "https://dev-ae.mssp.dna.fi/soap/services/MSS_ReceiptPort";
+            String msspSignatureUrl    = config.getString("mssp.msspSignatureUrl");
+            String msspStatusUrl       = config.getString("mssp.msspStatusUrl");
+            String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
 
             SignData.log.info("creating FiComClient");
             FiComClient fiComClient = new FiComClient(apId, 
