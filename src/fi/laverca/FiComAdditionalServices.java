@@ -29,6 +29,7 @@ public class FiComAdditionalServices {
     public static final String EVENT_ID_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#eventId";
     public static final String USER_LANG_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#userLang";
     public static final String PERSON_ID_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#personIdentity";
+    public static final String VALIDATE_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#validate"; //http://uri.etsi.org/TS102204/v1.1.2#validate
 
     //personid attributes
     public static final String PERSON_ID_HETU       = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#hetu";
@@ -84,6 +85,11 @@ public class FiComAdditionalServices {
         astc.addAdditionalServiceTypeChoiceItem(astci);
         astci.setUserLang(userLang);
         s.setAdditionalServiceTypeChoice(astc);
+        return s;
+    }
+    
+    public static Service createValidateService() {
+    	Service s = EtsiAdditionalServices.createService(VALIDATE_URI);
         return s;
     }
 
