@@ -281,7 +281,9 @@ public class Authentication {
             attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
             attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
             Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+            Service validateService = FiComAdditionalServices.createValidateService();
             additionalServices.add(personIdService);
+            additionalServices.add(validateService);
             
             try {
                 log.info("calling authenticate");
