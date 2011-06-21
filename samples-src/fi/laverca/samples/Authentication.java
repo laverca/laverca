@@ -263,12 +263,12 @@ public class Authentication {
             
             Long currentTimeMillis = System.currentTimeMillis();
             String apTransId = "A"+currentTimeMillis;
-            final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
             
             byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
 
             Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
             Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
+
             LinkedList<Service> additionalServices = new LinkedList<Service>();
             LinkedList<String> attributeNames = new LinkedList<String>(); 
      
