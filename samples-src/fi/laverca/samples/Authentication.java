@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
+import fi.ficom.mss.TS102204.v1_0_0.Status;
 import fi.laverca.DTBS;
 import fi.laverca.FiComAdditionalServices;
 import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
@@ -299,6 +300,7 @@ public class Authentication {
     			            	public void onResponse(FiComRequest req, FiComResponse resp) {
     			            		log.info("got resp");
     								callStateProgressBar.setIndeterminate(false);
+    								
     			            		log.info(resp.getPkcs7Signature().getSignerCn());
     			            		
     			            		try {
@@ -353,6 +355,11 @@ public class Authentication {
     			            			responseBox.setText(a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
     			            					+ "\n" + responseBox.getText());
     			            		}
+    			            		
+    			            		Status validationStatus = resp.getAeValidationStatusCode();
+    			            		responseBox.setText("AE validation status code: " + validationStatus.getStatusCode().getValue() + 
+    			            				" (" + validationStatus.getStatusMessage() + ")\n" + responseBox.getText());
+    			            		
     		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
     			            	}
     			

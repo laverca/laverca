@@ -11,8 +11,10 @@ import oasis.names.tc.SAML.v2_0.protocol.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
+import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
+import fi.ficom.mss.TS102204.v1_0_0.Status;
 
 /**
  * Asynchronous MSS_StatusResp callback.
@@ -78,6 +80,19 @@ public class FiComResponse {
             throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
 
         return this.statusResp.getMSS_Signature().getBase64Signature();
+    }
+    
+    public Status getAeValidationStatusCode() {
+    	Status validationStatus = null;
+    	for (StatusDetailTypeItem statusDetailTypeItem : this.getMSS_StatusResp().getStatus().getStatusDetail().getStatusDetailTypeItem()) {
+			for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
+				if (serviceResponse.getDescription().getMssURI().equals(FiComAdditionalServices.VALIDATE_URI)) {
+					validationStatus = serviceResponse.getStatus();
+					break;
+				}
+			}
+		}
+    	return validationStatus;
     }
 
     /*
