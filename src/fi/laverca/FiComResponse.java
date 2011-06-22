@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
+import fi.ficom.mss.TS102204.v1_0_0.PKCS1;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.Status;
 
@@ -31,8 +32,33 @@ public class FiComResponse {
     /** @return null if the signature is not in this format. */
     public FiComPkcs7 getPkcs7Signature() {
         try {
-            FiComPkcs7 p7 = new FiComPkcs7(this.getSignature());
+        	if(this.statusResp == null)
+                throw new RuntimeException("illegal state. Null statusResp.");
+
+            if(this.statusResp.getMSS_Signature() == null)
+                throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
+            
+            FiComPkcs7 p7 = new FiComPkcs7(this.statusResp.getMSS_Signature().getBase64Signature());
             return p7;
+        }
+        catch(IllegalArgumentException iae) {
+            log.debug("not a pkcs7?", iae);
+            return null;
+        }
+
+    }
+    
+    /** @return null if the signature is not in this format. */
+    public FiComPkcs1 getPkcs1Signature() {
+        try {
+        	if(this.statusResp == null)
+                throw new RuntimeException("illegal state. Null statusResp.");
+
+            if(this.statusResp.getMSS_Signature() == null)
+                throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
+            
+            FiComPkcs1 p1 = new FiComPkcs1(this.statusResp.getMSS_Signature().getPKCS1());
+            return p1;
         }
         catch(IllegalArgumentException iae) {
             log.debug("not a pkcs7?", iae);
@@ -70,16 +96,6 @@ public class FiComResponse {
     /** The final MSS_StatusResp message */
     public MSS_StatusResp getMSS_StatusResp() {
         return this.statusResp;
-    }
-
-    byte[] getSignature() {
-        if(this.statusResp == null)
-            throw new RuntimeException("illegal state. Null statusResp.");
-
-        if(this.statusResp.getMSS_Signature() == null)
-            throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
-
-        return this.statusResp.getMSS_Signature().getBase64Signature();
     }
     
     public Status getAeValidationStatus() {

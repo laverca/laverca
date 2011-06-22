@@ -17,6 +17,7 @@ import fi.laverca.DTBS;
 import fi.laverca.FiComAdditionalServices;
 import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.FiComClient;
+import fi.laverca.FiComException;
 import fi.laverca.FiComMSS_Formats;
 import fi.laverca.FiComRequest;
 import fi.laverca.FiComResponse;
@@ -36,7 +37,7 @@ import fi.laverca.ProgressUpdate;
 
 public class DirectCall {
 
-		private static final Log log = LogFactory.getLog(SignText.class);
+		private static final Log log = LogFactory.getLog(DirectCall.class);
 		private static FiComRequest req;
 		
 		/**
@@ -101,25 +102,27 @@ public class DirectCall {
 		        			eventIdService,
 		        			additionalServices, 
 		        			FiComSignatureProfiles.SIGNATURE,
-		        			FiComMSS_Formats.PKCS7,
+		        			FiComMSS_Formats.PKCS1,
 		        			new FiComResponseHandler() {
 				        		@Override
 				        		public void onResponse(FiComRequest req, FiComResponse resp) {
 				        			log.info("Got response");
 				        			sendButton.setEnabled(true);
 									callStateProgressBar.setIndeterminate(false);
-				        			try {
-				        				responseBox.setText("MSS Signature: " + 
-				        						new String(Base64.encode(resp.getMSS_StatusResp().
-				        						getMSS_Signature().getBase64Signature()), "ASCII") +
-				        						"\n\n" + responseBox.getText());
-				        			} catch (UnsupportedEncodingException e) {
-				        				log.info("Unsupported encoding", e);
-				        			}
-				        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+									
+									try {
+										log.info("MSS signer cert: " + resp.getPkcs1Signature().getSignerCert());
+									} catch (FiComException e) {
+										log.error("unable to get cert" + e);
+									}
+									
+				        			responseBox.setText("MSS Signature: " + resp.getPkcs1Signature().getMssSignatureValue() + "\n" + responseBox.getText());
+				        			responseBox.setText("MSS signer cn: " + resp.getPkcs1Signature().getSignerCn() + "\n" + responseBox.getText());
+				        			/*for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
 				        				log.info(a.getName() + " " + a.getStringValue());
 				        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-				        			}				        			
+				        			}*/
+				        			
 				        			responseBox.setText("Event ID: " + eventId + "\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
 				        		}
 				
