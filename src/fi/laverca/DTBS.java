@@ -19,50 +19,53 @@ public class DTBS {
     byte[] data = null;
     String mimeType = null;
     
+    final static public String ENCODING_UTF8 = "UTF-8";
+    final static public String ENCODING_BASE64 = "base64";
+    
     final static public String MIME_STREAM = "application/octet-stream";
     final static public String MIME_SHA1 = "application/x-sha1";
     final static public String MIME_SHA256 = "application/x-sha256";
     final static public String MIME_UCS2 = "text/plain;ucs2";
     final static public String MIME_GSM = "text/plain;gsm";
     final static public String MIME_UTF8 = "text/plain;UTF-8";
+    final static public String MIME_TEXTPLAIN = "text/plain";
 
-    /*
-    public DTBS(String newText) {
-        this(newText, "UTF-8");
-    }
-    */
-
+    
     /**
-     * Alternate constructor, incoming data is String with encoding code value.
-     *
-     * @param newText
-     * @param newEncoding
+     * Initialize a DTBS with text.
+     * 
+     * @param text
+     * @param encoding
+     * @param mimeType
      */
-    public DTBS( final String newText, final String newEncoding )
-    {
-        this.text     = newText;
-        this.encoding = newEncoding;
-    }
-
-    /**
-     * Alternate constructor, incoming data is byte-array
-     * @param newData
-     */
-    public DTBS( final byte[] newData )
-    {
-        this.data = newData;
-        this.mimeType = MIME_STREAM;
+    public DTBS(final String text, final String encoding, final String mimeType) {
+        this.text     = text;
+        this.encoding = encoding;
+        this.mimeType = mimeType;
     }
     
     /**
-     * Alternate constructor, incoming data is byte-array
-     * @param newData
+     * Initialize a DTBS with data.
+     * 
+     * @param data
+     * @param encoding
      * @param mimeType
      */
-    public DTBS( final byte[] newData, final String mimeType )
-    {
-        this.data = newData;
+    public DTBS(final byte[] data, final String encoding, final String mimeType) {
+        this.data = data;
+        this.encoding = encoding;
         this.mimeType = mimeType;
+    }
+    
+    /**
+     * Initialize a DTBS without a mime type for <code>toBytes()</code>
+     * 
+     * @param text
+     * @param encoding
+     */
+    public DTBS(final String text, final String encoding) {
+        this.text     = text;
+        this.encoding = encoding;
     }
 
     public String  getText() { return this.text; }
@@ -109,12 +112,13 @@ public class DTBS {
 
     public DataToBeSigned toDataToBeSigned() {
         DataToBeSigned rv = new DataToBeSigned();
-        rv.setContent(this.text); //TODO: data
+        rv.setEncoding(this.encoding);
+        rv.setMimeType(this.mimeType);
         
         if(this.text == null) {
             rv.setContent(Base64.encode(this.data));
-            rv.setEncoding("base64");
-            rv.setMimeType(this.mimeType);
+        } else {
+        	rv.setContent(this.text);
         }
         
         return rv;

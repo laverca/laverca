@@ -48,7 +48,7 @@ public class EtsiSigReqCaller {
 
         String apTransId = "A"+System.currentTimeMillis();
         String msisdn = "+35847001001";
-        DTBS dtbs = new DTBS("sign this", "UTF-8");
+        DTBS dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
         String dataToBeDisplayed = null;
         String signatureProfile = FiComSignatureProfiles.SIGNATURE;
         String mss_format = FiComMSS_Formats.PKCS7;
