@@ -82,7 +82,7 @@ public class FiComResponse {
         return this.statusResp.getMSS_Signature().getBase64Signature();
     }
     
-    public Status getAeValidationStatusCode() {
+    public Status getAeValidationStatus() {
     	Status validationStatus = null;
     	for (StatusDetailTypeItem statusDetailTypeItem : this.getMSS_StatusResp().getStatus().getStatusDetail().getStatusDetailTypeItem()) {
 			for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
