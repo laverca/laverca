@@ -89,7 +89,7 @@ public class DirectCall {
 	        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
 	        additionalServices.add(personIdService);
 	        
-	        DTBS dtbs = new DTBS(textToBeSigned, DTBS.MIME_TEXTPLAIN, DTBS.ENCODING_UTF8);
+	        DTBS dtbs = new DTBS(textToBeSigned, DTBS.ENCODING_UTF8, DTBS.MIME_TEXTPLAIN);
 	        
 	        try {
 	        	log.info("calling signText");
@@ -100,7 +100,7 @@ public class DirectCall {
 		        			noSpamService,
 		        			eventIdService,
 		        			additionalServices, 
-		        			FiComSignatureProfiles.CONSENT,
+		        			FiComSignatureProfiles.SIGNATURE,
 		        			FiComMSS_Formats.PKCS7,
 		        			new FiComResponseHandler() {
 				        		@Override
@@ -152,7 +152,7 @@ public class DirectCall {
 		
 		
 	    private static void initComponents() {
-	    	frame = new javax.swing.JFrame("Sign Text");
+	    	frame = new javax.swing.JFrame("Direct Call");
 	    	frame.setResizable(false);
 	        pane = new javax.swing.JPanel();
 	        lblTxtToBeSigned = new javax.swing.JLabel();
