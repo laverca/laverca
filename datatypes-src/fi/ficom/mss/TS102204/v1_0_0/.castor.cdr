@@ -1,8 +1,0 @@
-#Mon Jun 20 13:23:01 EEST 2011
-fi.ficom.mss.TS102204.v1_0_0.ServiceResponse=fi.ficom.mss.TS102204.v1_0_0.descriptors.ServiceResponseDescriptor
-fi.ficom.mss.TS102204.v1_0_0.ServiceResponses=fi.ficom.mss.TS102204.v1_0_0.descriptors.ServiceResponsesDescriptor
-fi.ficom.mss.TS102204.v1_0_0.PostalAddress=fi.ficom.mss.TS102204.v1_0_0.descriptors.PostalAddressDescriptor
-fi.ficom.mss.TS102204.v1_0_0.Description=fi.ficom.mss.TS102204.v1_0_0.descriptors.DescriptionDescriptor
-fi.ficom.mss.TS102204.v1_0_0.Status=fi.ficom.mss.TS102204.v1_0_0.descriptors.StatusDescriptor
-fi.ficom.mss.TS102204.v1_0_0.NoSpamCode=fi.ficom.mss.TS102204.v1_0_0.descriptors.NoSpamCodeDescriptor
-fi.ficom.mss.TS102204.v1_0_0.Entity=fi.ficom.mss.TS102204.v1_0_0.descriptors.EntityDescriptor
