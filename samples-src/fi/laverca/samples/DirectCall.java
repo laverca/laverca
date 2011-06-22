@@ -92,7 +92,7 @@ public class DirectCall {
 	        DTBS dtbs = new DTBS(textToBeSigned, DTBS.ENCODING_UTF8, DTBS.MIME_TEXTPLAIN);
 	        
 	        try {
-	        	log.info("calling signText");
+	        	log.info("calling call");
 	        	req = 
 		        	fiComClient.call(apTransId, 
 		        			dtbs, 
@@ -152,7 +152,7 @@ public class DirectCall {
 		
 		
 	    private static void initComponents() {
-	    	frame = new javax.swing.JFrame("Direct Call");
+	    	frame = new javax.swing.JFrame("Direct Call (Sign Text)");
 	    	frame.setResizable(false);
 	        pane = new javax.swing.JPanel();
 	        lblTxtToBeSigned = new javax.swing.JLabel();
@@ -271,5 +271,3 @@ public class DirectCall {
 	    private static javax.swing.JTextField textToBeSigned;
 		
 	}
-
-
