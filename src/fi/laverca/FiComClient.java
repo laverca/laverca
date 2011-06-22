@@ -63,7 +63,7 @@ public class FiComClient {
     {
 
         return call(apTransId, 
-                    new DTBS(authnChallenge, DTBS.MIME_STREAM, DTBS.ENCODING_BASE64),
+                    new DTBS(authnChallenge, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM),
                     phoneNumber,
                     noSpamService,
                     eventIdService,
@@ -85,7 +85,7 @@ public class FiComClient {
     {
 
         return call(apTransId, 
-                    new DTBS(authnChallenge, DTBS.MIME_STREAM, DTBS.ENCODING_BASE64),
+                    new DTBS(authnChallenge, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM),
                     phoneNumber,
                     noSpamService,
                     eventIDService,
@@ -129,7 +129,7 @@ public class FiComClient {
     {
 
         return call(apTransId, 
-                    new DTBS(digestToBeSigned, DTBS.MIME_SHA1, DTBS.ENCODING_BASE64),
+                    new DTBS(digestToBeSigned, DTBS.ENCODING_BASE64, DTBS.MIME_SHA1),
                     phoneNumber,
                     noSpamService,
                     eventIDService,
