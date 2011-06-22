@@ -60,7 +60,7 @@ public class PersonIdCaller {
         final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
         
         String phoneNumber = "+35847001001";
-        byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
+        byte[] authnChallenge = new DTBS(apTransId, DTBS.ENCODING_UTF8).toBytes();
         
         Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);

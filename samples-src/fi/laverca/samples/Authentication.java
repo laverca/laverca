@@ -265,7 +265,7 @@ public class Authentication {
             Long currentTimeMillis = System.currentTimeMillis();
             String apTransId = "A"+currentTimeMillis;
             
-            byte[] authnChallenge = new DTBS(apTransId, "UTF-8").toBytes();
+            byte[] authnChallenge = new DTBS(apTransId, DTBS.ENCODING_UTF8).toBytes();
 
             Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
             Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
