@@ -143,13 +143,16 @@
   	<mkdir dir="${dist}/src"/>
 	<copy todir="${dist}/samples-src">
 	  <fileset dir="${samples-src}" includes="**/**.java"/>
+	  <fileset dir="${samples-src}" includes="**/**.xml"/>
 	</copy>
   	<copy todir="${dist}/datatypes-src">
       <fileset dir="${datatypes-src}" includes="**/**.java"/>
     </copy>
   	<copy todir="${dist}/src">
   	  <fileset dir="${src}" includes="**/**.java"/>
+      <fileset dir="${src}" includes="**/**.properties"/>
     </copy>
+    <copy file="${src}/client-config.wsdd" todir="${dist}/src"/>
   </target>
 	
   <target depends="init" name="copy-start-scripts">
