@@ -356,7 +356,7 @@ public class Authentication {
     			            					+ "\n" + responseBox.getText());
     			            		}
     			            		
-    			            		Status validationStatus = resp.getAeValidationStatusCode();
+    			            		Status validationStatus = resp.getAeValidationStatus();
     			            		responseBox.setText("AE validation status code: " + validationStatus.getStatusCode().getValue() + 
     			            				" (" + validationStatus.getStatusMessage() + ")\n" + responseBox.getText());
     			            		
