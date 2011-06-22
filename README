@@ -18,6 +18,9 @@ CHANGELOG
 	
 	20.06.2011 0.94 
 	  First version in SourceForge. Apache 2.0 License
+	  
+	22.06.2011 0.95
+	  Minor bugfixes. Altered the way DTBS works. Added support for AE validation.
 
 
 REQUIREMENTS
