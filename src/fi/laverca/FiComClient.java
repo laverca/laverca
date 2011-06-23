@@ -196,6 +196,7 @@ public class FiComClient {
         fiReq.sigReq = sigReq;
 
         sigReq.getAdditionalServices().addService(noSpamService);
+        sigReq.getAdditionalServices().addService(eventIDService);
         if(additionalServices != null) {
             for(Service s : additionalServices) {
                 if(s != null)
@@ -224,7 +225,8 @@ public class FiComClient {
         final MSS_SignatureResp fSigResp = sigResp;
         FutureTask<FiComResponse> ft = 
             new FutureTask<FiComResponse>(new Callable<FiComResponse>() {
-                public FiComResponse call() throws Exception {
+                @SuppressWarnings("finally")
+				public FiComResponse call() throws Exception {
                 	
                     long timeout = 5*60*1000; // 5 min = 300 s = 300 000 millis
                     long currentTimeMillis = System.currentTimeMillis();
