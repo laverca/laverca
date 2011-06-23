@@ -42,7 +42,7 @@ public class BankTransfer {
 	 * @param amountTxt
 	 */
 	
-	private static void estamblishConnection(String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
+	private static void establishConnection(String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
 		
 		XMLConfiguration config = null;
 		try {
@@ -173,7 +173,7 @@ public class BankTransfer {
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
-				estamblishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
+				establishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
 		});
