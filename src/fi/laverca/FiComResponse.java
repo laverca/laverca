@@ -100,7 +100,7 @@ public class FiComResponse {
     
     public Status getAeValidationStatus() {
     	Status validationStatus = null;
-    	for (StatusDetailTypeItem statusDetailTypeItem : this.getMSS_StatusResp().getStatus().getStatusDetail().getStatusDetailTypeItem()) {
+    	for (StatusDetailTypeItem statusDetailTypeItem : this.statusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
 			for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
 				if (serviceResponse.getDescription().getMssURI().equals(FiComAdditionalServices.VALIDATE_URI)) {
 					validationStatus = serviceResponse.getStatus();

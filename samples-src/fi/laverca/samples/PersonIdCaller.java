@@ -26,7 +26,7 @@ public class PersonIdCaller {
      * @param args
      */
     public static void main(String[] args) {
-
+    	
     	XMLConfiguration config = null;
 		try {
 		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
@@ -59,52 +59,90 @@ public class PersonIdCaller {
         String apTransId = "A"+currentTimeMillis;
         final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
         
-        String phoneNumber = "+35847001001";
         byte[] authnChallenge = new DTBS(apTransId, DTBS.ENCODING_UTF8).toBytes();
         
         Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
         LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
+        
+        boolean performCall = true;
+        String phoneNumber = "+35847001001";
+        
+    	for (int i = 0; i < args.length; i++) {
+    		if (args[i].equals("--help") || args[i].equals("-help")) {
+    			System.out.println("\n-n <number>	Default +35847001001" +
+    					"\n-validuntil	add attribute PERSON_ID_VALIDUNTIL" +
+    					"\n-address	add attribute PERSON_ID_ADDRESS" +
+    					"\n-age		add attribute PERSON_ID_AGE" +
+    					"\n-subject	add attribute PERSON_ID_SUBJECT" +
+    					"\n-surname	add attribute PERSON_ID_SURNAME" +
+    					"\n-givenname	add attribute PERSON_ID_GIVENNAME" +
+    					"\n-hetu		add attribute PERSON_ID_HETU" +
+    					"\n-satu		add attribute PERSON_ID_SATU");
+    			performCall = false;
+    		} else if (args[i].equals("-n")) {
+    			phoneNumber = args[i+1];
+    		} else if (args[i].equals("-validuntil")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+    		} else if (args[i].equals("-address")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
+    		} else if (args[i].equals("-age")) {
+    			 attributeNames.add(FiComAdditionalServices.PERSON_ID_AGE);
+    		} else if (args[i].equals("-subject")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_SUBJECT);
+    		} else if (args[i].equals("-surname")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_SURNAME);
+    		} else if (args[i].equals("-givenname")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_GIVENNAME);
+    		} else if (args[i].equals("-hetu")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
+    		} else if (args[i].equals("-satu")) {
+    			attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
+    		}
+    	}
+        
+        //attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
         //personIdAttrs.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
         Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
         additionalServices.add(personIdService);
         
-        try {
-            log.info("calling authenticate");
-                fiComClient.authenticate(apTransId, 
-                                         authnChallenge, 
-                                         phoneNumber, 
-                                         noSpamService,
-                                         eventIdService,
-                                         additionalServices, 
-                                         new FiComResponseHandler() {
-                                             @Override
-                                             public void onResponse(FiComRequest req, FiComResponse resp) {
-                                                 log.info("got resp");
-                                                 log.info(resp.getPkcs7Signature().getSignerCn());
-                                                 for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-                                                     log.info(a.getName() + " " + a.getStringValue());
-                                                 }
-                                             }
+        if (performCall) {
+        	try {
+        		log.info("calling authenticate");
+        		fiComClient.authenticate(apTransId, 
+        				authnChallenge, 
+        				phoneNumber, 
+        				noSpamService,
+        				eventIdService,
+        				additionalServices, 
+        				new FiComResponseHandler() {
+        			@Override
+        			public void onResponse(FiComRequest req, FiComResponse resp) {
+        				log.info("got resp");
+        				log.info(resp.getPkcs7Signature().getSignerCn());
+        				for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+        					log.info(a.getName().substring(a.getName().indexOf('#')+1) + " " + a.getStringValue());
+        				}
+        			}
 
-                                             @Override
-                                             public void onError(FiComRequest req, Throwable throwable) {
-                                                 log.info("got error", throwable);
-                                             }
+        			@Override
+        			public void onError(FiComRequest req, Throwable throwable) {
+        				log.info("got error", throwable);
+        			}
 
-											@Override
-											public void onOutstandingProgress(
-													FiComRequest req,
-													ProgressUpdate prgUpdate) {
-												// TODO Auto-generated method stub
-												
-											}
-                                         });
-        }
-        catch (IOException e) {
-            log.info("error establishing connection", e);
+        			@Override
+        			public void onOutstandingProgress(
+        					FiComRequest req,
+        					ProgressUpdate prgUpdate) {
+        				// TODO Auto-generated method stub
+
+        			}
+        		});
+        	}
+        	catch (IOException e) {
+        		log.info("error establishing connection", e);
+        	}
         }
 
         fiComClient.shutdown();
