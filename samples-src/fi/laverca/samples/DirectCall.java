@@ -3,19 +3,16 @@ package fi.laverca.samples;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.util.encoders.Base64;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
 import fi.laverca.FiComAdditionalServices;
-import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.FiComClient;
 import fi.laverca.FiComException;
 import fi.laverca.FiComMSS_Formats;
