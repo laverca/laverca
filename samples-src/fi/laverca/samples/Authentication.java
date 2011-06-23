@@ -166,7 +166,7 @@ public class Authentication {
     		Long currentTimeMillis = System.currentTimeMillis();
     		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
     		initResponse();
-    		estamblishConnection(number);
+    		establishConnection(number);
     	}
     	
     	/**
@@ -232,7 +232,7 @@ public class Authentication {
     	 * Connects to MSSP using SSL and waits for response.
     	 * @param phoneNumber
     	 */
-    	private void estamblishConnection(final String phoneNumber) {
+    	private void establishConnection(final String phoneNumber) {
     		
     		XMLConfiguration config = null;
     		try {

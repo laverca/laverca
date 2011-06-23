@@ -245,7 +245,7 @@ public class SignData {
     		Long currentTimeMillis = System.currentTimeMillis();
     		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
     		initResponse();
-    		estamblishConnection(number, selectedFile);
+    		establishConnection(number, selectedFile);
     	}
 
     	private void initResponse() {
@@ -312,7 +312,7 @@ public class SignData {
     	 * @param phoneNumber
     	 * @param selectedFile
     	 */
-    	protected void estamblishConnection(String phoneNumber, final File selectedFile) {
+    	protected void establishConnection(String phoneNumber, final File selectedFile) {
     		
     		XMLConfiguration config = null;
     		try {

@@ -38,7 +38,7 @@ public class AnonAuthentication {
 	 * Connects to MSSP using SSL and waits for response.
 	 * @param phoneNumber
 	 */
-	private static void estamblishConnection(final String phoneNumber) {
+	private static void establishConnection(final String phoneNumber) {
 		
 		XMLConfiguration config = null;
 		try {
@@ -167,7 +167,7 @@ public class AnonAuthentication {
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
 				callStateProgressBar.setIndeterminate(true);
-				estamblishConnection(number.getText());
+				establishConnection(number.getText());
 			}
 		});
 

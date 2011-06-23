@@ -41,7 +41,7 @@ public class SignText {
 	 * @param textToBeSigned
 	 */
 	
-	private static void estamblishConnection(final String phoneNumber, final String textToBeSigned) {
+	private static void establishConnection(final String phoneNumber, final String textToBeSigned) {
 		
 		XMLConfiguration config = null;
 		try {
@@ -173,7 +173,7 @@ public class SignText {
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
-				estamblishConnection(number.getText(), textToBeSigned.getText());
+				establishConnection(number.getText(), textToBeSigned.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
 		});

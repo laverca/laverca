@@ -3,7 +3,6 @@ package fi.laverca.samples;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.LinkedList;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -26,6 +25,9 @@ import fi.laverca.ProgressUpdate;
 
 /**
  * An example for signing text that directly uses FiComClients call method.
+ * This allows it to request PKCS1 signature instead of PKCS7.
+ * 
+ * Indirect calling means simply taking the default settings for a certain action.
  * 
  * @author Eemeli Miettinen
  * @author Jan Mikael Lindlöf
@@ -43,7 +45,7 @@ public class DirectCall {
 		 * @param textToBeSigned
 		 */
 		
-		private static void estamblishConnection(final String phoneNumber, final String textToBeSigned) {
+		private static void establishConnection(final String phoneNumber, final String textToBeSigned) {
 			
 			XMLConfiguration config = null;
 			try {
@@ -80,13 +82,6 @@ public class DirectCall {
 	        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
 	        Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
 	        
-	        LinkedList<Service> additionalServices = new LinkedList<Service>();
-	        LinkedList<String> attributeNames = new LinkedList<String>();
-	        
-	        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
-	        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
-	        additionalServices.add(personIdService);
-	        
 	        DTBS dtbs = new DTBS(textToBeSigned, DTBS.ENCODING_UTF8, DTBS.MIME_TEXTPLAIN);
 	        
 	        try {
@@ -97,7 +92,7 @@ public class DirectCall {
 		        			phoneNumber, 
 		        			noSpamService,
 		        			eventIdService,
-		        			additionalServices, 
+		        			null, 
 		        			FiComSignatureProfiles.SIGNATURE,
 		        			FiComMSS_Formats.PKCS1,
 		        			new FiComResponseHandler() {
@@ -113,12 +108,8 @@ public class DirectCall {
 										log.error("unable to get cert" + e);
 									}
 									
-				        			responseBox.setText("MSS Signature: " + resp.getPkcs1Signature().getMssSignatureValue() + "\n" + responseBox.getText());
+				        			responseBox.setText("MSS signature: " + resp.getPkcs1Signature().getMssSignatureValue() + "\n" + responseBox.getText());
 				        			responseBox.setText("MSS signer cn: " + resp.getPkcs1Signature().getSignerCn() + "\n" + responseBox.getText());
-				        			/*for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-				        				log.info(a.getName() + " " + a.getStringValue());
-				        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-				        			}*/
 				        			
 				        			responseBox.setText("Event ID: " + eventId + "\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
 				        		}
@@ -174,13 +165,13 @@ public class DirectCall {
 
 	        lblTxtToBeSigned.setText("Text to be signed");
 
-	        textToBeSigned.setText("Sample text");
+	        textToBeSigned.setText("Some text to be signed");
 
 	        sendButton.setText("Send");
 	        sendButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					sendButton.setEnabled(false);
-					estamblishConnection(number.getText(), textToBeSigned.getText());
+					establishConnection(number.getText(), textToBeSigned.getText());
 					callStateProgressBar.setIndeterminate(true);
 				}
 			});
