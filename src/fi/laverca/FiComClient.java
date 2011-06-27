@@ -24,6 +24,11 @@ import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
  * An asynchronous client for FiCom -style signature requests.
  */
 public class FiComClient {
+	
+	private static final int INITIAL_WAIT = 20 * 1000; // initial wait 20 s as per FiCom, section 5.1
+	private static final int SUBSEQUENT_WAIT = 5 * 1000; // subsequent wait 5 s as per FiCom, section 5.1
+	private static final int TIMEOUT = 5*60*1000; // 5 min = 300 s = 300 000 millis
+	
     private static final Log log = LogFactory.getLog(FiComClient.class);
 
     EtsiClient etsiClient;
@@ -228,7 +233,7 @@ public class FiComClient {
                 @SuppressWarnings("finally")
 				public FiComResponse call() throws Exception {
                 	
-                    long timeout = 5*60*1000; // 5 min = 300 s = 300 000 millis
+                    long timeout = TIMEOUT;
                     long currentTimeMillis = System.currentTimeMillis();
                     // note that the transaction generally times out at the server at 180 s 
                     long deadline = currentTimeMillis + timeout;
@@ -237,10 +242,10 @@ public class FiComClient {
                     ProgressUpdate prgUpdate = new ProgressUpdate(timeout, currentTimeMillis);
 
                     MSS_StatusResp statResp = null;
-                    int waitPeriod = 20 * 1000; // initial wait 20 s as per FiCom, section 5.1
+                    int waitPeriod = INITIAL_WAIT;
                     LOOP: while(true) {
                         Thread.sleep(waitPeriod);
-                        waitPeriod = 5 * 1000; // subsequent wait 5 s as per FiCom, section 5.1
+                        waitPeriod = SUBSEQUENT_WAIT; 
                         long now = System.currentTimeMillis();
                         if (now > deadline) {
                             try {
