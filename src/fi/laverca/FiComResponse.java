@@ -99,7 +99,7 @@ public class FiComResponse {
     
     /**
      * 
-     * @return AE validation status
+     * @return AE validation status, null if no AE validation was done
      */
     public Status getAeValidationStatus() {
     	Status validationStatus = null;
@@ -120,12 +120,21 @@ public class FiComResponse {
      */
     
     public boolean isValid() {
-        long statusCode = this.statusResp.getStatus().getStatusCode().getValue();
-        long aeStatusCode = this.getAeValidationStatus().getStatusCode().getValue();
-        
-        return statusCode == FiComStatusCodes.VALID_SIGNATURE.getValue() &&
-        aeStatusCode == FiComStatusCodes.VALID_SIGNATURE.getValue(); 
+    	long statusCode = this.statusResp.getStatus().getStatusCode().getValue();
+    	boolean aeStatusOk; 
+
+    	try {
+    		aeStatusOk = getAeValidationStatus().getStatusCode().getValue() == 
+    			FiComStatusCodes.VALID_SIGNATURE.getValue();
+    	} catch (NullPointerException e) {
+
+    		if (getAeValidationStatus() != null) 
+    			aeStatusOk = true;
+    		else 
+    			aeStatusOk = false;
+    	}
+
+    	return statusCode == FiComStatusCodes.VALID_SIGNATURE.getValue() && aeStatusOk; 
     }
-    
 
 }

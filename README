@@ -94,7 +94,7 @@ DEVELOPMENT (with Eclipse)
 		Select all JAR files in <Project Name>/lib
 		
 		You may want to study the samples-src
-		and change an initial value of int waitPeriod 
+		and change an initial value of WAIT_PERIOD 
 		in fi.laverca.FiComClient to 1*1000 instead of 20*1000
 		for development.
 
