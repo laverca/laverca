@@ -243,10 +243,12 @@ public class FiComClient {
 
                     MSS_StatusResp statResp = null;
                     int waitPeriod = INITIAL_WAIT;
+                    long now = System.currentTimeMillis();
                     LOOP: while(true) {
-                        Thread.sleep(waitPeriod);
+                        Thread.sleep(waitPeriod - (System.currentTimeMillis()-now));
+                        now = System.currentTimeMillis();
                         waitPeriod = SUBSEQUENT_WAIT; 
-                        long now = System.currentTimeMillis();
+                        
                         if (now > deadline) {
                             try {
                                 handler.onError(fiReq, new FiComException("timed out"));
@@ -269,7 +271,7 @@ public class FiComClient {
                                 log.debug("got a final statResp. Ending the wait.");
                                 fiResp = new FiComResponse(statResp);
                                 try {
-                                    handler.onResponse(fiReq, fiResp);
+                                    handler.onResponse(fiReq, fiResp, fSigResp);
                                 }
                                 finally {
                                     break LOOP;
@@ -277,7 +279,7 @@ public class FiComClient {
                             }
                             else if(504 == statusCode) { // OUTSTANDING_TRANSACTION
                                 log.debug("got an outstanding statResp. Continuing to wait for a final answer.");
-                                handler.onOutstandingProgress(fiReq, prgUpdate);
+                                handler.onOutstandingProgress(fiReq, prgUpdate, fSigResp);
                                 continue LOOP;
                             }
                             else {
