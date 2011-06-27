@@ -277,7 +277,7 @@ public class FiComClient {
                                     break LOOP;
                                 }
                             }
-                            else if(504 == statusCode) { // OUTSTANDING_TRANSACTION
+                            else if(FiComStatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
                                 log.debug("got an outstanding statResp. Continuing to wait for a final answer.");
                                 handler.onOutstandingProgress(fiReq, prgUpdate, fSigResp);
                                 continue LOOP;
