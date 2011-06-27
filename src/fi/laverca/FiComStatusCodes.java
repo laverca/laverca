@@ -16,10 +16,14 @@ public class FiComStatusCodes {
     public final static StatusCode      CONSTRAINT_MISMATCH              = new StatusCode(505);
     
     static class StatusCode {
-        public final int primaryCode;
+        private final int primaryCode;
         
         public StatusCode(int primary) {
             this.primaryCode = primary;
+        }
+        
+        public int getValue(){
+        	return primaryCode;
         }
     }
 

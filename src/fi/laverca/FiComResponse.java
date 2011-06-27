@@ -13,7 +13,6 @@ import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
-import fi.ficom.mss.TS102204.v1_0_0.PKCS1;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.Status;
 
@@ -61,7 +60,7 @@ public class FiComResponse {
             return p1;
         }
         catch(IllegalArgumentException iae) {
-            log.debug("not a pkcs7?", iae);
+            log.debug("not a pkcs1?", iae);
             return null;
         }
 
@@ -98,6 +97,10 @@ public class FiComResponse {
         return this.statusResp;
     }
     
+    /**
+     * 
+     * @return AE validation status
+     */
     public Status getAeValidationStatus() {
     	Status validationStatus = null;
     	for (StatusDetailTypeItem statusDetailTypeItem : this.statusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
@@ -111,13 +114,18 @@ public class FiComResponse {
     	return validationStatus;
     }
 
-    /*
-    boolean isValid() {
+    /**
+     * 
+     * @return true if HMSSP and AE validations return VALID_SIGNATURE
+     */
+    
+    public boolean isValid() {
         long statusCode = this.statusResp.getStatus().getStatusCode().getValue();
-
-        return 502 == statusCode; //TODO magic number. Consider putting the status codes in a file
-        // TODO: read the AE validation status from a status detail element
+        long aeStatusCode = this.getAeValidationStatus().getStatusCode().getValue();
+        
+        return statusCode == FiComStatusCodes.VALID_SIGNATURE.getValue() &&
+        aeStatusCode == FiComStatusCodes.VALID_SIGNATURE.getValue(); 
     }
-    */
+    
 
 }
