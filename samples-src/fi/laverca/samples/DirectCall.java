@@ -8,6 +8,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
@@ -97,7 +98,7 @@ public class DirectCall {
 		        			FiComMSS_Formats.PKCS1,
 		        			new FiComResponseHandler() {
 				        		@Override
-				        		public void onResponse(FiComRequest req, FiComResponse resp) {
+				        		public void onResponse(FiComRequest req, FiComResponse resp, MSS_SignatureResp sigResp) {
 				        			log.info("Got response");
 				        			sendButton.setEnabled(true);
 									callStateProgressBar.setIndeterminate(false);
@@ -123,8 +124,7 @@ public class DirectCall {
 				        		}
 
 								@Override
-								public void onOutstandingProgress(FiComRequest req,
-										ProgressUpdate prgUpdate) {
+								public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate, MSS_SignatureResp sigResp) {
 								}
 		        			});
 	        }

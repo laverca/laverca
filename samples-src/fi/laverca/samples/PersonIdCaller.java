@@ -7,6 +7,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
@@ -118,7 +119,7 @@ public class PersonIdCaller {
         				additionalServices, 
         				new FiComResponseHandler() {
         			@Override
-        			public void onResponse(FiComRequest req, FiComResponse resp) {
+        			public void onResponse(FiComRequest req, FiComResponse resp, MSS_SignatureResp sigResp) {
         				log.info("got resp");
         				log.info(resp.getPkcs7Signature().getSignerCn());
         				for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
@@ -132,10 +133,7 @@ public class PersonIdCaller {
         			}
 
         			@Override
-        			public void onOutstandingProgress(
-        					FiComRequest req,
-        					ProgressUpdate prgUpdate) {
-        				// TODO Auto-generated method stub
+        			public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate, MSS_SignatureResp sigResp) {
 
         			}
         		});
