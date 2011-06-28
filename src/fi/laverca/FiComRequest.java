@@ -6,6 +6,9 @@ import java.util.concurrent.FutureTask;
 import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
 import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 
+/** 
+ * @author Asko Saura (asko@methics.fi)
+ */ 
 public class FiComRequest {
 
     MSS_SignatureReq           sigReq;

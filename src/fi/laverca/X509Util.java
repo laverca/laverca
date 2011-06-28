@@ -13,6 +13,11 @@ import javax.naming.ldap.Rdn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * A collection of helper methods for commonplace X509 tasks.
+ * 
+ * @author Asko Saura (asko@methics.fi)
+ */
 public class X509Util {
     private static Log log = LogFactory.getLog(X509Util.class);
 

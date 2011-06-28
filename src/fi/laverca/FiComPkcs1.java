@@ -17,6 +17,9 @@ import fi.ficom.mss.TS102204.v1_0_0.PKCS1;
 
 /** 
  * A PKCS1 SignedData element.
+ * 
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi) 
  */ 
 public class FiComPkcs1 {
     private static final Log log = LogFactory.getLog(FiComPkcs1.class);

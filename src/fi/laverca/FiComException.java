@@ -1,5 +1,9 @@
 package fi.laverca;
 
+/**
+ * @author Asko Saura (asko@methics.fi)
+ */
+
 @SuppressWarnings("serial")
 public class FiComException extends Exception {
 

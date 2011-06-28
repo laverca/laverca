@@ -1,5 +1,8 @@
 package fi.laverca;
 
+/**
+ * @author Asko Saura (asko@methics.fi)
+ */
 public class JvmSsl {
 
     /**
@@ -10,13 +13,11 @@ public class JvmSsl {
      *<p>
      * Note: This is STATIC, and uses global JVM settings.
      *       This can conflict with settings done by some other
-     *       library functions in Java runtime, or platform.
+     *       code, or by runtime settings.
      *
-     * @param trustStore the keystore containing trusted SSL server certificates.
-     * @param trustStorePassword the password to the trusted SSL server certificate keystore.
+     * @param trustStore the keystore file containing trusted SSL server certificates.
+     * @param trustStorePassword the password to the truststore.
      * @param keyStore the keystore containing your SSL client certificate.
-     *        If null, MSSP connections execute without strong
-     *        client authentication.
      * @param keyStorePassword the password to the SSL client keystore.
      * @param keyStoreType either "JKS" (Java native) or "PKCS12". 
      * @exception IllegalArgumentException if the stores can not be opened.

@@ -36,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * A collection of helper methods for commonplace SAML2 tasks.
  * 
+ * @author Asko Saura (asko@methics.fi)
  */
 public class Saml2Util {
     private static final Log log = LogFactory.getLog(Saml2Util.class);

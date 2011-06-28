@@ -53,6 +53,8 @@ import fi.laverca.ws.MSS_StatusQueryBindingStub;
 
 /**
  * A raw ETSI TS 102 204 client object.
+ *
+ * @author Asko Saura (asko@methics.fi)
  */ 
 public class EtsiClient {
     private static Log log = LogFactory.getLog(EtsiClient.class);

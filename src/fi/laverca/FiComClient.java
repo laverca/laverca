@@ -23,6 +23,10 @@ import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 
 /**  
  * An asynchronous client for FiCom -style signature requests.
+ * 
+ * @author Asko Saura (asko@methics.fi)
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi) 
  */
 public class FiComClient {
 	

@@ -10,6 +10,8 @@ import java.util.HashMap;
  * Transform java strings so that they only contain
  * characters included in the GSM03.38 charset.
  * See FiCom 2.0, appendix D.
+ *
+ * @author Asko Saura (asko@methics.fi)
  */ 
  
 public class FiComCharsetLimiter {
