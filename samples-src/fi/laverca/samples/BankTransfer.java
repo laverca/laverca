@@ -33,6 +33,7 @@ public class BankTransfer {
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
 	private static FiComRequest req;
+	private static FiComClient fiComClient;
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -42,7 +43,7 @@ public class BankTransfer {
 	 * @param amountTxt
 	 */
 	
-	private static void establishConnection(String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
+	private static void call(final String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
 		
 		XMLConfiguration config = null;
 		try {
@@ -66,11 +67,11 @@ public class BankTransfer {
         String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
 
         log.info("creating FiComClient");
-        FiComClient fiComClient = new FiComClient(apId, 
-                                                  apPwd, 
-                                                  msspSignatureUrl, 
-                                                  msspStatusUrl, 
-                                                  msspReceiptUrl);
+        fiComClient = new FiComClient(apId, 
+								        apPwd, 
+								        msspSignatureUrl, 
+								        msspStatusUrl, 
+								        msspReceiptUrl);
         
         Long currentTimeMillis = System.currentTimeMillis();
         String apTransId = "A"+currentTimeMillis;
@@ -84,7 +85,7 @@ public class BankTransfer {
         try {
            log.info("calling consent");
            req =
-           fiComClient.consent(apTransId, 
+        	   fiComClient.consent(apTransId, 
             		textToBeConsentedTo, 
             		phoneNumber, 
             		noSpamService,
@@ -96,18 +97,27 @@ public class BankTransfer {
 		            		log.info("got resp");
 		            		sendButton.setEnabled(true);
 							callStateProgressBar.setIndeterminate(false);
-		            		try {
-		            			responseBox.setText("\nMSS Signature: " + 
-		            					new String(Base64.encode(resp.getMSS_StatusResp().
-		            					getMSS_Signature().getBase64Signature()), "ASCII") +
-		            					"\n\n" + responseBox.getText());
-		            		} catch (UnsupportedEncodingException e) {
-		            			log.info("Unsupported encoding", e);
+							
+							String numberResponding = resp.getMSS_StatusResp().getMobileUser().getMSISDN();
+		            		if (numberResponding.equals(phoneNumber)) {
+		            			fiComClient.sendReceipt("Successfully authenticated the bank transfer by " + phoneNumber);
+		            			try {
+			            			responseBox.setText("\nMSS Signature: " + 
+			            					new String(Base64.encode(resp.getMSS_StatusResp().
+			            					getMSS_Signature().getBase64Signature()), "ASCII") +
+			            					"\n\n" + responseBox.getText());
+			            		} catch (UnsupportedEncodingException e) {
+			            			log.info("Unsupported encoding", e);
+			            		}
+			            		
+			            		responseBox.setText("User allowed transfer from " + fromTxt + 
+			            				" to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
+		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
+		            		} else {
+		            			responseBox.setText("The transfer failed because number " + numberResponding + 
+		            					" tried to authenticate the transfer of " + phoneNumber);
 		            		}
 		            		
-		            		responseBox.setText("User allowed transfer from " + fromTxt + 
-		            				" to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
-	            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
 		            	}
 		
 		            	@Override
@@ -171,7 +181,7 @@ public class BankTransfer {
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
-				establishConnection(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
+				call(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
 		});

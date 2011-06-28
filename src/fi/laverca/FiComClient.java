@@ -32,8 +32,11 @@ public class FiComClient {
 	
     private static final Log log = LogFactory.getLog(FiComClient.class);
 
-    EtsiClient etsiClient;
-    ExecutorService threadExecutor; 
+    private EtsiClient etsiClient;
+    private ExecutorService threadExecutor; 
+    private MSS_SignatureReq sigReq;
+    private MSS_SignatureResp sigResp;
+    private String apTransId;
 
     public FiComClient( String apId,             // AP settings
                         String apPwd, 
@@ -186,18 +189,18 @@ public class FiComClient {
         }
 
         final FiComRequest fiReq = new FiComRequest();
+        this.apTransId = apTransId;
 
         String msisdn = phoneNumber; //consider using some kind of normalizer
         String dataToBeDisplayed = null;
-        String mss_format = mssFormat;
         MessagingModeType messagingMode = MessagingModeType.ASYNCHCLIENTSERVER;
 
-        MSS_SignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, 
+        sigReq = etsiClient.createSignatureRequest(this.apTransId, 
                                                                     msisdn, 
                                                                     dtbs, 
                                                                     dataToBeDisplayed, 
                                                                     signatureProfile, 
-                                                                    mss_format, 
+                                                                    mssFormat, 
                                                                     messagingMode);
         fiReq.sigReq = sigReq;
 
@@ -210,7 +213,7 @@ public class FiComClient {
             }
         }
 
-        MSS_SignatureResp sigResp = null;
+        sigResp = null;
         try {
             log.debug("sending sigReq");
             sigResp = etsiClient.send(sigReq);
@@ -228,7 +231,6 @@ public class FiComClient {
             //handler.onError(fiReq, ioe);
         }
         
-        final MSS_SignatureReq fSigReq = sigReq;
         final MSS_SignatureResp fSigResp = sigResp;
         FutureTask<FiComResponse> ft = 
             new FutureTask<FiComResponse>(new Callable<FiComResponse>() {
@@ -332,13 +334,17 @@ public class FiComClient {
 
     }
     
-    /*static void sendReceipt() {
+    public void sendReceipt(String message) {
     	log.debug("sending receipt");
-    	MSS_ReceiptReq receiptReq = etsiClient.createReceiptRequest(fSigResp, apTransId, null);
-        receiptReq.setMobileUser(fSigReq.getMobileUser());
-        receiptReq.setStatus(fSigResp.getStatus());
-        etsiClient.send(receiptReq);
-    }*/
+    	MSS_ReceiptReq receiptReq = etsiClient.createReceiptRequest(sigResp, apTransId, message);
+        receiptReq.setMobileUser(sigReq.getMobileUser());
+        receiptReq.setStatus(sigResp.getStatus());
+        try {
+			etsiClient.send(receiptReq);
+		} catch (IOException e) {
+			log.debug("could not send receipt", e);
+		}
+    }
 
     static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
     long parseStatus(Status status) {
