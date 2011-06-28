@@ -28,6 +28,8 @@ import org.bouncycastle.asn1.x509.X509Name;
 
 /** 
  * A PKCS7 SignedData element.
+ * 
+ * @author Asko Saura (asko@methics.fi)
  */ 
 public class FiComPkcs7 {
     private static final Log log = LogFactory.getLog(FiComPkcs7.class);

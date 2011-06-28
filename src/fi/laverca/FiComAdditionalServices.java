@@ -20,6 +20,9 @@ import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
 
 /**
  * As per FiCom Soveltamisohje v2.0
+ *
+ * @author Asko Saura (asko@methics.fi)
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi) 
  */
 public class FiComAdditionalServices {
     private static final Log log = LogFactory.getLog(FiComAdditionalServices.class);

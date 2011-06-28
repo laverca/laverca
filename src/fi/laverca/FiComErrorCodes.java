@@ -8,6 +8,8 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * As per FiCom Soveltamisohje v2.0
+ * 
+ * @author Asko Saura (asko@methics.fi)
  */
 public class FiComErrorCodes {
     private static final Log log = LogFactory.getLog(FiComErrorCodes.class);

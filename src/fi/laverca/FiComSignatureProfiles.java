@@ -2,6 +2,8 @@ package fi.laverca;
 
 /**
  * As per FiCom Soveltamisohje v2.0
+ *
+ * @author Asko Saura (asko@methics.fi)
  */
 public class FiComSignatureProfiles {
 

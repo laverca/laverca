@@ -11,6 +11,10 @@ import org.etsi.uri.TS102204.v1_1_2.DataToBeSigned;
 /**
  *  Dual-mode mapper class for "DataToBeSigned"
  * This thing would benefit from a near-total rewrite.
+ * 
+ * @author Asko Saura (asko@methics.fi)
+ * @author Mikael Lindelöf (mikaelj
+ * 
  */
 public class DTBS {
 
@@ -64,8 +68,17 @@ public class DTBS {
      * @param encoding
      */
     public DTBS(final String text, final String encoding) {
-        this.text     = text;
-        this.encoding = encoding;
+    	this(text, encoding, null);
+    }
+
+    /**
+     * Initialize a DTBS without a mime type for <code>toBytes()</code>
+     * 
+     * @param text
+     * @param encoding
+     */
+    public DTBS(final String text) {
+    	this(text, ENCODING_UTF8);
     }
 
     public String  getText() { return this.text; }

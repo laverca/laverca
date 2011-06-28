@@ -4,7 +4,7 @@ import org.etsi.uri.TS102204.v1_1_2.Description;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 /**
- * 
+ * @author Asko Saura (asko@methics.fi)
  */
 public class EtsiAdditionalServices {
     

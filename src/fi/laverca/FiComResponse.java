@@ -18,6 +18,10 @@ import fi.ficom.mss.TS102204.v1_0_0.Status;
 
 /**
  * Asynchronous MSS_StatusResp callback.
+ * 
+ * @author Asko Saura (asko@methics.fi)
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi) 
  */
 public class FiComResponse {
     private static final Log log = LogFactory.getLog(FiComResponse.class);

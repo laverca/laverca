@@ -19,6 +19,8 @@ import org.apache.commons.logging.LogFactory;
  * sending XML signatures and Axis wants us to explicitly
  * mark all headers as "processed" due to mustunderstand 
  * -rules.
+ *
+ * @author Asko Saura (asko@methics.fi)
  */
 @SuppressWarnings("serial")
 public class HeaderHandler extends BasicHandler {
