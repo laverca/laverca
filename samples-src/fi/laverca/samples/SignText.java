@@ -11,7 +11,6 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.FiComAdditionalServices;
@@ -94,7 +93,7 @@ public class SignText {
 	        			additionalServices, 
 	        			new FiComResponseHandler() {
 			        		@Override
-			        		public void onResponse(FiComRequest req, FiComResponse resp, MSS_SignatureResp sigResp) {
+			        		public void onResponse(FiComRequest req, FiComResponse resp) {
 			        			log.info("got resp");
 			        			sendButton.setEnabled(true);
 								callStateProgressBar.setIndeterminate(false);
@@ -123,7 +122,7 @@ public class SignText {
 			        		}
 
 							@Override
-							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate, MSS_SignatureResp sigResp) {
+							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
 								
 							}
 	        			});

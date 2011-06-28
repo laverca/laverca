@@ -12,7 +12,6 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.ficom.mss.TS102204.v1_0_0.Status;
@@ -298,7 +297,7 @@ public class Authentication {
     	            		additionalServices, 
     	            		new FiComResponseHandler() {
     			            	@Override
-    			            	public void onResponse(FiComRequest req, FiComResponse resp, MSS_SignatureResp sigResp) {
+    			            	public void onResponse(FiComRequest req, FiComResponse resp) {
     			            		log.info("got resp");
     								callStateProgressBar.setIndeterminate(false);
     								
@@ -316,12 +315,6 @@ public class Authentication {
     			            				+ "   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD()
     			            				+ "   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n" + responseBox.getText());
     			            		
-    	//		            		responseBox.setText("MSS   StatusMessage: " + resp.getMSS_StatusResp().getStatus().getStatusMessage() 
-    	//		            				+ "   MajorVersion: " + resp.getMSS_StatusResp().getMajorVersion()
-    	//		            				+ "   MinorVersion: " + resp.getMSS_StatusResp().getMinorVersion()
-    	//		            				+ "   URI: " + resp.getMSS_StatusResp().getMSSP_Info().getMSSP_ID().getURI()
-    	//		            				+ "\n" + responseBox.getText());
-    			            		
     			            		responseBox.setText("MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN()
     			            				+ "\n" + responseBox.getText());
     			            		
@@ -334,7 +327,6 @@ public class Authentication {
     			            					+ "   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n"
     			            					+ "   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n"
     			            					+ "   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n"
-    	//		            					+ "   PublicKey: " + resp.getPkcs7Signature().getSignerCert().getPublicKey()
     			            					+ "\n" + responseBox.getText());
     	
     			            			for (String oid : resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs()) {
@@ -372,7 +364,7 @@ public class Authentication {
     			            	}
 
     							@Override
-    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate, MSS_SignatureResp sigResp) {
+    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
     								log.info("got progress update");
     								long timePast = prgUpdate.getElapsedTime();
                 					log.info("Time past: " + String.format("%d min, %d sec", 
@@ -386,8 +378,6 @@ public class Authentication {
     									    TimeUnit.MILLISECONDS.toSeconds(timeLeft) - 
     									    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeLeft))
     								));
-                					log.info("AP: " + sigResp.getAP_Info().getAP_ID());
-                					log.info("MSSP: " + sigResp.getMSSP_Info().getMSSP_ID().getURI());
     							}
     			            });
                 

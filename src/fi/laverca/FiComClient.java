@@ -10,6 +10,7 @@ import java.util.concurrent.FutureTask;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
 import org.etsi.uri.TS102204.v1_1_2.MSS_Signature;
 import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
 import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
@@ -27,7 +28,7 @@ public class FiComClient {
 	
 	private static final int INITIAL_WAIT = 20 * 1000; // initial wait 20 s as per FiCom, section 5.1
 	private static final int SUBSEQUENT_WAIT = 5 * 1000; // subsequent wait 5 s as per FiCom, section 5.1
-	private static final int TIMEOUT = 5*60*1000; // 5 min = 300 s = 300 000 millis
+	private static final int TIMEOUT = 5*60*1000; // timeout 5 min as per FiCom, section 6.4
 	
     private static final Log log = LogFactory.getLog(FiComClient.class);
 
@@ -166,7 +167,7 @@ public class FiComClient {
                     handler);
 
     }
-
+    
 
     public FiComRequest call(final String apTransId,
                              final DTBS dtbs,
@@ -226,7 +227,8 @@ public class FiComClient {
             throw ioe;
             //handler.onError(fiReq, ioe);
         }
-
+        
+        final MSS_SignatureReq fSigReq = sigReq;
         final MSS_SignatureResp fSigResp = sigResp;
         FutureTask<FiComResponse> ft = 
             new FutureTask<FiComResponse>(new Callable<FiComResponse>() {
@@ -270,8 +272,9 @@ public class FiComClient {
                             if(done) {
                                 log.debug("got a final statResp. Ending the wait.");
                                 fiResp = new FiComResponse(statResp);
+                                
                                 try {
-                                    handler.onResponse(fiReq, fiResp, fSigResp);
+                                    handler.onResponse(fiReq, fiResp);
                                 }
                                 finally {
                                     break LOOP;
@@ -279,7 +282,7 @@ public class FiComClient {
                             }
                             else if(FiComStatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
                                 log.debug("got an outstanding statResp. Continuing to wait for a final answer.");
-                                handler.onOutstandingProgress(fiReq, prgUpdate, fSigResp);
+                                handler.onOutstandingProgress(fiReq, prgUpdate);
                                 continue LOOP;
                             }
                             else {
@@ -328,6 +331,14 @@ public class FiComClient {
         return fiReq;
 
     }
+    
+    /*static void sendReceipt() {
+    	log.debug("sending receipt");
+    	MSS_ReceiptReq receiptReq = etsiClient.createReceiptRequest(fSigResp, apTransId, null);
+        receiptReq.setMobileUser(fSigReq.getMobileUser());
+        receiptReq.setStatus(fSigResp.getStatus());
+        etsiClient.send(receiptReq);
+    }*/
 
     static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
     long parseStatus(Status status) {

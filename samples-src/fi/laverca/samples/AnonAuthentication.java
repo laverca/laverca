@@ -9,7 +9,6 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
@@ -95,7 +94,7 @@ public class AnonAuthentication {
 	            		additionalServices, 
 	            		new FiComResponseHandler() {
 			            	@Override
-			            	public void onResponse(FiComRequest req, FiComResponse resp, MSS_SignatureResp sigResp) {
+			            	public void onResponse(FiComRequest req, FiComResponse resp) {
 			            		log.info("got resp");
 			    				sendButton.setEnabled(true);
 								callStateProgressBar.setIndeterminate(false);
@@ -116,7 +115,7 @@ public class AnonAuthentication {
 			            	}
 
 							@Override
-							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate, MSS_SignatureResp sigResp) {
+							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
 								
 							}
 			            });
