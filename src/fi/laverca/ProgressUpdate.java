@@ -4,8 +4,8 @@ package fi.laverca;
  * Information about outstanding transaction.
  * Sent periodically.
  * 
- * @author Jan Mikael Lindlöf
- * @author Eemeli Miettinen
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi) 
  */
 public class ProgressUpdate {
 	
