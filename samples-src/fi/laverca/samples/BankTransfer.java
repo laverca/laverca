@@ -21,7 +21,7 @@ import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
 /**
- * Sample for demonstrating a bank transfer. 
+ * Sample for demonstrating a bank transfer and sending a receipt.
  * 
  * @author Jan Mikael Lindlöf
  * @author Eemeli Miettinen
@@ -77,7 +77,7 @@ public class BankTransfer {
         String apTransId = "A"+currentTimeMillis;
         final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
         
-        String textToBeConsentedTo = "Do you allow transfer from " + fromTxt + " to " + toTxt + ", " + amountTxt;
+        String textToBeConsentedTo = "Do you allow a transfer from " + fromTxt + " to " + toTxt + ", " + amountTxt;
  
         Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);        
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
@@ -100,7 +100,7 @@ public class BankTransfer {
 							
 							String numberResponding = resp.getMSS_StatusResp().getMobileUser().getMSISDN();
 		            		if (numberResponding.equals(phoneNumber)) {
-		            			fiComClient.sendReceipt("Successfully authenticated the bank transfer by " + phoneNumber);
+		            			fiComClient.sendReceipt(phoneNumber + " successfully authenticated the bank transfer.");
 		            			try {
 			            			responseBox.setText("\nMSS Signature: " + 
 			            					new String(Base64.encode(resp.getMSS_StatusResp().
@@ -110,11 +110,11 @@ public class BankTransfer {
 			            			log.info("Unsupported encoding", e);
 			            		}
 			            		
-			            		responseBox.setText("User allowed transfer from " + fromTxt + 
+			            		responseBox.setText("User allowed the transfer from " + fromTxt + 
 			            				" to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
 		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
 		            		} else {
-		            			responseBox.setText("The transfer failed because number " + numberResponding + 
+		            			responseBox.setText("The transfer failed because " + numberResponding + 
 		            					" tried to authenticate the transfer of " + phoneNumber);
 		            		}
 		            		
