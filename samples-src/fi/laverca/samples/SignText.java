@@ -25,11 +25,9 @@ import fi.laverca.ProgressUpdate;
 /**
  * Sample for demonstrating text signing. 
  * 
- * @author Jan Mikael Lindlöf
- * @author Eemeli Miettinen
- *
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
  */
-
 public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
@@ -41,7 +39,6 @@ public class SignText {
 	 * @param phoneNumber
 	 * @param textToBeSigned
 	 */
-	
 	private static void connect(final String phoneNumber, final String textToBeSigned) {
 		
 		XMLConfiguration config = null;

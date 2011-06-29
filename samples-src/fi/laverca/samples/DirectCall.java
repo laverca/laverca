@@ -24,16 +24,14 @@ import fi.laverca.ProgressUpdate;
 
 
 /**
- * An example for signing text that directly uses FiComClients call method.
+ * Sample for signing text that directly uses FiComClients call method.
  * This allows it to request PKCS1 signature instead of PKCS7.
  * 
  * Indirect calling means simply taking the default settings for a certain action.
  * 
- * @author Eemeli Miettinen
- * @author Jan Mikael Lindlöf
- *
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
  */
-
 public class DirectCall {
 
 		private static final Log log = LogFactory.getLog(DirectCall.class);
@@ -45,7 +43,6 @@ public class DirectCall {
 		 * @param phoneNumber
 		 * @param textToBeSigned
 		 */
-		
 		private static void connect(final String phoneNumber, final String textToBeSigned) {
 			
 			XMLConfiguration config = null;
