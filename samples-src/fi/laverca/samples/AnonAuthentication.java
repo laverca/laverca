@@ -33,16 +33,17 @@ public class AnonAuthentication {
 
 	private static final Log log = LogFactory.getLog(AnonAuthentication.class);
 	private static FiComRequest req;
+	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
 	 * @param phoneNumber
 	 */
-	private static void establishConnection(final String phoneNumber) {
+	private static void connect(final String phoneNumber) {
 		
 		XMLConfiguration config = null;
 		try {
-		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+		    config = new XMLConfiguration(CONFIG_LOCATION);
 		} catch(ConfigurationException e) {
 		    log.info("configuration file not found", e);
 		}
@@ -165,7 +166,7 @@ public class AnonAuthentication {
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
 				callStateProgressBar.setIndeterminate(true);
-				establishConnection(number.getText());
+				connect(number.getText());
 			}
 		});
 

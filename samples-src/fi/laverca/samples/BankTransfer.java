@@ -27,12 +27,12 @@ import fi.laverca.ProgressUpdate;
  * @author Eemeli Miettinen
  *
  */
-
 public class BankTransfer {
 
 
 	private static final Log log = LogFactory.getLog(BankTransfer.class);
 	private static FiComRequest req;
+	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 	private static FiComClient fiComClient;
 	
 	/**
@@ -42,12 +42,11 @@ public class BankTransfer {
 	 * @param toTxt
 	 * @param amountTxt
 	 */
-	
-	private static void call(final String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
+	private static void connect(final String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
 		
 		XMLConfiguration config = null;
 		try {
-		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+		    config = new XMLConfiguration(CONFIG_LOCATION);
 		} catch(ConfigurationException e) {
 		    log.info("configuration file not found", e);
 		}
@@ -181,7 +180,7 @@ public class BankTransfer {
         sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
-				call(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
+				connect(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
 		});

@@ -38,6 +38,7 @@ public class DirectCall {
 
 		private static final Log log = LogFactory.getLog(DirectCall.class);
 		private static FiComRequest req;
+		private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 		
 		/**
 		 * Connects to MSSP using SSL and waits for response
@@ -45,11 +46,11 @@ public class DirectCall {
 		 * @param textToBeSigned
 		 */
 		
-		private static void establishConnection(final String phoneNumber, final String textToBeSigned) {
+		private static void connect(final String phoneNumber, final String textToBeSigned) {
 			
 			XMLConfiguration config = null;
 			try {
-			    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+			    config = new XMLConfiguration(CONFIG_LOCATION);
 			} catch(ConfigurationException e) {
 			    log.info("configuration file not found", e);
 			}
@@ -170,7 +171,7 @@ public class DirectCall {
 	        sendButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					sendButton.setEnabled(false);
-					establishConnection(number.getText(), textToBeSigned.getText());
+					connect(number.getText(), textToBeSigned.getText());
 					callStateProgressBar.setIndeterminate(true);
 				}
 			});

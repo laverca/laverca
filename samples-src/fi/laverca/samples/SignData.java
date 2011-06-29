@@ -52,6 +52,7 @@ import fi.laverca.ProgressUpdate;
 public class SignData {
 	
 	protected final static Log log = LogFactory.getLog(SignData.class);
+	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 	
 	/**
 	 * Generates SHA1 hash from a file and asks for a user to sign it.
@@ -245,7 +246,7 @@ public class SignData {
     		Long currentTimeMillis = System.currentTimeMillis();
     		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
     		initResponse();
-    		establishConnection(number, selectedFile);
+    		connect(number, selectedFile);
     	}
 
     	private void initResponse() {
@@ -312,11 +313,11 @@ public class SignData {
     	 * @param phoneNumber
     	 * @param selectedFile
     	 */
-    	protected void establishConnection(String phoneNumber, final File selectedFile) {
+    	protected void connect(String phoneNumber, final File selectedFile) {
     		
     		XMLConfiguration config = null;
     		try {
-    		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+    		    config = new XMLConfiguration(CONFIG_LOCATION);
     		} catch(ConfigurationException e) {
     		    log.info("configuration file not found", e);
     		}
