@@ -20,7 +20,9 @@ import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
 public class PersonIdCaller {
+	
     private static final Log log = LogFactory.getLog(PersonIdCaller.class);
+    private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 
     /**
      * @param args
@@ -29,7 +31,7 @@ public class PersonIdCaller {
     	
     	XMLConfiguration config = null;
 		try {
-		    config = new XMLConfiguration("fi/laverca/samples/configuration.xml");
+		    config = new XMLConfiguration(CONFIG_LOCATION);
 		} catch(ConfigurationException e) {
 		    log.info("configuration file not found", e);
 		}
@@ -102,8 +104,6 @@ public class PersonIdCaller {
     		}
     	}
         
-        //attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
-        //personIdAttrs.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
         Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
         additionalServices.add(personIdService);
         
