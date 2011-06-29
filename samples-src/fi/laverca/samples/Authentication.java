@@ -31,9 +31,7 @@ import fi.laverca.ProgressUpdate;
  * 
  * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
  * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
- *
  */
-
 public class Authentication {
 	
 	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
@@ -41,12 +39,7 @@ public class Authentication {
 	
 	/**
      * Creates a response window.
-     * 
-	 * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
-	 * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
-     * 
      */
-    
     private class ResponseWindow {
     	
     	private javax.swing.JProgressBar callStateProgressBar;

@@ -23,9 +23,8 @@ import fi.laverca.ProgressUpdate;
 /**
  * Sample for demonstrating a bank transfer and sending a receipt.
  * 
- * @author Jan Mikael Lindlöf
- * @author Eemeli Miettinen
- *
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
  */
 public class BankTransfer {
 

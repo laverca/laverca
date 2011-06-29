@@ -24,9 +24,8 @@ import fi.laverca.ProgressUpdate;
 /**
  * Sample for demonstrating anonymous authentication. 
  * 
- * @author Jan Mikael Lindlöf
- * @author Eemeli Miettinen
- *
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
  */
 
 public class AnonAuthentication {
@@ -138,9 +137,7 @@ public class AnonAuthentication {
 	
 	/**
 	 * Initializes the swing GUI
-	 * 
 	 */
-	
 	private static void initComponents() {
 
 		frame = new javax.swing.JFrame("Anon authentication");

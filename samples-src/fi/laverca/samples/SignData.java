@@ -45,9 +45,8 @@ import fi.laverca.ProgressUpdate;
 /**
  * Sample for demonstrating hash signing. 
  * 
- * @author Jan Mikael Lindlöf
- * @author Eemeli Miettinen
- *
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
  */
 public class SignData {
 	
@@ -221,9 +220,6 @@ public class SignData {
     /**
      * Generates a new window for connection that includes 
      * a response box, a cancel button and a progress bar.
-     * 
-	 * @author Jan Mikael Lindlöf
-	 * @author Eemeli Miettinen
      */
     private class ResponseWindow {
     	
@@ -236,11 +232,8 @@ public class SignData {
         private String eventId;
     	
         /**
-         * Generates a new window for response and calls <code>estamblishConnection</code>
+         * Generates a new window for response and calls <code>connect</code>
          * to start the authentication process.
-         * 
-    	 * @author Jan Mikael Lindlöf
-    	 * @author Eemeli Miettinen
          */
     	public ResponseWindow(String number, File selectedFile) {
     		Long currentTimeMillis = System.currentTimeMillis();
