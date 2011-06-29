@@ -50,18 +50,206 @@ import fi.laverca.ProgressUpdate;
  */
 public class SignData {
 	
-	protected final static Log log = LogFactory.getLog(SignData.class);
 	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
+    private static final Log log = LogFactory.getLog(SignData.class);	
 	
 	/**
-	 * Generates SHA1 hash from a file and asks for a user to sign it.
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		new SignData().initUI();
-	}
-	
-	/**
+     * Generates a new window for connection that includes 
+     * a response box, a cancel button and a progress bar.
+     */
+    private class ResponseWindow {
+    	
+    	private JProgressBar callStateProgressBar;
+    	private JButton cancelButton;
+    	private String eventId;
+        private JScrollPane jScrollPane1;
+        private FiComRequest req;
+        private JTextArea responseBox;
+        private JFrame responseFrame;
+    	
+        /**
+         * Generates a new window for response and calls <code>connect</code>
+         * to start the authentication process.
+         */
+    	public ResponseWindow(String number, File selectedFile) {
+    		Long currentTimeMillis = System.currentTimeMillis();
+    		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+    		initResponse();
+    		connect(number, selectedFile);
+    	}
+
+    	/**
+    	 * Connects to MSSP using SSL and waits for response.
+    	 * @param phoneNumber
+    	 * @param selectedFile
+    	 */
+    	protected void connect(String phoneNumber, final File selectedFile) {
+    		
+    		XMLConfiguration config = null;
+    		try {
+    		    config = new XMLConfiguration(CONFIG_LOCATION);
+    		} catch(ConfigurationException e) {
+    		    log.info("configuration file not found", e);
+    		}
+    		
+    		log.info("setting up ssl");
+    		JvmSsl.setSSL(config.getString("ssl.trustStore"),
+    				config.getString("ssl.trustStorePassword"),
+    				config.getString("ssl.keyStore"),
+    				config.getString("ssl.keyStorePassword"),
+    				config.getString("ssl.keyStoreType"));
+    		
+    		String apId  = config.getString("ap.apId");
+            String apPwd = config.getString("ap.apPwd");
+
+            String msspSignatureUrl    = config.getString("mssp.msspSignatureUrl");
+            String msspStatusUrl       = config.getString("mssp.msspStatusUrl");
+            String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
+
+            SignData.log.info("creating FiComClient");
+            FiComClient fiComClient = new FiComClient(apId, 
+                                                      apPwd, 
+                                                      msspSignatureUrl, 
+                                                      msspStatusUrl, 
+                                                      msspReceiptUrl);
+            
+            final byte[] output = SignData.generateSHA1(selectedFile);
+            String apTransId = "A"+System.currentTimeMillis();
+            
+            Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
+            Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
+            LinkedList<Service> additionalServices = new LinkedList<Service>();
+            LinkedList<String> attributeNames = new LinkedList<String>();
+            attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+            Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+            additionalServices.add(personIdService);
+            
+            try {
+            	SignData.log.info("calling signData");
+            	req = 
+            		fiComClient.signData(apTransId, 
+            				output, 
+            				phoneNumber, 
+            				noSpamService, 
+            				eventIdService,
+            				additionalServices, 
+            				new FiComResponseHandler() {
+            			
+								@Override
+			        			public void onResponse(FiComRequest req, FiComResponse resp) {
+			        				SignData.log.info("got resp");
+			        				callStateProgressBar.setIndeterminate(false);
+			        				SignData.printSHA1(output, responseBox);
+			        				
+			        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
+			        						+ "\n" + responseBox.getText());
+			        				
+			        				try {
+			        					responseBox.setText("MSS Signature: " + 
+			        							new String(Base64.encode(resp.getMSS_StatusResp().
+			        							getMSS_Signature().getBase64Signature()), "ASCII") +
+			        							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
+			        							"\n" + responseBox.getText());
+			        					for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+			        						SignData.log.info(a.getName() + " " + a.getStringValue());
+			        						responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+			        					}
+			        				} catch (UnsupportedEncodingException e) {
+			        					SignData.log.info("Unsupported encoding", e);
+			        				} catch (NullPointerException e){
+			        					SignData.log.info("PersonIDAttributes = null", e);
+			        				}
+			
+			        			}
+			        			
+    		        			@Override
+    		        			public void onError(FiComRequest req, Throwable throwable) {
+    		        				callStateProgressBar.setIndeterminate(false);
+    		        				SignData.log.info("got error", throwable);
+    		        			}
+    		
+    		        			@Override
+    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+    								
+    							}
+
+    		        		});
+            }
+            catch (IOException e) {
+            	SignData.log.info("error establishing connection", e);
+            }
+
+            fiComClient.shutdown();
+    	}
+    	
+    	private void initResponse() {
+        	responseFrame = new JFrame(eventId);
+            cancelButton = new JButton();
+            jScrollPane1 = new JScrollPane();
+            responseBox = new JTextArea();
+            callStateProgressBar = new JProgressBar();
+
+            cancelButton.setText("Cancel");
+            cancelButton.addActionListener(new ActionListener() {
+    			public void actionPerformed(ActionEvent e) {
+    				req.cancel();
+    				callStateProgressBar.setIndeterminate(false);
+    				responseFrame.dispose();
+    			}
+    		});
+            
+            responseBox.setColumns(20);
+            responseBox.setRows(5);
+            jScrollPane1.setViewportView(responseBox);
+            callStateProgressBar.setIndeterminate(true);
+
+            GroupLayout layout = new GroupLayout(responseFrame.getContentPane());
+            responseFrame.getContentPane().setLayout(layout);
+            layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(18, 18, 18)
+                    .addComponent(callStateProgressBar, GroupLayout.PREFERRED_SIZE, 252, GroupLayout.PREFERRED_SIZE)
+                    .addGap(18, 18, 18)
+                    .addComponent(cancelButton)
+                    .addContainerGap(47, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                        .addGap(14, 14, 14)))
+            );
+            layout.setVerticalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                        .addComponent(callStateProgressBar, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                        .addComponent(cancelButton, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(266, 266, 266))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(53, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, 226, GroupLayout.PREFERRED_SIZE)
+                        .addGap(21, 21, 21)))
+            );
+            
+            responseFrame.setLocation(500, 0);
+
+            responseFrame.pack();
+            responseFrame.setVisible(true);
+            responseFrame.setResizable(false);
+        }
+    }
+	private static JButton browseButton;	
+	private static JFrame dialFrame;	
+    private static JPanel dialPanel;   
+    private static JTextArea hashBox;   
+    private static JScrollPane jScrollPane1;
+    private static JLabel lblNumber;
+    private static JTextField number;
+    private static JButton sendButton;
+    /**
 	 * 
 	 * @param selectedFile
 	 * @return
@@ -90,7 +278,13 @@ public class SignData {
         
         return output;
 	}
-	
+    /**
+	 * Generates SHA1 hash from a file and asks for a user to sign it.
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		new SignData().initUI();
+	}
     /**
      * Prints SHA1 to the <code>responseBox</code>.
      * @param buf
@@ -108,6 +302,7 @@ public class SignData {
         }
         textArea.setText("SHA1: " + shaTmp + "\n" + textArea.getText());
     }
+    
     
     private void initUI() {
 
@@ -205,202 +400,5 @@ public class SignData {
 			}
 		});
 		fc.showOpenDialog(dialFrame);
-    }
-    
-    private static JFrame dialFrame;
-    private static JButton sendButton;
-    private static JButton browseButton;
-    private static JLabel lblNumber;
-    private static JPanel dialPanel;
-    private static JScrollPane jScrollPane1;
-    private static JTextArea hashBox;
-    private static JTextField number;
-    
-    
-    /**
-     * Generates a new window for connection that includes 
-     * a response box, a cancel button and a progress bar.
-     */
-    private class ResponseWindow {
-    	
-    	private FiComRequest req;
-    	private JTextArea responseBox;
-    	private JFrame responseFrame;
-        private JButton cancelButton;
-        private JProgressBar callStateProgressBar;
-        private JScrollPane jScrollPane1;
-        private String eventId;
-    	
-        /**
-         * Generates a new window for response and calls <code>connect</code>
-         * to start the authentication process.
-         */
-    	public ResponseWindow(String number, File selectedFile) {
-    		Long currentTimeMillis = System.currentTimeMillis();
-    		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
-    		initResponse();
-    		connect(number, selectedFile);
-    	}
-
-    	private void initResponse() {
-        	responseFrame = new JFrame(eventId);
-            cancelButton = new JButton();
-            jScrollPane1 = new JScrollPane();
-            responseBox = new JTextArea();
-            callStateProgressBar = new JProgressBar();
-
-            cancelButton.setText("Cancel");
-            cancelButton.addActionListener(new ActionListener() {
-    			public void actionPerformed(ActionEvent e) {
-    				req.cancel();
-    				callStateProgressBar.setIndeterminate(false);
-    				responseFrame.dispose();
-    			}
-    		});
-            
-            responseBox.setColumns(20);
-            responseBox.setRows(5);
-            jScrollPane1.setViewportView(responseBox);
-            callStateProgressBar.setIndeterminate(true);
-
-            GroupLayout layout = new GroupLayout(responseFrame.getContentPane());
-            responseFrame.getContentPane().setLayout(layout);
-            layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(18, 18, 18)
-                    .addComponent(callStateProgressBar, GroupLayout.PREFERRED_SIZE, 252, GroupLayout.PREFERRED_SIZE)
-                    .addGap(18, 18, 18)
-                    .addComponent(cancelButton)
-                    .addContainerGap(47, Short.MAX_VALUE))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
-                        .addGap(14, 14, 14)))
-            );
-            layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                        .addComponent(callStateProgressBar, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-                        .addComponent(cancelButton, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGap(266, 266, 266))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(53, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, 226, GroupLayout.PREFERRED_SIZE)
-                        .addGap(21, 21, 21)))
-            );
-            
-            responseFrame.setLocation(500, 0);
-
-            responseFrame.pack();
-            responseFrame.setVisible(true);
-            responseFrame.setResizable(false);
-        }
-    	
-    	/**
-    	 * Connects to MSSP using SSL and waits for response.
-    	 * @param phoneNumber
-    	 * @param selectedFile
-    	 */
-    	protected void connect(String phoneNumber, final File selectedFile) {
-    		
-    		XMLConfiguration config = null;
-    		try {
-    		    config = new XMLConfiguration(CONFIG_LOCATION);
-    		} catch(ConfigurationException e) {
-    		    log.info("configuration file not found", e);
-    		}
-    		
-    		log.info("setting up ssl");
-    		JvmSsl.setSSL(config.getString("ssl.trustStore"),
-    				config.getString("ssl.trustStorePassword"),
-    				config.getString("ssl.keyStore"),
-    				config.getString("ssl.keyStorePassword"),
-    				config.getString("ssl.keyStoreType"));
-    		
-    		String apId  = config.getString("ap.apId");
-            String apPwd = config.getString("ap.apPwd");
-
-            String msspSignatureUrl    = config.getString("mssp.msspSignatureUrl");
-            String msspStatusUrl       = config.getString("mssp.msspStatusUrl");
-            String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
-
-            SignData.log.info("creating FiComClient");
-            FiComClient fiComClient = new FiComClient(apId, 
-                                                      apPwd, 
-                                                      msspSignatureUrl, 
-                                                      msspStatusUrl, 
-                                                      msspReceiptUrl);
-            
-            final byte[] output = SignData.generateSHA1(selectedFile);
-            String apTransId = "A"+System.currentTimeMillis();
-            
-            Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
-            Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
-            LinkedList<Service> additionalServices = new LinkedList<Service>();
-            LinkedList<String> attributeNames = new LinkedList<String>();
-            attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
-            Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
-            additionalServices.add(personIdService);
-            
-            try {
-            	SignData.log.info("calling signData");
-            	req = 
-            		fiComClient.signData(apTransId, 
-            				output, 
-            				phoneNumber, 
-            				noSpamService, 
-            				eventIdService,
-            				additionalServices, 
-            				new FiComResponseHandler() {
-    		        			@Override
-    		        			public void onResponse(FiComRequest req, FiComResponse resp) {
-    		        				SignData.log.info("got resp");
-    		        				callStateProgressBar.setIndeterminate(false);
-    		        				SignData.printSHA1(output, responseBox);
-    		        				
-    		        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
-    		        						+ "\n" + responseBox.getText());
-    		        				
-    		        				try {
-    		        					responseBox.setText("MSS Signature: " + 
-    		        							new String(Base64.encode(resp.getMSS_StatusResp().
-    		        							getMSS_Signature().getBase64Signature()), "ASCII") +
-    		        							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
-    		        							"\n" + responseBox.getText());
-    		        					for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-    		        						SignData.log.info(a.getName() + " " + a.getStringValue());
-    		        						responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-    		        					}
-    		        				} catch (UnsupportedEncodingException e) {
-    		        					SignData.log.info("Unsupported encoding", e);
-    		        				} catch (NullPointerException e){
-    		        					SignData.log.info("PersonIDAttributes = null", e);
-    		        				}
-    		
-    		        			}
-    		
-    		        			@Override
-    		        			public void onError(FiComRequest req, Throwable throwable) {
-    		        				callStateProgressBar.setIndeterminate(false);
-    		        				SignData.log.info("got error", throwable);
-    		        			}
-
-    							@Override
-    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-    								
-    							}
-    		        		});
-            }
-            catch (IOException e) {
-            	SignData.log.info("error establishing connection", e);
-            }
-
-            fiComClient.shutdown();
-    	}
     }
 }
