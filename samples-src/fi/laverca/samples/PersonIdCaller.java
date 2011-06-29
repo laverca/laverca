@@ -19,6 +19,12 @@ import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
+/**
+ * Sample for simple authentication. Takes parameters.
+ * 
+ * @author Jan Mikael Lindlöf (mikael.lindlof@nbl.fi)
+ * @author Eemeli Miettinen (eemeli.miettinen@methics.fi)
+ */
 public class PersonIdCaller {
 	
     private static final Log log = LogFactory.getLog(PersonIdCaller.class);
