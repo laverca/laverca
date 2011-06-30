@@ -9,7 +9,7 @@ features specified in Finland.
 
 
 CHANGELOG
-
+	  
 	07.04.2011 0.9 
 	  Initial version distributed privately for review.
 	
@@ -21,6 +21,11 @@ CHANGELOG
 	  
 	22.06.2011 0.95
 	  Minor bugfixes. Altered the way DTBS works. Added support for AE validation.
+	  
+	30.06.2011 1.0
+	  PKCS1 support
+	  AE validation support
+	  Receipt support in FiComClient
 
 
 REQUIREMENTS
