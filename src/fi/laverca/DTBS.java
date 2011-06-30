@@ -1,6 +1,3 @@
-//
-//  (c) Copyright 2003-2008 Methics Oy. All rights reserved. 
-//
 package fi.laverca;
 
 import java.io.UnsupportedEncodingException;
