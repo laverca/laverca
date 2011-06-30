@@ -1,8 +1,3 @@
-//
-// Copyright Laverca project. 
-// The contents of this file are subject to the Laverca License.
-//
-
 package fi.laverca;
 
 import java.io.IOException;

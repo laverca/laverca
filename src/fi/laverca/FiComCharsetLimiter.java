@@ -1,6 +1,3 @@
-//
-//  (c) Copyright 2003-2011 Methics Oy. All rights reserved. 
-//
 package fi.laverca;
 
 import java.io.ByteArrayOutputStream;

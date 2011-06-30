@@ -10,7 +10,7 @@ import org.etsi.uri.TS102204.v1_1_2.DataToBeSigned;
  * This thing would benefit from a near-total rewrite.
  * 
  * @author Asko Saura (asko@methics.fi)
- * @author Mikael Lindelöf (mikaelj
+ * @author Mikael Lindlöf (mikael.lindlof@nbl.fi)
  * 
  */
 public class DTBS {
