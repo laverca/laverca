@@ -1,16 +1,3 @@
-//
-// Copyright, Methics Oy. 2003-2010. All rights reserved.
-// The contents of this file are subject to the Methics Oy Kiuru License.
-// You may obtain a information of the License at http://www.methics.fi/license
-//
-// You may incorporate our Source Code in your application
-// only if you own a valid Kiuru License from Methics Oy
-// and the copyright notices are not removed from the source code.
-//
-// This software distributed under the License is distributed on an
-// "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.
-//
-
 package fi.laverca;
 
 import java.util.Date;
