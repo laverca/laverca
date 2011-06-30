@@ -1,6 +1,6 @@
-Laverca
+Laverca 1.0
 =======
-April 2011
+June 2011
 
 Laverca is an open-source implementation of the ETSI TS 102 204
 SOAP interface for Application Providers. In addition to the 
@@ -102,6 +102,32 @@ DEVELOPMENT (with Eclipse)
 		and change an initial value of WAIT_PERIOD 
 		in fi.laverca.FiComClient to 1*1000 instead of 20*1000
 		for development.
+		
+		
+FEATURES
+
+	1. Supports synchronic and asynchronic client-server.
+	     (FiComClient for C/S asynch, EtsiClient for synchronic)
+	2. Strong mutual identification and encryption between all message routing entities.
+	     (JvmSsl)
+	3. Strong mutual identification and encryption between AP and AE including a password (AP_PWD).
+	     (JvmSsl)
+	4. Supported message formats are: MSS_SignatureReq, MSS_SignatureResp, MSS_StatusReq, MSS_StatusResp, MSS_ReceiptReq and MSS_ReceiptResp.
+	     (FiComClient, EtsiClient)
+	5. Supported character maps in service requests are UTF-8, GSM and UCS2.
+	     (FiComCharsetLimiter)
+	6. Supported character maps in client device are GSM 03.38 and UCS2.
+	     (FiComCharsetLimiter)
+	7. Provides all 6 different signature provides defined in FiCom 2.0.
+	     (FiComClient, FiComSignatureProfiles)
+	8. The signature profiles are used for choosing a specified service.
+	     (FiComClient, FiComSignatureProfiles)
+	9. The user can deny usage of any signature profile on the client device.
+	     (FiComErrorCodes)
+	10. Supports all of the FiCom 2.0 additional services.
+	     (FiComClient)
+	11. The format of the digital signature is base64-encoding and PKCS#7 or PKCS#1 with the users certificate.
+	     (FiComResponse)
 
 
 
