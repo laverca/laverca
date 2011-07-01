@@ -30,8 +30,10 @@ CHANGELOG
 
 REQUIREMENTS
  
-	JDK 6
+	Java 6
+		Java 5 can also be used by building the included source code with JDK 5. 
 	Ant (Tested with v1.8.1)
+
 
 	Download Ant
 	http://ant.apache.org/bindownload.cgi
