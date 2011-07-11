@@ -99,11 +99,15 @@ public class AnonAuthentication {
 			    				sendButton.setEnabled(true);
 								callStateProgressBar.setIndeterminate(false);
 			            		responseBox.setText("\n" + responseBox.getText());
-			            		
-			            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-			            			log.info(a.getStringValue());
-			            			responseBox.setText(a.getStringValue() + " " + responseBox.getText());
+			            		try{
+				            		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+				            			log.info(a.getStringValue());
+				            			responseBox.setText(a.getStringValue() + " " + responseBox.getText());
+				            		}
+			            		} catch (NullPointerException e){
+			            			log.warn("No Person ID Attributes found!");
 			            		}
+			            		
 			            		responseBox.setText("Event ID: " + eventId + "\nAdditional attributes:\n" + responseBox.getText());
 			            	}
 			
