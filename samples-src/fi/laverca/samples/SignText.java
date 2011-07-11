@@ -40,7 +40,6 @@ public class SignText {
 	 * @param textToBeSigned
 	 */
 	private static void connect(final String phoneNumber, final String textToBeSigned) {
-		
 		XMLConfiguration config = null;
 		try {
 		    config = new XMLConfiguration(CONFIG_LOCATION);
@@ -103,11 +102,14 @@ public class SignText {
 			        			} catch (UnsupportedEncodingException e) {
 			        				log.info("Unsupported encoding", e);
 			        			}
-			        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-			        				log.info(a.getName() + " " + a.getStringValue());
-			        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-			        			}
-			        			
+			        			try {
+				        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+				        				log.info(a.getName() + " " + a.getStringValue());
+				        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+				        			}
+			            		} catch (NullPointerException e){
+			            			log.warn("No Person ID Attributes found!");
+			            		}
 			        			responseBox.setText("Event ID: " + eventId + "\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
 			        		}
 			
