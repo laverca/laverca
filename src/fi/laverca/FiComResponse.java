@@ -75,7 +75,7 @@ public class FiComResponse {
      */
     public List<FiComAdditionalServices.PersonIdAttribute> getPersonIdAttributes() {
         try {
-            ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(this.statusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
+        	ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(this.statusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
 
             Response samlpResp = sResp.getResponse();
             Assertion assertion = Saml2Util.parseFromResponse(samlpResp);
@@ -90,7 +90,11 @@ public class FiComResponse {
 
             return fiComAttrs;
         }
+        catch (NullPointerException e){
+        	return null;
+        }
         catch(Throwable t) {
+        	log.error("", t);
             return null;
         }
     }
@@ -105,16 +109,23 @@ public class FiComResponse {
      * @return AE validation status, null if no AE validation was done
      */
     public Status getAeValidationStatus() {
-    	Status validationStatus = null;
-    	for (StatusDetailTypeItem statusDetailTypeItem : this.statusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
-			for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
-				if (serviceResponse.getDescription().getMssURI().equals(FiComAdditionalServices.VALIDATE_URI)) {
-					validationStatus = serviceResponse.getStatus();
-					break;
+    	try{
+			Status validationStatus = null;
+			for (StatusDetailTypeItem statusDetailTypeItem : this.statusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
+				for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
+					if (serviceResponse.getDescription().getMssURI().equals(FiComAdditionalServices.VALIDATE_URI)) {
+						validationStatus = serviceResponse.getStatus();
+						break;
+					}
 				}
 			}
-		}
-    	return validationStatus;
+			return validationStatus;
+    	} catch (NullPointerException e){
+    		return null;
+    	} catch (Throwable t) {
+    		log.error("", t);
+    		return null;
+    	}
     }
 
     /**
@@ -123,21 +134,26 @@ public class FiComResponse {
      */
     
     public boolean isValid() {
-    	long statusCode = this.statusResp.getStatus().getStatusCode().getValue();
-    	boolean aeStatusOk; 
-
     	try {
-    		aeStatusOk = getAeValidationStatus().getStatusCode().getValue() == 
-    			FiComStatusCodes.VALID_SIGNATURE.getValue();
-    	} catch (NullPointerException e) {
-
-    		if (getAeValidationStatus() != null) 
-    			aeStatusOk = true;
-    		else 
-    			aeStatusOk = false;
+    		long statusCode = this.statusResp.getStatus().getStatusCode().getValue();
+	    	boolean aeStatusOk; 
+	
+	    	try {
+	    		aeStatusOk = getAeValidationStatus().getStatusCode().getValue() == 
+	    			FiComStatusCodes.VALID_SIGNATURE.getValue();
+	    	} catch (NullPointerException e) {
+	
+	    		if (getAeValidationStatus() != null) 
+	    			aeStatusOk = true;
+	    		else 
+	    			aeStatusOk = false;
+	    	}
+	
+	    	return statusCode == FiComStatusCodes.VALID_SIGNATURE.getValue() && aeStatusOk; 
+    	} catch (Throwable t) {
+    		log.error("", t);
+    		return false;
     	}
-
-    	return statusCode == FiComStatusCodes.VALID_SIGNATURE.getValue() && aeStatusOk; 
     }
 
 }
