@@ -91,7 +91,6 @@ public class FiComResponse {
             return fiComAttrs;
         }
         catch(Throwable t) {
-            log.error("", t);
             return null;
         }
     }
