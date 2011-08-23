@@ -226,8 +226,8 @@ public class FiComClient {
         }
         catch(AxisFault af) {
             log.error("got soap fault", af);
-            throw af;
-            //handler.onError(fiReq, af);
+            //throw af;
+            handler.onError(fiReq, af);
         }
         catch(IOException ioe) {
             log.error("got IOException ", ioe);
