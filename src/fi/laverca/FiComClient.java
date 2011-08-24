@@ -252,12 +252,13 @@ public class FiComClient {
                     MSS_StatusResp statResp = null;
                     int waitPeriod = INITIAL_WAIT;
                     long now = System.currentTimeMillis();
-                    LOOP: while(true) {
-                        Thread.sleep(waitPeriod - (System.currentTimeMillis()-now));
+                    LOOP: while(true) {    	
+                    	Thread.sleep(waitPeriod - (System.currentTimeMillis()-now));
                         now = System.currentTimeMillis();
                         waitPeriod = SUBSEQUENT_WAIT; 
                         
                         if (now > deadline) {
+                        	log.error("timed out");
                             try {
                                 handler.onError(fiReq, new FiComException("timed out"));
                             }
@@ -265,7 +266,6 @@ public class FiComClient {
                                 break LOOP;
                             }
                         }
-
                         MSS_StatusReq  statReq = etsiClient.createStatusRequest(fSigResp, apTransId);
                         try {
                             log.debug("sending statReq");
@@ -275,21 +275,20 @@ public class FiComClient {
                             boolean done = isDone(statResp);
                             long statusCode = parseStatus(statResp.getStatus());
 
-                            if(done) {
+                            if(FiComStatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
+                                log.debug("got an outstanding statResp. Continuing to wait for a final answer.");
+                                handler.onOutstandingProgress(fiReq, prgUpdate);
+                                continue LOOP;
+                            }
+                            else if(done) {
                                 log.debug("got a final statResp. Ending the wait.");
                                 fiResp = new FiComResponse(statResp);
-                                
                                 try {
                                     handler.onResponse(fiReq, fiResp);
                                 }
                                 finally {
-                                    break LOOP;
+                                    break LOOP;                              
                                 }
-                            }
-                            else if(FiComStatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
-                                log.debug("got an outstanding statResp. Continuing to wait for a final answer.");
-                                handler.onOutstandingProgress(fiReq, prgUpdate);
-                                continue LOOP;
                             }
                             else {
                                 log.debug("got an abnormal statResp. Ending the wait.");
