@@ -143,7 +143,7 @@ public class FiComResponse {
 	    			FiComStatusCodes.VALID_SIGNATURE.getValue();
 	    	} catch (NullPointerException e) {
 	
-	    		if (getAeValidationStatus() != null) 
+	    		if (getAeValidationStatus() == null) 
 	    			aeStatusOk = true;
 	    		else 
 	    			aeStatusOk = false;
