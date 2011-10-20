@@ -10,6 +10,8 @@ import oasis.names.tc.SAML.v2_0.protocol.Response;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
@@ -26,22 +28,29 @@ import fi.ficom.mss.TS102204.v1_0_0.Status;
 public class FiComResponse {
     private static final Log log = LogFactory.getLog(FiComResponse.class);
 
-    MSS_StatusResp statusResp;
+    MSS_SignatureReq  originalSigReq;
+    MSS_SignatureResp originalSigResp;
+    MSS_StatusResp    finalStatusResp;
 
-    FiComResponse(MSS_StatusResp statResp) {
-        this.statusResp = statResp;
+    FiComResponse( MSS_SignatureReq  originalSigReq,
+                   MSS_SignatureResp originalSigResp,
+                   MSS_StatusResp    finalStatusResp
+    ) { 
+        this.originalSigReq  = originalSigReq;
+        this.originalSigResp = originalSigResp;
+        this.finalStatusResp = finalStatusResp;
     }
 
     /** @return null if the signature is not in this format. */
     public FiComPkcs7 getPkcs7Signature() {
         try {
-        	if(this.statusResp == null)
+        	if(this.finalStatusResp == null)
                 throw new RuntimeException("illegal state. Null statusResp.");
 
-            if(this.statusResp.getMSS_Signature() == null)
+            if(this.finalStatusResp.getMSS_Signature() == null)
                 throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
             
-            FiComPkcs7 p7 = new FiComPkcs7(this.statusResp.getMSS_Signature().getBase64Signature());
+            FiComPkcs7 p7 = new FiComPkcs7(this.finalStatusResp.getMSS_Signature().getBase64Signature());
             return p7;
         }
         catch(IllegalArgumentException iae) {
@@ -54,13 +63,13 @@ public class FiComResponse {
     /** @return null if the signature is not in this format. */
     public FiComPkcs1 getPkcs1Signature() {
         try {
-        	if(this.statusResp == null)
+        	if(this.finalStatusResp == null)
                 throw new RuntimeException("illegal state. Null statusResp.");
 
-            if(this.statusResp.getMSS_Signature() == null)
+            if(this.finalStatusResp.getMSS_Signature() == null)
                 throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
             
-            FiComPkcs1 p1 = new FiComPkcs1(this.statusResp.getMSS_Signature().getPKCS1());
+            FiComPkcs1 p1 = new FiComPkcs1(this.finalStatusResp.getMSS_Signature().getPKCS1());
             return p1;
         }
         catch(IllegalArgumentException iae) {
@@ -75,7 +84,7 @@ public class FiComResponse {
      */
     public List<FiComAdditionalServices.PersonIdAttribute> getPersonIdAttributes() {
         try {
-        	ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(this.statusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
+        	ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(this.finalStatusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
 
             Response samlpResp = sResp.getResponse();
             Assertion assertion = Saml2Util.parseFromResponse(samlpResp);
@@ -101,7 +110,7 @@ public class FiComResponse {
 
     /** The final MSS_StatusResp message */
     public MSS_StatusResp getMSS_StatusResp() {
-        return this.statusResp;
+        return this.finalStatusResp;
     }
     
     /**
@@ -111,7 +120,7 @@ public class FiComResponse {
     public Status getAeValidationStatus() {
     	try{
 			Status validationStatus = null;
-			for (StatusDetailTypeItem statusDetailTypeItem : this.statusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
+			for (StatusDetailTypeItem statusDetailTypeItem : this.finalStatusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
 				for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
 					if (serviceResponse.getDescription().getMssURI().equals(FiComAdditionalServices.VALIDATE_URI)) {
 						validationStatus = serviceResponse.getStatus();
@@ -135,7 +144,7 @@ public class FiComResponse {
     
     public boolean isValid() {
     	try {
-    		long statusCode = this.statusResp.getStatus().getStatusCode().getValue();
+    		long statusCode = this.finalStatusResp.getStatus().getStatusCode().getValue();
 	    	boolean aeStatusOk; 
 	
 	    	try {

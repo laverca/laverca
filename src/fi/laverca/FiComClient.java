@@ -38,9 +38,6 @@ public class FiComClient {
 
     private EtsiClient etsiClient;
     private ExecutorService threadExecutor; 
-    private MSS_SignatureReq sigReq;
-    private MSS_SignatureResp sigResp;
-    private String apTransId;
 
     public FiComClient( String apId,             // AP settings
                         String apPwd, 
@@ -193,13 +190,12 @@ public class FiComClient {
         }
 
         final FiComRequest fiReq = new FiComRequest();
-        this.apTransId = apTransId;
 
         String msisdn = phoneNumber; //consider using some kind of normalizer
         String dataToBeDisplayed = null;
         MessagingModeType messagingMode = MessagingModeType.ASYNCHCLIENTSERVER;
 
-        sigReq = etsiClient.createSignatureRequest(this.apTransId, 
+        final MSS_SignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, 
                                                                     msisdn, 
                                                                     dtbs, 
                                                                     dataToBeDisplayed, 
@@ -217,12 +213,12 @@ public class FiComClient {
             }
         }
 
-        sigResp = null;
+        MSS_SignatureResp _sigResp = null;
         try {
             log.debug("sending sigReq");
-            sigResp = etsiClient.send(sigReq);
+            _sigResp = etsiClient.send(sigReq);
             log.debug("got resp");
-            fiReq.sigResp = sigResp;
+            fiReq.sigResp = _sigResp;
         }
         catch(AxisFault af) {
             log.error("got soap fault", af);
@@ -235,7 +231,7 @@ public class FiComClient {
             //handler.onError(fiReq, ioe);
         }
         
-        final MSS_SignatureResp fSigResp = sigResp;
+        final MSS_SignatureResp fSigResp = _sigResp;
         FutureTask<FiComResponse> ft = 
             new FutureTask<FiComResponse>(new Callable<FiComResponse>() {
                 @SuppressWarnings("finally")
@@ -282,7 +278,9 @@ public class FiComClient {
                             }
                             else if(done) {
                                 log.debug("got a final statResp. Ending the wait.");
-                                fiResp = new FiComResponse(statResp);
+                                fiResp = new FiComResponse(sigReq,
+                                                           fSigResp,
+                                                           statResp);
                                 try {
                                     handler.onResponse(fiReq, fiResp);
                                 }
@@ -337,11 +335,17 @@ public class FiComClient {
 
     }
     
-    public void sendReceipt(String message) {
-    	log.debug("sending receipt");
-    	MSS_ReceiptReq receiptReq = etsiClient.createReceiptRequest(sigResp, apTransId, message);
-        receiptReq.setMobileUser(sigReq.getMobileUser());
-        receiptReq.setStatus(sigResp.getStatus());
+    public void sendReceipt(FiComResponse fiResp, String message) {
+        
+        if(fiResp == null)
+            throw new IllegalArgumentException("null fiResp object. Can't send receipt.");
+        
+        log.debug("sending receipt");
+    	MSS_ReceiptReq receiptReq = etsiClient.createReceiptRequest(fiResp.originalSigResp, 
+    	                                                            fiResp.originalSigReq.getAP_Info().getAP_TransID(), 
+    	                                                            message);
+        receiptReq.setMobileUser(fiResp.originalSigReq.getMobileUser());
+        //receiptReq.setStatus(fiResp.originalSigResp.getStatus());
         try {
 			etsiClient.send(receiptReq);
 		} catch (IOException e) {
