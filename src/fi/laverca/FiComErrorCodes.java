@@ -111,7 +111,7 @@ public class FiComErrorCodes {
     public final static StatusCode      INVALID_KEY_ALGORITHM            = new TwoLevelStatusCode(900, 9008);
 
 
-    static class StatusCode {
+    public static class StatusCode {
         public final int primaryCode;
 
         public StatusCode(int primary) {
@@ -147,7 +147,7 @@ public class FiComErrorCodes {
         }
     }
 
-    static class TwoLevelStatusCode extends StatusCode {
+    public static class TwoLevelStatusCode extends StatusCode {
         public final int secondaryCode;
 
         public TwoLevelStatusCode(int primary, int secondary) {
