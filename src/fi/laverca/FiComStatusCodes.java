@@ -17,7 +17,7 @@ public class FiComStatusCodes {
     public final static StatusCode      OUTSTANDING_TRANSACTION          = new StatusCode(504);
     public final static StatusCode      CONSTRAINT_MISMATCH              = new StatusCode(505);
     
-    static class StatusCode {
+    public static class StatusCode {
         private final int primaryCode;
         
         public StatusCode(int primary) {
