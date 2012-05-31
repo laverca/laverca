@@ -158,7 +158,7 @@ public class FiComErrorCodes {
         @Override
         public boolean is(AxisFault af) {
             QName[] subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.length != 1)
+            if(subcodes == null || subcodes.length < 2)
                 return false;
             return 
             subcodeMatch(this.primaryCode,   subcodes[0]) &&
