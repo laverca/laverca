@@ -71,7 +71,6 @@
       </classpath>
       <include name="**/**.java"/>
     </javac>
-    <copy file="${src}/client-config.wsdd" todir="${build}/laverca"/>
     <jar jarfile="${build}/laverca.jar">
       <fileset dir="${build}/laverca">
         <include name="**"/>
