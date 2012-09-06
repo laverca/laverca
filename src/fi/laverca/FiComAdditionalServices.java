@@ -46,7 +46,7 @@ public class FiComAdditionalServices {
     public static final String PERSON_ID_SURNAME    = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#surName";
     public static final String PERSON_ID_SUBJECT    = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#subject";
     public static final String PERSON_ID_VALIDUNTIL = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#validUntil";
-
+    
 
     /** Create an AdditionalService for Ficom noSpam codes as per FiCom 2.0
      */
@@ -117,28 +117,54 @@ public class FiComAdditionalServices {
 
     public static class PersonIdAttribute {
         Attribute samlAttribute;
+        
         PersonIdAttribute(Attribute samlAttribute) {
             if(samlAttribute == null) {
                 throw new IllegalArgumentException("null attribute not allowed.");
             }
             this.samlAttribute = samlAttribute;
         }
+        
         public String getName() {
             return this.samlAttribute.getName();
         }
+        
         public String getStringValue() {
             try {
-                Object o = this.samlAttribute.getAttributeValue(0);
-                org.exolab.castor.types.AnyNode an = (org.exolab.castor.types.AnyNode)o;
-                return an.getStringValue();
-                //TODO address is not a string. It's an xml struct.
+                if (PERSON_ID_ADDRESS.equals(this.samlAttribute.getName())){
+                    Object o = this.samlAttribute.getAttributeValue(0);
+                    fi.ficom.mss.TS102204.v1_0_0.PostalAddress pa;
+                    try {
+                        pa = (fi.ficom.mss.TS102204.v1_0_0.PostalAddress)o;
+                    } catch (Throwable t){
+                        return null;
+                    }
+                    return postalAddressToString(pa);       
+                } else {                       
+                    Object o = this.samlAttribute.getAttributeValue(0);
+                    org.exolab.castor.types.AnyNode an = (org.exolab.castor.types.AnyNode)o;
+                    return an.getStringValue();
+                }
             }
             catch(Throwable t) {
                 log.error("",t);
                 return null;
             }
         }
-
+        
+        /**
+         * Pretty print postal address 
+         * There is no standard way to print postal address. Laverca uses comma separated values.
+         * @param pa PostalAddress class to be printed
+         * @return Pretty print of PostalAddress
+         */
+        private String postalAddressToString(fi.ficom.mss.TS102204.v1_0_0.PostalAddress pa){
+            return pa.getName() + ", " + 
+                   pa.getStreetAddress() + ", " + 
+                   pa.getPostalCode() + " " +
+                   pa.getTown() + ", " +
+                   pa.getCountry();
+        }
     }
 
     public static ServiceResponses readServiceResponses(StatusDetail sd) {
