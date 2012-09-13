@@ -18,16 +18,16 @@
   
   <fileset dir="${lib}" id="lib.fileset">
     <include name="axis-1.4.jar"/>
-    <include name="castor-1.3.jar"/>
-    <include name="castor-1.3-core.jar"/>
+    <include name="castor-1.3.1.jar"/>
+    <include name="castor-1.3.1-core.jar"/>
     <include name="commons-codec-1.4.jar"/>
   	<include name="commons-configuration-1.6.jar"/>
   	<include name="commons-lang-2.6.jar"/>
     <include name="commons-discovery-0.4.jar"/>
     <include name="commons-httpclient-3.1.jar"/>
-    <include name="commons-logging-1.1.jar"/>
+    <include name="commons-logging-1.1.1.jar"/>
     <include name="jaxrpc-1.1.jar"/>
-    <include name="wsdl4j-1.5.1.jar"/>
+    <include name="wsdl4j-1.6.2.jar"/>
     <include name="bcprov-jdk16-145.jar"/>
   </fileset>
   
