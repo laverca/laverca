@@ -121,9 +121,7 @@ public class BankTransfer {
 		            	@Override
 		            	public void onError(FiComRequest req, Throwable throwable) {
 		            		log.info("got error", throwable);
-		            		responseBox.setText("User did not allow transfer from " + 
-		            				fromTxt + " to\n" + toTxt + ", " + amountTxt + "\n" + 
-		            				responseBox.getText());
+		            		responseBox.setText(throwable.getMessage());
 							callStateProgressBar.setIndeterminate(false);
 
 		            	}

@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -159,8 +160,7 @@ public class Authentication {
 							
     			            	@Override
     			            	public void onError(FiComRequest req, Throwable throwable) {
-    			            		log.info("got error", throwable);
-    			            		responseBox.setText(responseBox.getText() + throwable);
+    			            		responseBox.setText(throwable.getMessage());
     								callStateProgressBar.setIndeterminate(false);
     			            	}
     			            	
@@ -208,31 +208,38 @@ public class Authentication {
     			response+="\n";
     		    response+="CriticalExtensionOIDs:\n";
     		    response+=resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n";
-    		    response+="AE validation status code: " + validationStatus.getStatusCode().getValue();
-        		response+=" (" + validationStatus.getStatusMessage() + ")\n";
-
-    			Set<String> oids = resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs();
-    			response +="Event ID: " + eventId + "\n";	
-    			for (String oid : oids) {
-    				response +="   " + oid + "\n";
-    			}
-    			response +="NonCriticalExtensionOIDs:" + "\n";
-    			oids = resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs();
-    			for (String oid : oids) {
-    				response +="   " + oid + "\n";
-    			}
-    			
-        		for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-        			response +=a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
-        					+ "\n";
+    		    //response+="AE validation status code: " + validationStatus.getStatusCode().getValue();
+        		//response+=" (" + validationStatus.getStatusMessage() + ")\n";
+        		try {
+        		    Set<String> oids = resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs();
+        			response +="Event ID: " + eventId + "\n";	
+        			for (String oid : oids) {
+        				response +="   " + oid + "\n";
+        			}
+        			response +="NonCriticalExtensionOIDs:" + "\n";
+        			oids = resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs();
+        			for (String oid : oids) {
+        				response +="   " + oid + "\n";
+        			}
+        		} catch (NullPointerException e){
+    	                log.debug("Unable to get OIDs");
+    	        }
+        		try {
+        			List<PersonIdAttribute> attributes = resp.getPersonIdAttributes();
+    			    response +="PersonIdAttributes: \n";
+            		for(PersonIdAttribute a : attributes) {
+            			response +=a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
+            					+ "\n";
+            		}
+        		} catch (NullPointerException ne){
+        		    log.debug("Unable to get PersonIdAttributes");
         		}
-        		
     		} catch (FiComException e1) {
     			log.info(e1);
     		} catch (UnsupportedEncodingException e) {
     			log.info("Unsupported encoding", e);
-    		} catch (NullPointerException e){
-    			log.info(e);
+    		} catch (NullPointerException ne){
+    		    ne.printStackTrace();
     		}
     		responseBox.setText(response);
     	}
