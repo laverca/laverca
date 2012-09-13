@@ -12,8 +12,8 @@
     <apPwd>pfkpfk</apPwd>
   </ap>
   <mssp>
-    <msspSignatureUrl>https://changeme.com/soap/services/MSS_SignaturePort</msspSignatureUrl>
-    <msspStatusUrl>https://changeme.com/soap/services/MSS_StatusQueryPort</msspStatusUrl>
-    <msspReceiptUrl>https://changeme.com/soap/services/MSS_ReceiptPort</msspReceiptUrl>
+    <msspSignatureUrl>http://server-eemeli:9050/soap/services/MSS_SignaturePort</msspSignatureUrl>
+    <msspStatusUrl>http://server-eemeli:9050/soap/services/MSS_StatusQueryPort</msspStatusUrl>
+    <msspReceiptUrl>http://server-eemeli:9050/soap/services/MSS_ReceiptPort</msspReceiptUrl>
   </mssp>
 </contact-information>

@@ -87,7 +87,7 @@ public class FiComSigReqCaller {
 
 											@Override
 											public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-												
+												log.debug("got progress update");
 											}
                                          });
         }

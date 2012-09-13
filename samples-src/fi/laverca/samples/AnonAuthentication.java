@@ -114,8 +114,7 @@ public class AnonAuthentication {
 			            	@Override
 			            	public void onError(FiComRequest req, Throwable throwable) {
 								callStateProgressBar.setIndeterminate(false);
-			            		log.info("got error", throwable);
-			            		responseBox.setText("ERROR, " + phoneNumber + "\n" + responseBox.getText());
+			            		responseBox.setText(throwable.getMessage());
 			            	}
 
 							@Override

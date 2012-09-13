@@ -116,8 +116,7 @@ public class DirectCall {
 				        		public void onError(FiComRequest req, Throwable throwable) {
 				        			log.info("got error", throwable);
 									callStateProgressBar.setIndeterminate(false);
-				        			responseBox.setText("ERROR, " + phoneNumber + "\n" +
-				        					responseBox.getText());
+				        			responseBox.setText(throwable.getMessage());
 				        		}
 
 								@Override
