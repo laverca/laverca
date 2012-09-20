@@ -1,6 +1,7 @@
 package fi.laverca.samples;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
@@ -15,24 +16,19 @@ import fi.laverca.FiComMSS_Formats;
 import fi.laverca.FiComSignatureProfiles;
 
 public class EtsiSigReqCaller {
+    
     private static final Log log = LogFactory.getLog(EtsiSigReqCaller.class);
 
-    /**
-     * @param args
-     */
     public static void main(String[] args) {
        
-        //String apId  = "http://my.ap.id";
-        //String apPwd = "my-ap-pwd";
-
-        //TODO: Use your AP identity
-        String apId  = "http://ap1.methics.fi";
-        String apPwd = "ap1pass";
+        Properties properties = SampleConf.getProperties();
         
-        //TODO: Use your own addresses
-        String msspSignatureUrl    = "http://pavo.methics.fi:50080/soap/services/MSS_SignaturePort";
-        String msspStatusUrl       = "http://pavo.methics.fi:50080/soap/services/MSS_StatusQueryPort";
-        String msspReceiptUrl      = "http://pavo.methics.fi:50080/soap/services/MSS_ReceiptPort";
+        String apId  = properties.getProperty(SampleConf.AP_ID);
+        String apPwd = properties.getProperty(SampleConf.AP_PASSWORD);
+        
+        String msspSignatureUrl    = properties.getProperty(SampleConf.SIGNATURE_URL);
+        String msspStatusUrl       = properties.getProperty(SampleConf.STATUS_URL);
+        String msspReceiptUrl      = properties.getProperty(SampleConf.RECEIPT_URL);
         String msspRegistrationUrl = "http://nevermind";
         String msspProfileUrl      = "http://nevermind";
         String msspHandshakeUrl    = "http://nevermind";

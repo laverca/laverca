@@ -4,9 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Properties;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
@@ -43,26 +42,21 @@ public class BankTransfer {
 	 */
 	private static void connect(final String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
 		
-		XMLConfiguration config = null;
-		try {
-		    config = new XMLConfiguration(CONFIG_LOCATION);
-		} catch(ConfigurationException e) {
-		    log.info("configuration file not found", e);
-		}
-		
-		log.info("setting up ssl");
-		JvmSsl.setSSL(config.getString("ssl.trustStore"),
-				config.getString("ssl.trustStorePassword"),
-				config.getString("ssl.keyStore"),
-				config.getString("ssl.keyStorePassword"),
-				config.getString("ssl.keyStoreType"));
-		
-		String apId  = config.getString("ap.apId");
-        String apPwd = config.getString("ap.apPwd");
+        Properties properties = SampleConf.getProperties();
+        
+        log.info("setting up ssl");
+        JvmSsl.setSSL(properties.getProperty(SampleConf.TRUSTSTORE_FILE),
+                properties.getProperty(SampleConf.TRUSTSTORE_PASSWORD),
+                properties.getProperty(SampleConf.KEYSTORE_FILE),
+                properties.getProperty(SampleConf.KEYSTORE_PASSWORD),
+                properties.getProperty(SampleConf.KEYSTORE_TYPE));
+        
+        String apId  = properties.getProperty(SampleConf.AP_ID);
+        String apPwd = properties.getProperty(SampleConf.AP_PASSWORD);
 
-        String msspSignatureUrl    = config.getString("mssp.msspSignatureUrl");
-        String msspStatusUrl       = config.getString("mssp.msspStatusUrl");
-        String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
+        String msspSignatureUrl    = properties.getProperty(SampleConf.SIGNATURE_URL);
+        String msspStatusUrl       = properties.getProperty(SampleConf.STATUS_URL);
+        String msspReceiptUrl      = properties.getProperty(SampleConf.RECEIPT_URL);
 
         log.info("creating FiComClient");
         fiComClient = new FiComClient(apId, 
