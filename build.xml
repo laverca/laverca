@@ -13,21 +13,12 @@
   <property location="samples-src" name="samples-src"/>
   <property location="lib" name="lib"/>
   <property location="etc" name="etc"/>
+  <property location="conf" name="conf"/>
   <property location="docs" name="docs"/>
   <property location="start-scripts" name="start-scripts"/>
   
   <fileset dir="${lib}" id="lib.fileset">
-    <include name="axis-1.4.jar"/>
-    <include name="castor-1.3.1.jar"/>
-    <include name="castor-1.3.1-core.jar"/>
-    <include name="commons-codec-1.6.jar"/>
-  	<include name="commons-lang-2.6.jar"/>
-    <include name="commons-discovery-0.4.jar"/>
-    <include name="commons-httpclient-3.1.jar"/>
-    <include name="commons-logging-1.1.1.jar"/>
-    <include name="jaxrpc-1.1.jar"/>
-    <include name="wsdl4j-1.6.2.jar"/>
-    <include name="bcprov-jdk16-145.jar"/>
+    <include name="**/**.jar"/>
   </fileset>
   
   <path id="project.classpath">
@@ -36,7 +27,7 @@
 
   <target name="clean">
     <delete dir="${build}"/>
-    <delete dir="${dist}"/>
+    <delete dir="${dist}" failonerror="false"/>
   </target>
 
   <target name="init">
@@ -88,7 +79,6 @@
       </classpath>
       <include name="**/**.java"/>
     </javac>
-  	<copy file="${samples-src}/fi/laverca/samples/configuration.xml" todir="${build}/samples/fi/laverca/samples"/>
     <jar jarfile="${build}/laverca-samples.jar">
       <fileset dir="${build}/samples">
         <include name="**"/>
@@ -117,6 +107,11 @@
 	<copy todir="${dist}/etc">
 	  <fileset dir="${etc}" includes="**/*"/>
 	</copy>
+    
+    <mkdir dir="${dist}/conf"/>
+    <copy todir="${dist}/conf">
+      <fileset dir="${conf}" includes="**/*"/>
+    </copy>
   </target>
 	
   <target depends="init" name="copy-info">
