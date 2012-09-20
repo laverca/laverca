@@ -4,9 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Properties;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.Service;
@@ -32,7 +31,7 @@ public class AnonAuthentication {
 
 	private static final Log log = LogFactory.getLog(AnonAuthentication.class);
 	private static FiComRequest req;
-	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
+
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response.
@@ -40,26 +39,21 @@ public class AnonAuthentication {
 	 */
 	private static void connect(final String phoneNumber) {
 		
-		XMLConfiguration config = null;
-		try {
-		    config = new XMLConfiguration(CONFIG_LOCATION);
-		} catch(ConfigurationException e) {
-		    log.info("configuration file not found", e);
-		}
-		
+	    Properties properties = SampleConf.getProperties();
+	    
 		log.info("setting up ssl");
-		JvmSsl.setSSL(config.getString("ssl.trustStore"),
-				config.getString("ssl.trustStorePassword"),
-				config.getString("ssl.keyStore"),
-				config.getString("ssl.keyStorePassword"),
-				config.getString("ssl.keyStoreType"));
+		JvmSsl.setSSL(properties.getProperty(SampleConf.TRUSTSTORE_FILE),
+		        properties.getProperty(SampleConf.TRUSTSTORE_PASSWORD),
+		        properties.getProperty(SampleConf.KEYSTORE_FILE),
+		        properties.getProperty(SampleConf.KEYSTORE_PASSWORD),
+		        properties.getProperty(SampleConf.KEYSTORE_TYPE));
 		
-		String apId  = config.getString("ap.apId");
-        String apPwd = config.getString("ap.apPwd");
+		String apId  = properties.getProperty(SampleConf.AP_ID);
+        String apPwd = properties.getProperty(SampleConf.AP_PASSWORD);
 
-        String msspSignatureUrl    = config.getString("mssp.msspSignatureUrl");
-        String msspStatusUrl       = config.getString("mssp.msspStatusUrl");
-        String msspReceiptUrl      = config.getString("mssp.msspReceiptUrl");
+        String msspSignatureUrl    = properties.getProperty(SampleConf.SIGNATURE_URL);
+        String msspStatusUrl       = properties.getProperty(SampleConf.STATUS_URL);
+        String msspReceiptUrl      = properties.getProperty(SampleConf.RECEIPT_URL);
 
         log.info("creating FiComClient");
         FiComClient fiComClient = new FiComClient(apId, 
@@ -78,8 +72,8 @@ public class AnonAuthentication {
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
         LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_AGE);
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_GENDER);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
+        //attributeNames.add(FiComAdditionalServices.PERSON_ID_GENDER);
         Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
         additionalServices.add(personIdService);
         
