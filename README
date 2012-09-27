@@ -1,6 +1,6 @@
-Laverca 1.0
+Laverca 1.1 RC 1
 =======
-June 2011
+September 2012
 
 Laverca is an open-source implementation of the ETSI TS 102 204
 SOAP interface for Application Providers. In addition to the 
@@ -9,7 +9,10 @@ features specified in Finland.
 
 
 CHANGELOG
-	  
+	
+     27.9.2012 1.1 RC 1
+       Cleaned up and updated libraries  	
+
 	07.04.2011 0.9 
 	  Initial version distributed privately for review.
 	

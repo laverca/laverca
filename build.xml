@@ -3,7 +3,7 @@
     Laverca project build file
   </description>
   
-  <property value="1.01" name="project-version"/>
+  <property value="1.1-RC1" name="project-version"/>
   <property value="laverca" name="project-name"/>
 	
   <property location="build" name="build"/>
