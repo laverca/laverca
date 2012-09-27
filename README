@@ -9,130 +9,139 @@ features specified in Finland.
 
 
 CHANGELOG
-	
-     27.9.2012 1.1 RC 1
-       Cleaned up and updated libraries  	
-
-	07.04.2011 0.9 
-	  Initial version distributed privately for review.
-	
-	April-May 0.91...0.93 
-	  Minor bugfixes according to review and testing feedback.
-	
-	20.06.2011 0.94 
-	  First version in SourceForge. Apache 2.0 License
-	  
-	22.06.2011 0.95
-	  Minor bugfixes. Altered the way DTBS works. Added support for AE validation.
-	  
-	30.06.2011 1.0
-	  PKCS1 support
-	  AE validation support
-	  Receipt support in FiComClient
+    
+    27.09.2012 1.1 RC 1
+       Cleaned up and updated libraries:
+         - Upgraded Commons HTTPClient to HTTPComponents
+         - Removed Commons Configuration, 
+            uses java properties instead
+         - Updated Commons Codec, Castor, 
+            Commons Logging and wsdl4j libraries
+       Cleaned up ant build file
+       Fixed getting address from FiCom response
+       Fixed bugs 3529730, 3529086, 3414397, 3393586      
+       
+    07.04.2011 0.9 
+      Initial version distributed privately for review.
+    
+    April-May 0.91...0.93 
+      Minor bugfixes according to review and testing feedback.
+    
+    20.06.2011 0.94 
+      First version in SourceForge. Apache 2.0 License
+      
+    22.06.2011 0.95
+      Minor bugfixes. Altered the way DTBS works. 
+      Added support for AE validation.
+      
+    30.06.2011 1.0
+      PKCS1 support
+      AE validation support
+      Receipt support in FiComClient
 
 
 REQUIREMENTS
  
-	Java 6
-		Java 5 can also be used by building the included source code with JDK 5. 
-	Ant (Tested with v1.8.1)
+    Java 6
+        Java 5 can also be used by building the included source code with JDK 5. 
+    Ant (Tested with v1.8.1)
 
 
-	Download Ant
-	http://ant.apache.org/bindownload.cgi
+    Download Ant
+    http://ant.apache.org/bindownload.cgi
 
-	Ant manual
-	http://ant.apache.org/manual/index.html
-	
-	JDK SE
-	http://www.oracle.com/technetwork/java/javase/downloads/index.html
+    Ant manual
+    http://ant.apache.org/manual/index.html
+    
+    JDK SE
+    http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 
 INSTALLATION
-	
-	To create distribution
-	(Run in Laverca folder.)
-	ant
-	 OR
-	ant dist
-	
-	
-	To compile
-	ant compile-all
-	
+    
+    To create distribution
+    (Run in Laverca folder.)
+    ant
+     OR
+    ant dist
+    
+    
+    To compile
+    ant build
+    
 
 USAGE
-	
-	To run distributed sample
-	run dist/start-scripts/FiComSigReqCaller.(bat/sh)
-	Most samples require GUI.
-	
+    
+    To run distributed sample
+    run dist/start-scripts/FiComSigReqCaller.(bat/sh)
+    Most samples require GUI.
+    
 
 DEVELOPMENT (with Eclipse)
-	
-	Install Eclipse IDE for Java Developers
-	http://www.eclipse.org/downloads/
-	
-	Install Subclipse
-	http://subclipse.tigris.org/install.html
-	
-	
-	STEP-BY-STEP instructions
-	
-		File -> New -> Other...
-		SVN/Checkout Projects from SVN
-		Create new repository location:
-		https://laverca.svn.sourceforge.net/svnroot/laverca
-		
-		Select Folder:
-		https://laverca.svn.sourceforge.net/svnroot/laverca
-		Finish
-		
-		New project
-		Java/Java Project
-		
-		Set Project name
-		Finish
-		
-		
-		Righ click your project folder -> Properties
-		Java Build Path -> Source
-		Add Folder...
-		Select: datatypes-scr and samples-src -> OK
-		Java Build Path -> Libraries
-		Add JARs...
-		Select all JAR files in <Project Name>/lib
-		
-		You may want to study the samples-src
-		and change an initial value of WAIT_PERIOD 
-		in fi.laverca.FiComClient to 1*1000 instead of 20*1000
-		for development.
-		
-		
+    
+    Install Eclipse IDE for Java Developers
+    http://www.eclipse.org/downloads/
+    
+    Install Subclipse
+    http://subclipse.tigris.org/install.html
+    
+    
+    STEP-BY-STEP instructions
+    
+        File -> New -> Other...
+        SVN/Checkout Projects from SVN
+        Create new repository location:
+        https://laverca.svn.sourceforge.net/svnroot/laverca
+        
+        Select Folder:
+        https://laverca.svn.sourceforge.net/svnroot/laverca
+        Finish
+        
+        New project
+        Java/Java Project
+        
+        Set Project name
+        Finish
+        
+        
+        Righ click your project folder -> Properties
+        Java Build Path -> Source
+        Add Folder...
+        Select: datatypes-scr and samples-src -> OK
+        Java Build Path -> Libraries
+        Add JARs...
+        Select all JAR files in <Project Name>/lib
+        
+        You may want to study the samples-src
+        and change an initial value of WAIT_PERIOD 
+        in fi.laverca.FiComClient to 1*1000 instead of 20*1000
+        for development.
+        
+        
 FEATURES
 
-	1. Supports synchronic and asynchronic client-server.
-	     (FiComClient for C/S asynch, EtsiClient for synchronic)
-	2. Strong mutual identification and encryption between all message routing entities.
-	     (JvmSsl)
-	3. Strong mutual identification and encryption between AP and AE including a password (AP_PWD).
-	     (JvmSsl)
-	4. Supported message formats are: MSS_SignatureReq, MSS_SignatureResp, MSS_StatusReq, MSS_StatusResp, MSS_ReceiptReq and MSS_ReceiptResp.
-	     (FiComClient, EtsiClient)
-	5. Supported character maps in service requests are UTF-8, GSM and UCS2.
-	     (FiComCharsetLimiter)
-	6. Supported character maps in client device are GSM 03.38 and UCS2.
-	     (FiComCharsetLimiter)
-	7. Provides all 6 different signature provides defined in FiCom 2.0.
-	     (FiComClient, FiComSignatureProfiles)
-	8. The signature profiles are used for choosing a specified service.
-	     (FiComClient, FiComSignatureProfiles)
-	9. The user can deny usage of any signature profile on the client device.
-	     (FiComErrorCodes)
-	10. Supports all of the FiCom 2.0 additional services.
-	     (FiComClient)
-	11. The format of the digital signature is base64-encoding and PKCS#7 or PKCS#1 with the users certificate.
-	     (FiComResponse)
+    1. Supports synchronic and asynchronic client-server.
+         (FiComClient for C/S asynch, EtsiClient for synchronic)
+    2. Strong mutual identification and encryption between all message routing entities.
+         (JvmSsl)
+    3. Strong mutual identification and encryption between AP and AE including a password (AP_PWD).
+         (JvmSsl)
+    4. Supported message formats are: MSS_SignatureReq, MSS_SignatureResp, MSS_StatusReq, MSS_StatusResp, MSS_ReceiptReq and MSS_ReceiptResp.
+         (FiComClient, EtsiClient)
+    5. Supported character maps in service requests are UTF-8, GSM and UCS2.
+         (FiComCharsetLimiter)
+    6. Supported character maps in client device are GSM 03.38 and UCS2.
+         (FiComCharsetLimiter)
+    7. Provides all 6 different signature provides defined in FiCom 2.0.
+         (FiComClient, FiComSignatureProfiles)
+    8. The signature profiles are used for choosing a specified service.
+         (FiComClient, FiComSignatureProfiles)
+    9. The user can deny usage of any signature profile on the client device.
+         (FiComErrorCodes)
+    10. Supports all of the FiCom 2.0 additional services.
+         (FiComClient)
+    11. The format of the digital signature is base64-encoding and PKCS#7 or PKCS#1 with the users certificate.
+         (FiComResponse)
 
 
 
