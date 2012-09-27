@@ -28,7 +28,6 @@
 
   <target name="init">
     <mkdir dir="${build}"/>
-    <copy file="${src}/client-config.wsdd" todir="${build}/laverca"/>
   	<mkdir dir="${dist}"/>
   </target>
   
