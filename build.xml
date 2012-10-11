@@ -3,7 +3,7 @@
     Laverca project build file
   </description>
   
-  <property value="1.1-RC1" name="project-version"/>
+  <property value="1.1-RC2" name="project-version"/>
   <property value="laverca" name="project-name"/>
 	
   <property location="build" name="build"/>
@@ -92,6 +92,7 @@
   
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>
     <copy todir="${dist}"><fileset dir="${build}" includes="*.jar"/></copy>
+	<copy todir="${dist}/datatypes-src"><fileset dir="${datatypes-src}"/></copy>
 	<copy todir="${dist}/samples-src"><fileset dir="${samples-src}"/></copy>
   	<copy todir="${dist}/src"><fileset dir="${src}"/></copy>    
 	<copy todir="${dist}/start-scripts"><fileset dir="${start-scripts}"/></copy>

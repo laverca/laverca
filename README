@@ -10,16 +10,20 @@ features specified in Finland.
 
 CHANGELOG
     
+    11.10.2012 1.1 RC 2
+      Updated readme
+      Added missing datatypes-src folder to the release package
+
     27.09.2012 1.1 RC 1
-       Cleaned up and updated libraries:
-         - Upgraded Commons HTTPClient to HTTPComponents
-         - Removed Commons Configuration, 
-            uses java properties instead
-         - Updated Commons Codec, Castor, 
-            Commons Logging and wsdl4j libraries
-       Cleaned up ant build file
-       Fixed getting address from FiCom response
-       Fixed bugs 3529730, 3529086, 3414397, 3393586      
+      Cleaned up and updated libraries:
+        - Upgraded Commons HTTPClient to HTTPComponents
+        - Removed Commons Configuration, 
+           uses java properties instead
+        - Updated Commons Codec, Castor, 
+           Commons Logging and wsdl4j libraries
+      Cleaned up ant build file
+      Fixed getting address from FiCom response
+      Fixed bugs 3529730, 3529086, 3414397, 3393586      
        
     07.04.2011 0.9 
       Initial version distributed privately for review.
