@@ -72,8 +72,7 @@ public class AnonAuthentication {
         Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
         LinkedList<Service> additionalServices = new LinkedList<Service>();
         LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);
-        //attributeNames.add(FiComAdditionalServices.PERSON_ID_GENDER);
+        attributeNames.add(FiComAdditionalServices.PERSON_ID_GENDER);
         Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
         additionalServices.add(personIdService);
         
