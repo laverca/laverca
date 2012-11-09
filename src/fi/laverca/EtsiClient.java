@@ -280,7 +280,7 @@ public class EtsiClient {
      */
     public MSS_StatusReq createStatusRequest(MSS_SignatureResp sigResp,
                                              String apTransId
-                                             ) {
+                                             ) throws IllegalArgumentException {
         MSS_StatusReq req = new MSS_StatusReq();
         
         fillMatStuff(req, apTransId);
@@ -300,7 +300,7 @@ public class EtsiClient {
 
         String msspTransId = sigResp.getMSSP_TransID();
         req.setMSSP_TransID(msspTransId);
-
+        
         return req;
     }
 
