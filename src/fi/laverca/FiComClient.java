@@ -262,7 +262,18 @@ public class FiComClient {
                                 break LOOP;
                             }
                         }
-                        MSS_StatusReq  statReq = etsiClient.createStatusRequest(fSigResp, apTransId);
+                        MSS_StatusReq  statReq = null;
+                        try {
+                            statReq = etsiClient.createStatusRequest(fSigResp, apTransId);
+                        } catch (Throwable t){
+                            log.error("Failed creating status request");
+                            try {
+                                handler.onError(fiReq, t);
+                            } 
+                            finally {
+                                break LOOP;
+                            }
+                        }
                         try {
                             log.debug("sending statReq");
                             statResp = etsiClient.send(statReq);
