@@ -1,3 +1,3 @@
 #!/bin/sh
-cd dist/start-scripts/..
+cd `dirname $0`/..
 java -classpath 'lib/*:*' fi.laverca.samples.BankTransfer
