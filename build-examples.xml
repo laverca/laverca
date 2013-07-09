@@ -1,0 +1,51 @@
+<project name="Laverca examples" basedir="." default="dist">
+  <description>
+    Laverca examples build file
+  </description>
+
+  <property name="build"     location="build" />
+	
+  <property name="examples-src" location="src"/>
+	
+  <property name="libs"      location="../libs"/>
+  <property name="conf"      location="conf"/>
+  <property name="scripts"   location="scripts" />
+
+  <property name="core-lib"      location="${libs}/laverca-core.jar" />
+  <property name="datatypes-lib" location="${libs}/laverca-datatypes.jar" />
+  <property name="examples-lib"  location="${build}/laverca-examples.jar" />
+
+  <path id="example-libs">
+    <fileset dir="${libs}"><include name="*.jar"/></fileset>
+    <pathelement location="${core-lib}" />
+    <pathelement location="${datatypes-lib}" />
+  </path>
+
+  <target name="clean">
+    <delete dir="${build}" />
+  	<delete file="laverca-examples.jar" />
+  </target>
+  
+  <target name="build"  depends="build-examples" />  
+
+  <target name="build-examples">
+    <mkdir dir="${build}/examples" />
+    <javac debug="true" deprecation="true" destdir="${build}/examples" encoding="ISO-8859-15" includeantruntime="false">
+      <src path="${examples-src}" />
+      <classpath>
+      	<path refid="example-libs" />
+      </classpath>
+      <include name="**/**.java" />
+    </javac>
+    <jar jarfile="${examples-lib}">
+      <fileset dir="${build}/examples">
+        <include name="**" />
+      </fileset>
+    </jar>
+  </target>
+	
+  <target name="dist" depends="build">
+    <copy file="${examples-lib}" todir="." />
+  </target>
+
+</project>
