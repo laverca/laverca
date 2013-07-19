@@ -1,0 +1,39 @@
+Laverca Changelog
+=================
+    
+    9.11.2012 1.11
+      Fixed FiComClient loop getting stuck due to missing catch
+      Removed invalid configurations and certs
+      
+    11.10.2012 1.1
+      Updated readme (bug id 3575958)
+      Added missing datatypes-src folder to the release package
+
+    27.09.2012 1.1 RC 1
+      Cleaned up and updated libraries:
+        - Upgraded Commons HTTPClient to HTTPComponents
+        - Removed Commons Configuration, 
+           uses java properties instead
+        - Updated Commons Codec, Castor, 
+           Commons Logging and wsdl4j libraries
+      Cleaned up ant build file
+      Fixed getting address from FiCom response
+      Fixed bugs 3529730, 3529086, 3414397, 3393586      
+       
+    07.04.2011 0.9 
+      Initial version distributed privately for review.
+    
+    April-May 0.91...0.93 
+      Minor bugfixes according to review and testing feedback.
+    
+    20.06.2011 0.94 
+      First version in SourceForge. Apache 2.0 License
+      
+    22.06.2011 0.95
+      Minor bugfixes. Altered the way DTBS works. 
+      Added support for AE validation.
+      
+    30.06.2011 1.0
+      PKCS1 support
+      AE validation support
+      Receipt support in FiComClient

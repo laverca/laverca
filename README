@@ -1,130 +1,78 @@
-Laverca 1.11
-=======
-November 2012
+Laverca Readme
+==============
 
-Laverca is an open-source implementation of the ETSI TS 102 204
-SOAP interface for Application Providers. In addition to the 
-standard ETSI features, Laverca includes the FiCom 2.0 
-features specified in Finland.
+Laverca is an open-source Java API for requesting signatures using mobile 
+signature services.
 
+Mobile signature service (MSS) allows users to sign messages securely using 
+mobile devices. For instance, Laverca API can be used for document signing
+or strong user authentication in a login system.
 
-CHANGELOG
-    
-    9.11.2012 1.11
-      Fixed FiComClient loop getting stuck due to missing catch
-      Removed invalid configurations and certs
-      
-    11.10.2012 1.1
-      Updated readme (bug id 3575958)
-      Added missing datatypes-src folder to the release package
+Laverca implements the ETSI TS 102 204 SOAP interface for application providers 
+(APs). It means that Laverca can communicate with ETSI 204 conforming MSS 
+systems. Laverca supports synchronous and asynchronous signature requests. 
+Status of an asynchronous signature request can be polled.
 
-    27.09.2012 1.1 RC 1
-      Cleaned up and updated libraries:
-        - Upgraded Commons HTTPClient to HTTPComponents
-        - Removed Commons Configuration, 
-           uses java properties instead
-        - Updated Commons Codec, Castor, 
-           Commons Logging and wsdl4j libraries
-      Cleaned up ant build file
-      Fixed getting address from FiCom response
-      Fixed bugs 3529730, 3529086, 3414397, 3393586      
-       
-    07.04.2011 0.9 
-      Initial version distributed privately for review.
-    
-    April-May 0.91...0.93 
-      Minor bugfixes according to review and testing feedback.
-    
-    20.06.2011 0.94 
-      First version in SourceForge. Apache 2.0 License
-      
-    22.06.2011 0.95
-      Minor bugfixes. Altered the way DTBS works. 
-      Added support for AE validation.
-      
-    30.06.2011 1.0
-      PKCS1 support
-      AE validation support
-      Receipt support in FiComClient
+In addition to the ETSI features, Laverca includes the FiCom 2.0 features 
+specified in Finland.
 
 
 REQUIREMENTS
- 
+
+  Laverca API
+
     Java 6
         Java 5 can also be used by building the included source code with JDK 5. 
-    Ant (Tested with v1.8.1)
 
+    JDK SE
+    http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
+
+  Examples
+  
+    Building of examples also require the following.
+  
+    Ant (Tested with v1.8.1)
 
     Download Ant
     http://ant.apache.org/bindownload.cgi
 
     Ant manual
     http://ant.apache.org/manual/index.html
-    
-    JDK SE
-    http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 
-INSTALLATION
+EXAMPLES
+
+    Laverca ships with example implementations. The examples are included 
+    in the examples directory.
+
+
+  Building
+
+    Compiled examples are shipped for your convenience. Build and distribute the 
+    examples jar over the shipped one yourself by running the following command:
+
+    $ ant dist
+
+
+  Usage
     
-    To create distribution
-    (Run in Laverca folder.)
-    ant
+    Most samples require a GUI. Run the examples by using the scripts in 
+    examples/script directory. For example:
+    
+    $ sh examples/script/SignText.sh
      OR
-    ant dist
-    
-    
-    To compile
-    ant build
+    $ examples/script/SignText.bat
     
 
-USAGE
-    
-    To run distributed sample
-    run dist/start-scripts/FiComSigReqCaller.(bat/sh)
-    Most samples require GUI.
-    
+  Configuration
 
-DEVELOPMENT (with Eclipse)
-    
-    Install Eclipse IDE for Java Developers
-    http://www.eclipse.org/downloads/
-    
-    Install Subclipse
-    http://subclipse.tigris.org/install.html
-    
-    
-    STEP-BY-STEP instructions
-    
-        File -> New -> Other...
-        SVN/Checkout Projects from SVN
-        Create new repository location:
-        https://laverca.svn.sourceforge.net/svnroot/laverca
-        
-        Select Folder:
-        https://laverca.svn.sourceforge.net/svnroot/laverca
-        Finish
-        
-        New project
-        Java/Java Project
-        
-        Set Project name
-        Finish
-        
-        
-        Righ click your project folder -> Properties
-        Java Build Path -> Source
-        Add Folder...
-        Select: datatypes-scr and samples-src -> OK
-        Java Build Path -> Libraries
-        Add JARs...
-        Select all JAR files in <Project Name>/lib
-        
-        You may want to study the samples-src
-        and change an initial value of WAIT_PERIOD 
-        in fi.laverca.FiComClient to 1*1000 instead of 20*1000
-        for development.
-        
+    Examples configuration file is located in examples/conf/.
+
+    By default the examples are configured to use a demo AE server which is 
+    hosted by Methics Ltd. Find additional information about the demo service
+    in: http://demo.methics.fi/demo-environment/application-providers/
+
         
 FEATURES
 
@@ -156,3 +104,4 @@ FEATURES
 COPYRIGHT AND LICENSE
 
 see the LICENSE file
+
