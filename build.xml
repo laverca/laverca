@@ -123,6 +123,7 @@
              version="false"
              Private="true"
              use="true"
+             useexternalfile="true"
              windowtitle="Laverca">
       <classpath>
         <path refid="laverca-libs"/>
