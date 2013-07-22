@@ -171,10 +171,6 @@ public class FiComPkcs7 {
         // 1. Read PKCS7.Certificates to get all possible certs.
         log.debug("read all certs");
         List<X509Certificate> certs = readCerts(sd);
-        // In FiCom signatures, there's only one cert
-        if(certs.size() != 1) {
-            throw new IllegalArgumentException("#certs != 1");
-        }
 
         // 2. Read PKCS7.SignerInfo to get all signers.
         log.debug("read signerinfo");
