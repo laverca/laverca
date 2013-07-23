@@ -6,6 +6,7 @@ Laverca Changelog
       Changed structure of the release.
       Implemented correct HttpClient fault and handler processing.
       PKCS7 SignedData.certificates may contain multiple certificates.
+      Updated finnish documentation
 
     09.11.2012 1.11
       Fixed FiComClient loop getting stuck due to missing catch
