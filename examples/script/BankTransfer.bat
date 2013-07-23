@@ -1,3 +1,3 @@
 cd %~dp0..
-java -classpath ../libs/*;* fi.laverca.examples.BankTransfer
+java -classpath ../libs/*;*;../* fi.laverca.examples.BankTransfer
 pause

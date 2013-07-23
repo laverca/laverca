@@ -1,3 +1,3 @@
 #!/bin/sh
 cd `dirname $0`/..
-java -classpath '../libs/*:*' fi.laverca.examples.PersonIdCaller $*
+java -classpath '../libs/*:*:../*' fi.laverca.examples.PersonIdCaller $*
