@@ -77,16 +77,16 @@ public class FiComPkcs7 {
      * 
      */
     public X509Certificate getSignerCert() throws FiComException {
-
-        try {
-            List<X509Certificate> allSignerCerts = getSignerCerts(this._sd);
-            return allSignerCerts.get(0);
-        }
-        catch(RuntimeException e) {
-            log.error("", e);
-            throw new FiComException(e);
+        List<X509Certificate> allSignerCerts = getSignerCerts(this._sd);
+        int certsFound = allSignerCerts.size();
+        
+        if (certsFound < 1) {
+        	throw new FiComException("Signer cert not found.");
+        } else if (certsFound > 1) {
+        	throw new FiComException("Expected a single signer cert but found " + certsFound + ".");
         }
         
+        return allSignerCerts.get(0);
     }
 
     /**
@@ -155,7 +155,7 @@ public class FiComPkcs7 {
     /**
      * Return the certificates used to sign a PKCS7 SignedData.
      */
-    public static List<X509Certificate> getSignerCerts(SignedData sd) {
+    public static List<X509Certificate> getSignerCerts(SignedData sd) throws FiComException {
 
         // 0. Setup. 
         // 1. Read PKCS7.Certificates to get all possible certs.
@@ -172,31 +172,40 @@ public class FiComPkcs7 {
         // 1. Read PKCS7.Certificates to get all possible certs.
         log.debug("read all certs");
         List<X509Certificate> certs = readCerts(sd);
+        
+        if (certs.isEmpty()) {
+        	throw new FiComException("PKCS7 SignedData certificates not found");
+        }
 
         // 2. Read PKCS7.SignerInfo to get all signers.
         log.debug("read signerinfo");
         List<SignerInfo> signerInfos = readSignerInfos(sd);
+        
+        if (signerInfos.isEmpty()) {
+        	throw new FiComException("PKCS7 SignedData signerInfo not found");
+        }
 
         // 3. Verify that signerInfo cert details match the cert on hand
-        log.debug("matching cert and signerinfo details");
+        log.debug("matching cert and signerInfo details");
         for(SignerInfo si : signerInfos) {
-            String siIssuer = readIssuer(si);
-            String siSerial = readSerial(si);
+        	for(X509Certificate theCert : certs) {
+	            String siIssuer = readIssuer(si);
+	            String siSerial = readSerial(si);
 
-            X509Certificate theCert = certs.get(0);
-            String cIssuer = theCert.getIssuerDN().toString();
-            String cSerial = theCert.getSerialNumber().toString();
-
-            if(dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
-                signerCerts.add(theCert);
-            }
-            else {
-                log.debug("cert does not match signerinfo");
-                log.debug(siIssuer);
-                log.debug(siSerial);
-                log.debug(cIssuer);
-                log.debug(cSerial);
-            }
+	            String cIssuer = theCert.getIssuerDN().toString();
+	            String cSerial = theCert.getSerialNumber().toString();
+	
+	            if(dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
+	                signerCerts.add(theCert);
+	                log.debug("cert does match signerInfo");
+	            	log.debug("signerInfo issuer:serial=" + siIssuer + ":" + siSerial);
+	            	log.debug("certificates issuer:serial=" + cIssuer + ":" + cSerial);
+	            } else {
+	            	log.debug("cert does not match signerInfo");
+	            	log.debug("signerInfo issuer:serial=" + siIssuer + ":" + siSerial);
+	            	log.debug("certificates issuer:serial=" + cIssuer + ":" + cSerial);
+	            }
+        	}
         }
 
         // 4. Return the list.
