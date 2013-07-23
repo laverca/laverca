@@ -21,11 +21,13 @@ REQUIREMENTS
 
   Laverca API
 
-    Java 6
-        Java 5 can also be used by building the included source code with JDK 5. 
+    Java 7
+        Java 6 can also be used by building the included source code with JDK 6. 
 
     JDK SE
-    http://www.oracle.com/technetwork/java/javase/downloads/index.html
+        http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
+    Laverca requires the libraries found under libs directory in the release root.
 
 
   Examples
