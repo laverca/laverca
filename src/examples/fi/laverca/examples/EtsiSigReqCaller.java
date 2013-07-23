@@ -33,6 +33,7 @@ import fi.laverca.DTBS;
 import fi.laverca.EtsiClient;
 import fi.laverca.FiComMSS_Formats;
 import fi.laverca.FiComSignatureProfiles;
+import fi.laverca.JvmSsl;
 
 public class EtsiSigReqCaller {
     
@@ -41,6 +42,13 @@ public class EtsiSigReqCaller {
     public static void main(String[] args) {
        
         Properties properties = ExampleConf.getProperties();
+        
+        log.info("setting up ssl");
+        JvmSsl.setSSL(properties.getProperty(ExampleConf.TRUSTSTORE_FILE),
+                properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD),
+                properties.getProperty(ExampleConf.KEYSTORE_FILE),
+                properties.getProperty(ExampleConf.KEYSTORE_PASSWORD),
+                properties.getProperty(ExampleConf.KEYSTORE_TYPE));
         
         String apId  = properties.getProperty(ExampleConf.AP_ID);
         String apPwd = properties.getProperty(ExampleConf.AP_PASSWORD);
