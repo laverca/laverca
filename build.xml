@@ -91,8 +91,8 @@
   	<copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
   	<copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
     	
-    <copy todir="${dist}/libs" file="${core-lib}" />
-    <copy todir="${dist}/libs" file="${datatypes-lib}" />
+    <copy todir="${dist}" file="${core-lib}" />
+    <copy todir="${dist}" file="${datatypes-lib}" />
     <copy todir="${dist}/examples" file="${examples-lib}" />
     
     <copy todir="${dist}" file="README" />
