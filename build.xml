@@ -8,7 +8,7 @@
 	
   <property name="build"     location="build" />
   <property name="dist"      location="dist" />
-  <property name="javadoc"   location="javadoc" />
+  <property name="apidocs"   location="apidocs" />
 	
   <property name="core-src"      location="src/core" />
   <property name="datatypes-src" location="src/datatypes" />
@@ -33,7 +33,7 @@
   <target name="clean">
     <delete dir="${build}" />
     <delete dir="${dist}" />
-    <delete dir="${javadoc}" />
+    <delete dir="${apidocs}" />
   </target>
 
   <!-- BUILD -->
@@ -79,7 +79,7 @@
   
   <!-- DIST -->
   
-  <target name="dist" depends="build, javadoc">
+  <target name="dist" depends="build, apidocs">
   
   	<copy todir="${dist}/examples/conf"><fileset dir="${conf}"/></copy>
   	<copy todir="${dist}/examples/etc"><fileset dir="${etc}"/></copy>
@@ -88,7 +88,7 @@
   	<copy tofile="${dist}/examples/build.xml" file="build-examples.xml" />
   	
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>
-  	<copy todir="${dist}/javadoc"><fileset dir="${javadoc}"/></copy>
+  	<copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
   	<copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
     	
     <copy todir="${dist}/libs" file="${core-lib}" />
@@ -112,13 +112,13 @@
 	<tar compression="gzip" longfile="gnu" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
   </target>
   
-  <target name="javadoc"
+  <target name="apidocs"
           description="Generates Laverca documentation.">
-		  <mkdir dir="javadoc"/>
+		  <mkdir dir="apidocs"/>
   	
-    <javadoc packagenames="fi.laverca.*,fi.ficom.*, org.etsi.*, fi.methics.*"
+    <javadoc packagenames="fi.laverca.*"
              defaultexcludes="yes"
-             destdir="${javadoc}"
+             destdir="${apidocs}"
              author="false"
              version="false"
              Private="true"
@@ -129,18 +129,11 @@
         <path refid="laverca-libs"/>
       </classpath>
     	
-      <fileset dir="${datatypes-src}" casesensitive="yes">
-      	<include name="**/*.java" />
-      </fileset>
-    	
       <fileset dir="${core-src}" casesensitive="yes">
         <include name="**/*.java" />
       </fileset>
 			 	
       <doctitle><![CDATA[<h1>Laverca v${project-version}</h1>]]></doctitle>
-      <group title="Core packages" packages="fi.methics.*"/>
-      <group title="ETSI packages" packages="org.etsi.*"/>
-      <group title="FiCom packages" packages="fi.ficom.*"/>
     </javadoc>
   </target>
 
