@@ -156,14 +156,16 @@ public class FiComAdditionalServices {
                         return null;
                     }
                     return postalAddressToString(pa);       
-                } else {                       
+                } else {
                     Object o = this.samlAttribute.getAttributeValue(0);
                     org.exolab.castor.types.AnyNode an = (org.exolab.castor.types.AnyNode)o;
                     return an.getStringValue();
                 }
-            }
-            catch(Throwable t) {
-                log.error("",t);
+            } catch (IndexOutOfBoundsException ioe) {
+                log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
+                return null;
+            } catch(Throwable t) {
+                log.warn("Failed getting String value from " + this.samlAttribute.getName() + "." , t);
                 return null;
             }
         }
@@ -172,9 +174,12 @@ public class FiComAdditionalServices {
          * Pretty print postal address 
          * There is no standard way to print postal address. Laverca uses comma separated values.
          * @param pa PostalAddress class to be printed
-         * @return Pretty print of PostalAddress
+         * @return Pretty print of PostalAddress or null if the given PostalAddress was null.
          */
         private String postalAddressToString(fi.ficom.mss.TS102204.v1_0_0.PostalAddress pa){
+            if (pa == null) {
+                return null;
+            }
             return pa.getName() + ", " + 
                    pa.getStreetAddress() + ", " + 
                    pa.getPostalCode() + " " +
