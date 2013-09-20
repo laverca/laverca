@@ -50,7 +50,6 @@ import fi.laverca.ProgressUpdate;
  */
 public class Authentication {
 	
-	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 	private static final Log log = LogFactory.getLog(Authentication.class);
 	
 	/**
