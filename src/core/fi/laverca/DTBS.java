@@ -103,6 +103,7 @@ public class DTBS {
      * form happened to be a String, otherwise returning it as is.
      * 
      * @return byte-array
+     * @throws RunTimeException when no text or data is found
      */
     public byte[] toBytes() {
         if (this.data != null) {
@@ -136,6 +137,10 @@ public class DTBS {
         }
     }
 
+    /**
+     * Convert to a DataToBeSigned object.
+     * 
+     */
     public DataToBeSigned toDataToBeSigned() {
         DataToBeSigned rv = new DataToBeSigned();
         rv.setEncoding(this.encoding);
@@ -154,16 +159,17 @@ public class DTBS {
      * Length of DTBS data, either the string, or the byte-array
      * 
      * @return int - length of data
+     * @throws RunTimeException when no text or data is found
      */
     public int length() {
         if (this.text != null) {
-	    return this.text.length();
+            return this.text.length();
         }
         else if (this.data != null) {
             return this.data.length; 
         }
         else {
-            throw new RuntimeException("illegal dtbs");
+            throw new RuntimeException("Illegal DTBS");
         }
     }
 }
