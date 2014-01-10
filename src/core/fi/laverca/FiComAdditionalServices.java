@@ -38,7 +38,7 @@ import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
 
 /**
- * As per FiCom Soveltamisohje v2.0
+ * As per FiCom Implementation Guideline v2.0
  */
 public class FiComAdditionalServices {
     private static final Log log = LogFactory.getLog(FiComAdditionalServices.class);
@@ -64,7 +64,10 @@ public class FiComAdditionalServices {
     public static final String PERSON_ID_VALIDUNTIL = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#validUntil";
     
 
-    /** Create an AdditionalService for Ficom noSpam codes as per FiCom 2.0
+    /** 
+     * Create an AdditionalService for FiCom noSpam codes as per FiCom 2.0
+     * @param String noSpamCodeValue the value of the nospam code
+     * @param boolean verifyValue
      */
     public static Service createNoSpamService(String noSpamCodeValue, boolean verifyValue) {
         Service s = EtsiAdditionalServices.createService(NO_SPAM_URI);
@@ -85,6 +88,10 @@ public class FiComAdditionalServices {
         return s;
     }
 
+    /**
+     * Creates an AdditionalService for FiCom eventId
+     * @param String eventId
+     */
     public static Service createEventIdService(String eventId) {
         Service s = EtsiAdditionalServices.createService(EVENT_ID_URI);
 
@@ -117,7 +124,8 @@ public class FiComAdditionalServices {
         return createAttributeQueryService(PERSON_ID_URI, aq);
     }
 
-    /** Create an AdditionalService for SAML2 AttributeQuery
+    /** 
+     * Create an AdditionalService for SAML2 AttributeQuery
      * @param attributeQuery SAML2 attribute query, as per FiCom 2.0.
      */
     public static Service createAttributeQueryService(String uri, AttributeQuery attributeQuery) {
