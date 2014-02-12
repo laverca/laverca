@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2013 Laverca Project
+ * Copyright 2014 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@
 package fi.laverca;
 
 /**
- * Information about outstanding transaction.
- * Sent periodically.
+ * Object containing information about outstanding transaction.
  */
 public class ProgressUpdate {
 	
-	long initTime;
-	long timeout;
+	private long initTime;
+	private long timeout;
 	
 	/**
+	 * Create a new ProgressUpdate
 	 * 
 	 * @param timeout Maximum time of the progress in milliseconds.
 	 * @param initTime Progress starting time in System.currentTimeMillis() format.
@@ -42,10 +42,16 @@ public class ProgressUpdate {
 		this.timeout = timeout;
 	}
 	
+	/**
+	 * @return time elapsed in milliseconds
+	 */
 	public long getElapsedTime() {
 		return System.currentTimeMillis() - initTime;
 	}
 	
+	/**
+	 * @return time left before time out in milliseconds.
+	 */
 	public long getTimeLeft() {
 		return timeout + initTime - System.currentTimeMillis();
 	}
