@@ -19,11 +19,10 @@
 
 package fi.laverca;
 
+import java.util.ArrayList;
 import java.util.List;
-
 import oasis.names.tc.SAML.v2_0.assertion.Attribute;
 import oasis.names.tc.SAML.v2_0.protocol.AttributeQuery;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.AdditionalServiceTypeChoice;
@@ -31,7 +30,6 @@ import org.etsi.uri.TS102204.v1_1_2.AdditionalServiceTypeChoiceItem;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetail;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
-
 import fi.ficom.mss.TS102204.v1_0_0.Description;
 import fi.ficom.mss.TS102204.v1_0_0.NoSpamCode;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
@@ -114,19 +112,41 @@ public class FiComAdditionalServices {
         return s;
     }
     
+    /**
+     * Helper method for creating a Validation Service.
+     * @return Created Service
+     */
     public static Service createValidateService() {
     	Service s = EtsiAdditionalServices.createService(VALIDATE_URI);
         return s;
     }
 
+    /**
+     * Creates a new PersonId Service from the given attribute names.
+     * @param attributeNames List of attribute names to put in the PersonId Service
+     * @return Created Service
+     */
     public static Service createPersonIdService(List<String> attributeNames) {
         AttributeQuery aq = Saml2Util.createAttributeQuery(null, null, attributeNames);
         return createAttributeQueryService(PERSON_ID_URI, aq);
+    }
+    
+
+    /**
+     * Creates a new PersonId Service from one attribute name.
+     * @param attributeName Attribtue name to put in the PersonId Service
+     * @return Created Service
+     */    
+    public static Service createPersonIdService(String attributeName) {
+        List<String> attrNames = new ArrayList<String>();
+        attrNames.add(attributeName);
+        return createPersonIdService(attrNames);
     }
 
     /** 
      * Create an AdditionalService for SAML2 AttributeQuery
      * @param attributeQuery SAML2 attribute query, as per FiCom 2.0.
+     * @return Created Service
      */
     public static Service createAttributeQueryService(String uri, AttributeQuery attributeQuery) {
         Service s = EtsiAdditionalServices.createService(PERSON_ID_URI);

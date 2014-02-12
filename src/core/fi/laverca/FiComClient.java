@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2013 Laverca Project
+ * Copyright 2014 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,9 @@ import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
  */
 public class FiComClient {
 	
-	private static final int INITIAL_WAIT = 20 * 1000; // initial wait 20 s as per FiCom, section 5.1
-	private static final int SUBSEQUENT_WAIT = 5 * 1000; // subsequent wait 5 s as per FiCom, section 5.1
-	private static final int TIMEOUT = 5*60*1000; // timeout 5 min as per FiCom, section 6.4
+	private static final int INITIAL_WAIT    = 20 * 1000;     // Initial wait 20 s   as per MSS_FiCom_Implementation_guideline, section 5.1
+	private static final int SUBSEQUENT_WAIT = 5 * 1000;      // Subsequent wait 5 s as per MSS_FiCom_Implementation_guideline, section 5.1
+	private static final int TIMEOUT         = 5 * 60 * 1000; // Timeout 5 min       as per MSS_FiCom_Implementation_guideline, section 6.4
 	
     private static final Log log = LogFactory.getLog(FiComClient.class);
 
@@ -201,7 +201,7 @@ public class FiComClient {
     {
 
         if(handler == null) {
-            throw new IOException("null response handler not allowed.");
+            throw new IOException("Null response handler not allowed.");
         }
 
         final FiComRequest fiReq = new FiComRequest();
@@ -230,18 +230,18 @@ public class FiComClient {
 
         MSS_SignatureResp _sigResp = null;
         try {
-            log.debug("sending sigReq");
+            log.debug("Sending sigReq");
             _sigResp = etsiClient.send(sigReq);
-            log.debug("got resp");
+            log.debug("Got resp");
             fiReq.sigResp = _sigResp;
         }
         catch(AxisFault af) {
-            log.error("got soap fault", af);
+            log.error("Got SOAP fault", af);
             //throw af;
             handler.onError(fiReq, af);
         }
         catch(IOException ioe) {
-            log.error("got IOException ", ioe);
+            log.error("Got IOException ", ioe);
             throw ioe;
             //handler.onError(fiReq, ioe);
         }
@@ -250,6 +250,7 @@ public class FiComClient {
         FutureTask<FiComResponse> ft = 
             new FutureTask<FiComResponse>(new Callable<FiComResponse>() {
                 @SuppressWarnings("finally")
+                @Override
 				public FiComResponse call() throws Exception {
                 	
                     long timeout = TIMEOUT;
@@ -269,7 +270,7 @@ public class FiComClient {
                         waitPeriod = SUBSEQUENT_WAIT; 
                         
                         if (now > deadline) {
-                        	log.error("timed out");
+                        	log.error("Timed out");
                             try {
                                 handler.onError(fiReq, new FiComException("timed out"));
                             }
@@ -290,20 +291,20 @@ public class FiComClient {
                             }
                         }
                         try {
-                            log.debug("sending statReq");
+                            log.debug("Sending statReq");
                             statResp = etsiClient.send(statReq);
-                            log.debug("got statResp");
+                            log.debug("Got statResp");
 
                             boolean done = isDone(statResp);
                             long statusCode = parseStatus(statResp.getStatus());
 
                             if(FiComStatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
-                                log.debug("got an outstanding statResp. Continuing to wait for a final answer.");
+                                log.debug("Got an outstanding statResp. Continuing to wait for a final answer.");
                                 handler.onOutstandingProgress(fiReq, prgUpdate);
                                 continue LOOP;
                             }
                             else if(done) {
-                                log.debug("got a final statResp. Ending the wait.");
+                                log.debug("Got a final statResp. Ending the wait.");
                                 fiResp = new FiComResponse(sigReq,
                                                            fSigResp,
                                                            statResp);
@@ -315,7 +316,7 @@ public class FiComClient {
                                 }
                             }
                             else {
-                                log.debug("got an abnormal statResp. Ending the wait.");
+                                log.debug("Got an abnormal statResp. Ending the wait.");
                                 //throw new FiComException("abnormal status code");
                                 FiComException fe = new FiComException("abnormal status code");
                                 try {
@@ -328,7 +329,7 @@ public class FiComClient {
 
                         }
                         catch(AxisFault af) {
-                            log.error("got soap fault", af);
+                            log.error("Got soap fault", af);
                             //throw af;
                             try {
                                 handler.onError(fiReq, af);
@@ -338,7 +339,7 @@ public class FiComClient {
                             }
                         }
                         catch(IOException ioe) {
-                            log.error("got IOException ", ioe);
+                            log.error("Got IOException ", ioe);
                             //throw ioe;
                             try {
                                 handler.onError(fiReq, ioe);
@@ -354,7 +355,7 @@ public class FiComClient {
             });
         fiReq.ft = ft;
 
-        log.debug("starting calling");
+        log.debug("Starting calling");
         this.threadExecutor.execute(ft);
 
         return fiReq;
@@ -364,9 +365,9 @@ public class FiComClient {
     public void sendReceipt(FiComResponse fiResp, String message) {
         
         if(fiResp == null)
-            throw new IllegalArgumentException("null fiResp object. Can't send receipt.");
+            throw new IllegalArgumentException("Null fiResp object. Can't send receipt.");
         
-        log.debug("sending receipt");
+        log.debug("Sending receipt");
     	MSS_ReceiptReq receiptReq = etsiClient.createReceiptRequest(fiResp.originalSigResp, 
     	                                                            fiResp.originalSigReq.getAP_Info().getAP_TransID(), 
     	                                                            message);
@@ -375,12 +376,12 @@ public class FiComClient {
         try {
 			etsiClient.send(receiptReq);
 		} catch (IOException e) {
-			log.debug("could not send receipt", e);
+			log.debug("Could not send receipt", e);
 		}
     }
 
-    static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
-    long parseStatus(Status status) {
+    private static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
+    private long parseStatus(Status status) {
         if(status == null)
             return NO_STATUS;
         StatusCode sc = status.getStatusCode();
@@ -389,7 +390,7 @@ public class FiComClient {
         return sc.getValue();
     }
 
-    static boolean isDone(MSS_StatusResp statResp) {
+    private static boolean isDone(MSS_StatusResp statResp) {
         if(statResp == null)
             return false;
         MSS_Signature sig = statResp.getMSS_Signature();

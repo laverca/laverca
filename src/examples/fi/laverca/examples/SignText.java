@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2013 Laverca Project
+ * Copyright 2014 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,12 @@ package fi.laverca.examples;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.util.encoders.Base64;
 import org.etsi.uri.TS102204.v1_1_2.Service;
-
 import fi.laverca.FiComAdditionalServices;
 import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.FiComClient;
@@ -47,7 +44,6 @@ public class SignText {
 
 	private static final Log log = LogFactory.getLog(SignText.class);
 	private static FiComRequest req;
-	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 	
 	/**
 	 * Connects to MSSP using SSL and waits for response
@@ -58,12 +54,12 @@ public class SignText {
         
         Properties properties = ExampleConf.getProperties();
         
-        log.info("setting up ssl");
+        log.info("Setting up SSL");
         JvmSsl.setSSL(properties.getProperty(ExampleConf.TRUSTSTORE_FILE),
-                properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD),
-                properties.getProperty(ExampleConf.KEYSTORE_FILE),
-                properties.getProperty(ExampleConf.KEYSTORE_PASSWORD),
-                properties.getProperty(ExampleConf.KEYSTORE_TYPE));
+                      properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD),
+                      properties.getProperty(ExampleConf.KEYSTORE_FILE),
+                      properties.getProperty(ExampleConf.KEYSTORE_PASSWORD),
+                      properties.getProperty(ExampleConf.KEYSTORE_TYPE));
         
         String apId  = properties.getProperty(ExampleConf.AP_ID);
         String apPwd = properties.getProperty(ExampleConf.AP_PASSWORD);
@@ -72,7 +68,7 @@ public class SignText {
         String msspStatusUrl       = properties.getProperty(ExampleConf.STATUS_URL);
         String msspReceiptUrl      = properties.getProperty(ExampleConf.RECEIPT_URL);
 
-        log.info("creating FiComClient");
+        log.info("Creating FiComClient");
         FiComClient fiComClient = new FiComClient(apId, 
                                                   apPwd, 
                                                   msspSignatureUrl, 
@@ -80,18 +76,22 @@ public class SignText {
                                                   msspReceiptUrl);
         
         Long currentTimeMillis = System.currentTimeMillis();
-        String apTransId = "A"+currentTimeMillis;
-        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        final String apTransId = "A"+currentTimeMillis;
+        final String eventId   = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        
         Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
-        Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
-        LinkedList<Service> additionalServices = new LinkedList<Service>();
-        LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
-        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+        Service noSpamService  = FiComAdditionalServices.createNoSpamService("A12", false);
+        
+        // Create additional services
+        Service personIdService = FiComAdditionalServices.createPersonIdService(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
+        
+        List<Service> additionalServices = new ArrayList<Service>();                      
         additionalServices.add(personIdService);
         
+        responseBox.setText("Event ID: " + eventId);
+        
         try {
-        	log.info("calling signText");
+        	log.info("Calling signText");        	
         	req = 
 	        	fiComClient.signText(apTransId, 
 	        			textToBeSigned, 
@@ -102,39 +102,35 @@ public class SignText {
 	        			new FiComResponseHandler() {
 			        		@Override
 			        		public void onResponse(FiComRequest req, FiComResponse resp) {
-			        			log.info("got resp");
+			        			log.info("Got response");
 			        			sendButton.setEnabled(true);
 								callStateProgressBar.setIndeterminate(false);
-			        			try {
-			        				responseBox.setText("MSS Signature: " + 
-			        						new String(Base64.encode(resp.getMSS_StatusResp().
-			        						getMSS_Signature().getBase64Signature()), "ASCII") +
-			        						"\n\n" + responseBox.getText());
-			        			} catch (UnsupportedEncodingException e) {
-			        				log.info("Unsupported encoding", e);
-			        			}
-			        			try {
+
+								responseBox.setText("\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
+								
+			        			// Write received PersonId attributes to the response textbox
+			        			if (resp.getPersonIdAttributes() != null) {
 				        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-				        				log.info(a.getName() + " " + a.getStringValue());
-				        				responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+				        			    if (a != null) {
+    				        				log.info(a.getName() + ": " + a.getStringValue());
+    				        				responseBox.setText(a.getName() + ": " + a.getStringValue() + "\n" + responseBox.getText());
+				        			    }
 				        			}
-			            		} catch (NullPointerException e){
-			            			log.warn("No Person ID Attributes found!");
+			            		} else {
+			            			log.info("No Person ID Attributes found!");
 			            		}
-			        			responseBox.setText("Event ID: " + eventId + "\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
 			        		}
 			
 			        		@Override
-			        		public void onError(FiComRequest req, Throwable throwable) {
-			        			log.info("got error", throwable);
+			        		public void onError(FiComRequest req, Throwable t) {
+			        			log.info("Received error.", t);
 								callStateProgressBar.setIndeterminate(false);
-			        			responseBox.setText("ERROR, " + phoneNumber + "\n" +
-			        					responseBox.getText());
+			        			responseBox.setText("SignText failed (" + eventId + "): " + ( t != null ? t.getMessage() : null));
 			        		}
 
 							@Override
 							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-								
+								// Do nothing
 							}
 	        			});
         }
@@ -144,51 +140,71 @@ public class SignText {
 
         fiComClient.shutdown();
 	}
+
+	/**
+	 * Main method
+	 * 
+	 */
+    public static void main(String[] args) {
+        initComponents();
+    }
+    
+    /*
+     * Swing UI
+     */
+    
+    private static javax.swing.JFrame frame;
+    private static javax.swing.JButton sendButton;
+    private static javax.swing.JButton cancelButton;
+    private static javax.swing.JLabel numberLabel;
+    private static javax.swing.JLabel textToBeSignedLabel;
+    private static javax.swing.JPanel panel;
+    private static javax.swing.JProgressBar callStateProgressBar;
+    private static javax.swing.JScrollPane scrollPanel;
+    private static javax.swing.JTextArea responseBox;
+    private static javax.swing.JTextField numberField;
+    private static javax.swing.JTextField textToBeSignedField;
 	
 	/**
-	 * Asks a user for text to sign.
-	 * @param args
-	 */	
-	public static void main(String[] args) {
-		initComponents();
-	}
-	
+	 * Initializes the UI components.
+	 */
     private static void initComponents() {
     	frame = new javax.swing.JFrame("Sign Text");
     	frame.setResizable(false);
-        pane = new javax.swing.JPanel();
-        lblTxtToBeSigned = new javax.swing.JLabel();
-        lblNumber = new javax.swing.JLabel();
-        number = new javax.swing.JTextField();
-        textToBeSigned = new javax.swing.JTextField();
-        sendButton = new javax.swing.JButton();
+    	
+        panel                = new javax.swing.JPanel();
+        textToBeSignedLabel  = new javax.swing.JLabel();
+        numberLabel          = new javax.swing.JLabel();
+        textToBeSignedField  = new javax.swing.JTextField();
+        numberField          = new javax.swing.JTextField();
+        sendButton           = new javax.swing.JButton();
+        cancelButton         = new javax.swing.JButton();
+        scrollPanel          = new javax.swing.JScrollPane();
+        responseBox          = new javax.swing.JTextArea();
         callStateProgressBar = new javax.swing.JProgressBar(0, 100);
-        cancelButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        responseBox = new javax.swing.JTextArea();
 
         frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
         
-        lblNumber.setText("Phone number");
+        numberLabel.setText("Phone number");
+        numberField.setText("+35847001001");
 
-        number.setText("+35847001001");
-
-        lblTxtToBeSigned.setText("Text to be signed");
-
-        textToBeSigned.setText("Sample text");
+        textToBeSignedLabel.setText("Text to be signed");
+        textToBeSignedField.setText("Sample text");
 
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
+            @Override
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(false);
-				connect(number.getText(), textToBeSigned.getText());
+				connect(numberField.getText(), textToBeSignedField.getText());
 				callStateProgressBar.setIndeterminate(true);
 			}
 		});
         
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new ActionListener() {
+            @Override
 			public void actionPerformed(ActionEvent e) {
 				sendButton.setEnabled(true);
 				req.cancel();
@@ -197,23 +213,23 @@ public class SignText {
 		});
         responseBox.setColumns(20);
         responseBox.setRows(5);
-        jScrollPane1.setViewportView(responseBox);
+        scrollPanel.setViewportView(responseBox);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
-        pane.setLayout(jPanel1Layout);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(panel);
+        panel.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    .addComponent(scrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(textToBeSigned, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(textToBeSignedField, javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(number, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
-                                .addComponent(lblNumber)
-                                .addComponent(lblTxtToBeSigned)
+                                .addComponent(numberField, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                                .addComponent(numberLabel)
+                                .addComponent(textToBeSignedLabel)
                                 .addGroup(jPanel1Layout.createSequentialGroup()
                                     .addComponent(sendButton)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -230,19 +246,19 @@ public class SignText {
                         .addContainerGap()
                         .addComponent(cancelButton))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(lblNumber)
+                        .addComponent(numberLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(numberField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblTxtToBeSigned)
+                        .addComponent(textToBeSignedLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(textToBeSigned, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(textToBeSignedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
                             .addComponent(sendButton))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(scrollPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -250,27 +266,15 @@ public class SignText {
         frame.getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         frame.pack();
     }
-    
-    private static javax.swing.JFrame frame;
-    private static javax.swing.JButton sendButton;
-    private static javax.swing.JButton cancelButton;
-    private static javax.swing.JLabel lblNumber;
-    private static javax.swing.JLabel lblTxtToBeSigned;
-    private static javax.swing.JPanel pane;
-    protected static javax.swing.JProgressBar callStateProgressBar;
-    private static javax.swing.JScrollPane jScrollPane1;
-    private static javax.swing.JTextArea responseBox;
-    private static javax.swing.JTextField number;
-    private static javax.swing.JTextField textToBeSigned;
 	
 }
 
