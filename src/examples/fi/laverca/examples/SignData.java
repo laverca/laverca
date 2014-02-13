@@ -64,41 +64,41 @@ import fi.laverca.ProgressUpdate;
  * Sample for demonstrating hash signing. 
  */
 public class SignData {
-	
-	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
-    private static final Log log = LogFactory.getLog(SignData.class);	
-	
-	/**
+    
+    private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
+    private static final Log log = LogFactory.getLog(SignData.class);    
+    
+    /**
      * Generates a new window for connection that includes 
      * a response box, a cancel button and a progress bar.
      */
     private class ResponseWindow {
-    	
-    	private JProgressBar callStateProgressBar;
-    	private JButton cancelButton;
-    	private String eventId;
+        
+        private JProgressBar callStateProgressBar;
+        private JButton cancelButton;
+        private String eventId;
         private JScrollPane jScrollPane1;
         private FiComRequest req;
         private JTextArea responseBox;
         private JFrame responseFrame;
-    	
+        
         /**
          * Generates a new window for response and calls <code>connect</code>
          * to start the authentication process.
          */
-    	public ResponseWindow(String number, File selectedFile) {
-    		Long currentTimeMillis = System.currentTimeMillis();
-    		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
-    		initResponse();
-    		connect(number, selectedFile);
-    	}
+        public ResponseWindow(String number, File selectedFile) {
+            Long currentTimeMillis = System.currentTimeMillis();
+            eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+            initResponse();
+            connect(number, selectedFile);
+        }
 
-    	/**
-    	 * Connects to MSSP using SSL and waits for response.
-    	 * @param phoneNumber
-    	 * @param selectedFile
-    	 */
-    	protected void connect(String phoneNumber, final File selectedFile) {
+        /**
+         * Connects to MSSP using SSL and waits for response.
+         * @param phoneNumber
+         * @param selectedFile
+         */
+        protected void connect(String phoneNumber, final File selectedFile) {
             
             Properties properties = ExampleConf.getProperties();
             
@@ -135,65 +135,65 @@ public class SignData {
             additionalServices.add(personIdService);
             
             try {
-            	SignData.log.info("calling signData");
-            	req = 
-            		fiComClient.signData(apTransId, 
-            				output, 
-            				phoneNumber, 
-            				noSpamService, 
-            				eventIdService,
-            				additionalServices, 
-            				new FiComResponseHandler() {
-            			
-								@Override
-			        			public void onResponse(FiComRequest req, FiComResponse resp) {
-			        				SignData.log.info("got resp");
-			        				callStateProgressBar.setIndeterminate(false);
-			        				SignData.printSHA1(output, responseBox);
-			        				
-			        				responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
-			        						+ "\n" + responseBox.getText());
-			        				
-			        				try {
-			        					responseBox.setText("MSS Signature: " + 
-			        							new String(Base64.encode(resp.getMSS_StatusResp().
-			        							getMSS_Signature().getBase64Signature()), "ASCII") +
-			        							"\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
-			        							"\n" + responseBox.getText());
-			        					for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-			        						SignData.log.info(a.getName() + " " + a.getStringValue());
-			        						responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
-			        					}
-			        				} catch (UnsupportedEncodingException e) {
-			        					SignData.log.info("Unsupported encoding", e);
-			        				} catch (NullPointerException e){
-			        					SignData.log.info("PersonIDAttributes = null", e);
-			        				}
-			
-			        			}
-			        			
-    		        			@Override
-    		        			public void onError(FiComRequest req, Throwable throwable) {
-    		        				callStateProgressBar.setIndeterminate(false);
-    		        				SignData.log.info("got error", throwable);
-    		        			}
-    		
-    		        			@Override
-    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-    								
-    							}
+                SignData.log.info("calling signData");
+                req = 
+                    fiComClient.signData(apTransId, 
+                            output, 
+                            phoneNumber, 
+                            noSpamService, 
+                            eventIdService,
+                            additionalServices, 
+                            new FiComResponseHandler() {
+                        
+                                @Override
+                                public void onResponse(FiComRequest req, FiComResponse resp) {
+                                    SignData.log.info("got resp");
+                                    callStateProgressBar.setIndeterminate(false);
+                                    SignData.printSHA1(output, responseBox);
+                                    
+                                    responseBox.setText("File path: " + selectedFile.getAbsolutePath() 
+                                            + "\n" + responseBox.getText());
+                                    
+                                    try {
+                                        responseBox.setText("MSS Signature: " + 
+                                                new String(Base64.encode(resp.getMSS_StatusResp().
+                                                getMSS_Signature().getBase64Signature()), "ASCII") +
+                                                "\nSigner: " + resp.getPkcs7Signature().getSignerCn() +
+                                                "\n" + responseBox.getText());
+                                        for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+                                            SignData.log.info(a.getName() + " " + a.getStringValue());
+                                            responseBox.setText(a.getStringValue() + "\n" + responseBox.getText());
+                                        }
+                                    } catch (UnsupportedEncodingException e) {
+                                        SignData.log.info("Unsupported encoding", e);
+                                    } catch (NullPointerException e){
+                                        SignData.log.info("PersonIDAttributes = null", e);
+                                    }
+            
+                                }
+                                
+                                @Override
+                                public void onError(FiComRequest req, Throwable throwable) {
+                                    callStateProgressBar.setIndeterminate(false);
+                                    SignData.log.info("got error", throwable);
+                                }
+            
+                                @Override
+                                public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                                    
+                                }
 
-    		        		});
+                            });
             }
             catch (IOException e) {
-            	SignData.log.info("error establishing connection", e);
+                SignData.log.info("error establishing connection", e);
             }
 
             fiComClient.shutdown();
-    	}
-    	
-    	private void initResponse() {
-        	responseFrame = new JFrame(eventId);
+        }
+        
+        private void initResponse() {
+            responseFrame = new JFrame(eventId);
             cancelButton = new JButton();
             jScrollPane1 = new JScrollPane();
             responseBox = new JTextArea();
@@ -201,12 +201,12 @@ public class SignData {
 
             cancelButton.setText("Cancel");
             cancelButton.addActionListener(new ActionListener() {
-    			public void actionPerformed(ActionEvent e) {
-    				req.cancel();
-    				callStateProgressBar.setIndeterminate(false);
-    				responseFrame.dispose();
-    			}
-    		});
+                public void actionPerformed(ActionEvent e) {
+                    req.cancel();
+                    callStateProgressBar.setIndeterminate(false);
+                    responseFrame.dispose();
+                }
+            });
             
             responseBox.setColumns(20);
             responseBox.setRows(5);
@@ -251,8 +251,8 @@ public class SignData {
             responseFrame.setResizable(false);
         }
     }
-	private static JButton browseButton;	
-	private static JFrame dialFrame;	
+    private static JButton browseButton;    
+    private static JFrame dialFrame;    
     private static JPanel dialPanel;   
     private static JTextArea hashBox;   
     private static JScrollPane jScrollPane1;
@@ -260,46 +260,46 @@ public class SignData {
     private static JTextField number;
     private static JButton sendButton;
     /**
-	 * 
-	 * @param selectedFile
-	 * @return
-	 */
-	public static byte[] generateSHA1(final File selectedFile) {
-		byte[] output = null;
-		try {
-			InputStream is = new FileInputStream(selectedFile);
-			byte[] buffer = new byte[1024];
-			MessageDigest md = MessageDigest.getInstance("SHA1");
-			int numRead;
-			do {
-				numRead = is.read(buffer);
-				if (numRead > 0) {
-					md.update(buffer, 0, numRead);
-				}
-			} while (numRead != -1);
-			output = md.digest();
-		} catch (NoSuchAlgorithmException e) {
-			SignData.log.info("error finding algorithm", e);
-		} catch (FileNotFoundException e) {
-			SignData.log.info("error finding file", e);
-		} catch (IOException e) {
-			SignData.log.info("i/o error", e);
-		}
+     * 
+     * @param selectedFile
+     * @return
+     */
+    public static byte[] generateSHA1(final File selectedFile) {
+        byte[] output = null;
+        try {
+            InputStream is = new FileInputStream(selectedFile);
+            byte[] buffer = new byte[1024];
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            int numRead;
+            do {
+                numRead = is.read(buffer);
+                if (numRead > 0) {
+                    md.update(buffer, 0, numRead);
+                }
+            } while (numRead != -1);
+            output = md.digest();
+        } catch (NoSuchAlgorithmException e) {
+            SignData.log.info("error finding algorithm", e);
+        } catch (FileNotFoundException e) {
+            SignData.log.info("error finding file", e);
+        } catch (IOException e) {
+            SignData.log.info("i/o error", e);
+        }
         
         return output;
-	}
+    }
     /**
-	 * Generates SHA1 hash from a file and asks for a user to sign it.
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		new SignData().initUI();
-	}
+     * Generates SHA1 hash from a file and asks for a user to sign it.
+     * @param args
+     */
+    public static void main(String[] args) {
+        new SignData().initUI();
+    }
     /**
      * Prints SHA1 to the <code>responseBox</code>.
      * @param buf
      */
-	public static void printSHA1(byte[] buf, JTextArea textArea) {
+    public static void printSHA1(byte[] buf, JTextArea textArea) {
         Formatter formatter = new Formatter();
         for (byte b : buf)
             formatter.format("%02x", b);
@@ -308,7 +308,7 @@ public class SignData {
         String sha1 = formatter.toString().substring(8).toUpperCase();
         String shaTmp = new String();
         for (int i = 0; i < sha1.length()/4; i++){
-        	shaTmp += " " + sha1.substring(i*4, i*4+4);
+            shaTmp += " " + sha1.substring(i*4, i*4+4);
         }
         textArea.setText("SHA1: " + shaTmp + "\n" + textArea.getText());
     }
@@ -316,7 +316,7 @@ public class SignData {
     
     private void initUI() {
 
-    	dialFrame = new JFrame("Sign Data");
+        dialFrame = new JFrame("Sign Data");
         dialPanel = new JPanel();
         lblNumber = new JLabel();
         number = new JTextField();
@@ -329,14 +329,14 @@ public class SignData {
         dialFrame.setVisible(true);
         dialFrame.setResizable(false);
         
-		final JFileChooser fc = new JFileChooser();
+        final JFileChooser fc = new JFileChooser();
 
         browseButton.setText("Browse...");
         browseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				fc.showOpenDialog(dialFrame);
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                fc.showOpenDialog(dialFrame);
+            }
+        });
 
         dialFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         dialFrame.setVisible(true);
@@ -346,11 +346,11 @@ public class SignData {
 
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				new ResponseWindow(number.getText(), fc.getSelectedFile());
-				
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                new ResponseWindow(number.getText(), fc.getSelectedFile());
+                
+            }
+        });
         
         hashBox.setColumns(20);
         hashBox.setRows(5);
@@ -404,11 +404,11 @@ public class SignData {
         );
 
         dialFrame.pack();
-		fc.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				printSHA1(generateSHA1(fc.getSelectedFile()), hashBox);
-			}
-		});
-		fc.showOpenDialog(dialFrame);
+        fc.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                printSHA1(generateSHA1(fc.getSelectedFile()), hashBox);
+            }
+        });
+        fc.showOpenDialog(dialFrame);
     }
 }

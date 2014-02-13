@@ -42,15 +42,15 @@ import fi.laverca.ProgressUpdate;
  */
 public class SignText {
 
-	private static final Log log = LogFactory.getLog(SignText.class);
-	private static FiComRequest req;
-	
-	/**
-	 * Connects to MSSP using SSL and waits for response
-	 * @param phoneNumber
-	 * @param textToBeSigned
-	 */
-	private static void connect(final String phoneNumber, final String textToBeSigned) {
+    private static final Log log = LogFactory.getLog(SignText.class);
+    private static FiComRequest req;
+    
+    /**
+     * Connects to MSSP using SSL and waits for response
+     * @param phoneNumber
+     * @param textToBeSigned
+     */
+    private static void connect(final String phoneNumber, final String textToBeSigned) {
         
         Properties properties = ExampleConf.getProperties();
         
@@ -91,60 +91,60 @@ public class SignText {
         responseBox.setText("Event ID: " + eventId);
         
         try {
-        	log.info("Calling signText");        	
-        	req = 
-	        	fiComClient.signText(apTransId, 
-	        			textToBeSigned, 
-	        			phoneNumber, 
-	        			noSpamService,
-	        			eventIdService,
-	        			additionalServices, 
-	        			new FiComResponseHandler() {
-			        		@Override
-			        		public void onResponse(FiComRequest req, FiComResponse resp) {
-			        			log.info("Got response");
-			        			sendButton.setEnabled(true);
-								callStateProgressBar.setIndeterminate(false);
+            log.info("Calling signText");            
+            req = 
+                fiComClient.signText(apTransId, 
+                        textToBeSigned, 
+                        phoneNumber, 
+                        noSpamService,
+                        eventIdService,
+                        additionalServices, 
+                        new FiComResponseHandler() {
+                            @Override
+                            public void onResponse(FiComRequest req, FiComResponse resp) {
+                                log.info("Got response");
+                                sendButton.setEnabled(true);
+                                callStateProgressBar.setIndeterminate(false);
 
-								responseBox.setText("\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
-								
-			        			// Write received PersonId attributes to the response textbox
-			        			if (resp.getPersonIdAttributes() != null) {
-				        			for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-				        			    if (a != null) {
-    				        				log.info(a.getName() + ": " + a.getStringValue());
-    				        				responseBox.setText(a.getName() + ": " + a.getStringValue() + "\n" + responseBox.getText());
-				        			    }
-				        			}
-			            		} else {
-			            			log.info("No Person ID Attributes found!");
-			            		}
-			        		}
-			
-			        		@Override
-			        		public void onError(FiComRequest req, Throwable t) {
-			        			log.info("Received error.", t);
-								callStateProgressBar.setIndeterminate(false);
-			        			responseBox.setText("SignText failed (" + eventId + "): " + ( t != null ? t.getMessage() : null));
-			        		}
+                                responseBox.setText("\nSigned text: " + textToBeSigned + "\n" + responseBox.getText());
+                                
+                                // Write received PersonId attributes to the response textbox
+                                if (resp.getPersonIdAttributes() != null) {
+                                    for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+                                        if (a != null) {
+                                            log.info(a.getName() + ": " + a.getStringValue());
+                                            responseBox.setText(a.getName() + ": " + a.getStringValue() + "\n" + responseBox.getText());
+                                        }
+                                    }
+                                } else {
+                                    log.info("No Person ID Attributes found!");
+                                }
+                            }
+            
+                            @Override
+                            public void onError(FiComRequest req, Throwable t) {
+                                log.info("Received error.", t);
+                                callStateProgressBar.setIndeterminate(false);
+                                responseBox.setText("SignText failed (" + eventId + "): " + ( t != null ? t.getMessage() : null));
+                            }
 
-							@Override
-							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-								// Do nothing
-							}
-	        			});
+                            @Override
+                            public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                                // Do nothing
+                            }
+                        });
         }
         catch (IOException e) {
             log.info("error establishing connection", e);
         }
 
         fiComClient.shutdown();
-	}
+    }
 
-	/**
-	 * Main method
-	 * 
-	 */
+    /**
+     * Main method
+     * 
+     */
     public static void main(String[] args) {
         initComponents();
     }
@@ -164,14 +164,14 @@ public class SignText {
     private static javax.swing.JTextArea responseBox;
     private static javax.swing.JTextField numberField;
     private static javax.swing.JTextField textToBeSignedField;
-	
-	/**
-	 * Initializes the UI components.
-	 */
+    
+    /**
+     * Initializes the UI components.
+     */
     private static void initComponents() {
-    	frame = new javax.swing.JFrame("Sign Text");
-    	frame.setResizable(false);
-    	
+        frame = new javax.swing.JFrame("Sign Text");
+        frame.setResizable(false);
+        
         panel                = new javax.swing.JPanel();
         textToBeSignedLabel  = new javax.swing.JLabel();
         numberLabel          = new javax.swing.JLabel();
@@ -195,22 +195,22 @@ public class SignText {
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
             @Override
-			public void actionPerformed(ActionEvent e) {
-				sendButton.setEnabled(false);
-				connect(numberField.getText(), textToBeSignedField.getText());
-				callStateProgressBar.setIndeterminate(true);
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                sendButton.setEnabled(false);
+                connect(numberField.getText(), textToBeSignedField.getText());
+                callStateProgressBar.setIndeterminate(true);
+            }
+        });
         
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new ActionListener() {
             @Override
-			public void actionPerformed(ActionEvent e) {
-				sendButton.setEnabled(true);
-				req.cancel();
-				callStateProgressBar.setIndeterminate(false);
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                sendButton.setEnabled(true);
+                req.cancel();
+                callStateProgressBar.setIndeterminate(false);
+            }
+        });
         responseBox.setColumns(20);
         responseBox.setRows(5);
         scrollPanel.setViewportView(responseBox);
@@ -275,6 +275,6 @@ public class SignText {
 
         frame.pack();
     }
-	
+    
 }
 

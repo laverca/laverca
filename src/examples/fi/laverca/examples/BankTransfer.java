@@ -44,20 +44,20 @@ import fi.laverca.ProgressUpdate;
 public class BankTransfer {
 
 
-	private static final Log log = LogFactory.getLog(BankTransfer.class);
-	private static FiComRequest req;
-	private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
-	private static FiComClient fiComClient;
-	
-	/**
-	 * Connects to MSSP using SSL and waits for response.
-	 * @param phoneNumber
-	 * @param fromTxt
-	 * @param toTxt
-	 * @param amountTxt
-	 */
-	private static void connect(final String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
-		
+    private static final Log log = LogFactory.getLog(BankTransfer.class);
+    private static FiComRequest req;
+    private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
+    private static FiComClient fiComClient;
+    
+    /**
+     * Connects to MSSP using SSL and waits for response.
+     * @param phoneNumber
+     * @param fromTxt
+     * @param toTxt
+     * @param amountTxt
+     */
+    private static void connect(final String phoneNumber, final String fromTxt, final String toTxt, final String amountTxt) {
+        
         Properties properties = ExampleConf.getProperties();
         
         log.info("setting up ssl");
@@ -76,10 +76,10 @@ public class BankTransfer {
 
         log.info("creating FiComClient");
         fiComClient = new FiComClient(apId, 
-								        apPwd, 
-								        msspSignatureUrl, 
-								        msspStatusUrl, 
-								        msspReceiptUrl);
+                                        apPwd, 
+                                        msspSignatureUrl, 
+                                        msspStatusUrl, 
+                                        msspReceiptUrl);
         
         Long currentTimeMillis = System.currentTimeMillis();
         String apTransId = "A"+currentTimeMillis;
@@ -93,74 +93,74 @@ public class BankTransfer {
         try {
            log.info("calling consent");
            req =
-        	   fiComClient.consent(apTransId, 
-            		textToBeConsentedTo, 
-            		phoneNumber, 
-            		noSpamService,
-            		eventIdService,
-            		null, 
-            		new FiComResponseHandler() {
-		            	@Override
-		            	public void onResponse(FiComRequest req, FiComResponse resp) {
-		            		log.info("got resp");
-		            		sendButton.setEnabled(true);
-							callStateProgressBar.setIndeterminate(false);
-							
-							String numberResponding = resp.getMSS_StatusResp().getMobileUser().getMSISDN();
-		            		if (numberResponding.equals(phoneNumber)) {
-		            			fiComClient.sendReceipt(resp, phoneNumber + " successfully authenticated the bank transfer.");
-		            			try {
-			            			responseBox.setText("\nMSS Signature: " + 
-			            					new String(Base64.encode(resp.getMSS_StatusResp().
-			            					getMSS_Signature().getBase64Signature()), "ASCII") +
-			            					"\n\n" + responseBox.getText());
-			            		} catch (UnsupportedEncodingException e) {
-			            			log.info("Unsupported encoding", e);
-			            		}
-			            		
-			            		responseBox.setText("User allowed the transfer from " + fromTxt + 
-			            				" to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
-		            			responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());	
-		            		} else {
-		            			responseBox.setText("The transfer failed because " + numberResponding + 
-		            					" tried to authenticate the transfer of " + phoneNumber);
-		            		}
-		            		
-		            	}
-		
-		            	@Override
-		            	public void onError(FiComRequest req, Throwable throwable) {
-		            		log.info("got error", throwable);
-		            		responseBox.setText(throwable.getMessage());
-							callStateProgressBar.setIndeterminate(false);
+               fiComClient.consent(apTransId, 
+                    textToBeConsentedTo, 
+                    phoneNumber, 
+                    noSpamService,
+                    eventIdService,
+                    null, 
+                    new FiComResponseHandler() {
+                        @Override
+                        public void onResponse(FiComRequest req, FiComResponse resp) {
+                            log.info("got resp");
+                            sendButton.setEnabled(true);
+                            callStateProgressBar.setIndeterminate(false);
+                            
+                            String numberResponding = resp.getMSS_StatusResp().getMobileUser().getMSISDN();
+                            if (numberResponding.equals(phoneNumber)) {
+                                fiComClient.sendReceipt(resp, phoneNumber + " successfully authenticated the bank transfer.");
+                                try {
+                                    responseBox.setText("\nMSS Signature: " + 
+                                            new String(Base64.encode(resp.getMSS_StatusResp().
+                                            getMSS_Signature().getBase64Signature()), "ASCII") +
+                                            "\n\n" + responseBox.getText());
+                                } catch (UnsupportedEncodingException e) {
+                                    log.info("Unsupported encoding", e);
+                                }
+                                
+                                responseBox.setText("User allowed the transfer from " + fromTxt + 
+                                        " to\n" + toTxt + ", " + amountTxt + "\n" + responseBox.getText());
+                                responseBox.setText("Event ID: " + eventId + "\n" + responseBox.getText());    
+                            } else {
+                                responseBox.setText("The transfer failed because " + numberResponding + 
+                                        " tried to authenticate the transfer of " + phoneNumber);
+                            }
+                            
+                        }
+        
+                        @Override
+                        public void onError(FiComRequest req, Throwable throwable) {
+                            log.info("got error", throwable);
+                            responseBox.setText(throwable.getMessage());
+                            callStateProgressBar.setIndeterminate(false);
 
-		            	}
+                        }
 
-						@Override
-						public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-							
-						}
-		            });
+                        @Override
+                        public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                            
+                        }
+                    });
         }
         catch (IOException e) {
             log.info("error establishing connection", e);
         }
 
         fiComClient.shutdown();
-	}
-	
-	/**
-	 * Allows user to sign a bank transfer.
-	 * @param args
-	 */
-	
-	public static void main(String[] args) {
-		initComponents();
-	}
-	
+    }
+    
+    /**
+     * Allows user to sign a bank transfer.
+     * @param args
+     */
+    
+    public static void main(String[] args) {
+        initComponents();
+    }
+    
     private static void initComponents() {
-    	frame = new javax.swing.JFrame("Bank Transfer");
-    	frame.setResizable(false);
+        frame = new javax.swing.JFrame("Bank Transfer");
+        frame.setResizable(false);
         pane = new javax.swing.JPanel();
         lblNumber = new javax.swing.JLabel();
         number = new javax.swing.JTextField();
@@ -185,23 +185,23 @@ public class BankTransfer {
 
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				sendButton.setEnabled(false);
-				connect(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
-				callStateProgressBar.setIndeterminate(true);
-			}
-		});
-		
+            public void actionPerformed(ActionEvent e) {
+                sendButton.setEnabled(false);
+                connect(number.getText(), fromTxt.getText(), toTxt.getText(), amountTxt.getText());
+                callStateProgressBar.setIndeterminate(true);
+            }
+        });
+        
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				req.cancel();
-				sendButton.setEnabled(true);
-				responseBox.setText("Canceled\n" + responseBox.getText());
-				callStateProgressBar.setIndeterminate(false);
-			}
-		});
-		
+            public void actionPerformed(ActionEvent e) {
+                req.cancel();
+                sendButton.setEnabled(true);
+                responseBox.setText("Canceled\n" + responseBox.getText());
+                callStateProgressBar.setIndeterminate(false);
+            }
+        });
+        
         responseBox.setColumns(20);
         responseBox.setRows(5);
         jScrollPane1.setViewportView(responseBox);
