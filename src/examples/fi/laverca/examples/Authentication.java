@@ -49,40 +49,40 @@ import fi.laverca.ProgressUpdate;
  * Sample for demonstrating authentication. 
  */
 public class Authentication {
-	
-	private static final Log log = LogFactory.getLog(Authentication.class);
-	
-	/**
+    
+    private static final Log log = LogFactory.getLog(Authentication.class);
+    
+    /**
      * Creates a response window.
      */
     private class ResponseWindow {
-    	
-    	private javax.swing.JProgressBar callStateProgressBar;
-    	private javax.swing.JButton cancelButton;
-    	private String eventId;
+        
+        private javax.swing.JProgressBar callStateProgressBar;
+        private javax.swing.JButton cancelButton;
+        private String eventId;
         private javax.swing.JScrollPane jScrollPane1;
         private FiComRequest req;
         private javax.swing.JTextArea responseBox;
         private javax.swing.JFrame responseFrame;
-    	
+        
         /**
          * Generates a new window for responses and calls <code>estamblishConnection</code> 
          * to start the authentication process.
          * @param number
          */
-    	public ResponseWindow(String number) {
-    		Long currentTimeMillis = System.currentTimeMillis();
-    		eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
-    		initResponse();
-    		connect(number);
-    	}
-    	
-    	/**
-    	 * Creates a new FiComClient using an xml configuration file
-    	 * @return
-    	 */    	
-    	public FiComClient createFiComClient(){
-    	    
+        public ResponseWindow(String number) {
+            Long currentTimeMillis = System.currentTimeMillis();
+            eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+            initResponse();
+            connect(number);
+        }
+        
+        /**
+         * Creates a new FiComClient using an xml configuration file
+         * @return
+         */        
+        public FiComClient createFiComClient(){
+            
             Properties properties = ExampleConf.getProperties();
             
             log.info("setting up ssl");
@@ -106,12 +106,12 @@ public class Authentication {
                                                       msspStatusUrl, 
                                                       msspReceiptUrl);
             return fiComClient;
-    	}
-    	/**
-    	 * 
-    	 * @return
-    	 */
-    	private LinkedList<Service> createAdditionalServices(){
+        }
+        /**
+         * 
+         * @return
+         */
+        private LinkedList<Service> createAdditionalServices(){
 
             LinkedList<Service> additionalServices = new LinkedList<Service>();
             LinkedList<String> attributeNames = new LinkedList<String>(); 
@@ -131,15 +131,15 @@ public class Authentication {
             additionalServices.add(validateService);
 
             return additionalServices;
-    	}
-    	
-    	
-    	/**
-    	 * Creates services, connects to MSSP using SSL and waits for response.
-    	 * @param phoneNumber
-    	 */
-    	private void connect(final String phoneNumber) {
-    		
+        }
+        
+        
+        /**
+         * Creates services, connects to MSSP using SSL and waits for response.
+         * @param phoneNumber
+         */
+        private void connect(final String phoneNumber) {
+            
             FiComClient fiComClient = createFiComClient();
             Long currentTimeMillis = System.currentTimeMillis();
             String apTransId = "A"+currentTimeMillis;
@@ -153,32 +153,32 @@ public class Authentication {
             try {
                 log.info("calling authenticate");
                 req = 
-    	            fiComClient.authenticate(apTransId, 
-    	            		authnChallenge, 
-    	            		phoneNumber, 
-    	            		noSpamService, 
-    	            		eventIdService,
-    	            		additionalServices, 
-    	            		new FiComResponseHandler() {  
-    	            	
-								@Override
-				            	public void onResponse(FiComRequest req, FiComResponse resp) {
-				            		log.info("got resp");
-				            		printResponse(resp, eventId);
-    								callStateProgressBar.setIndeterminate(false);
-				            	}
-							
-    			            	@Override
-    			            	public void onError(FiComRequest req, Throwable throwable) {
-    			            		responseBox.setText(throwable.getMessage());
-    								callStateProgressBar.setIndeterminate(false);
-    			            	}
-    			            	
-    			            	@Override
-    							public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-    								log.info("got progress update");
-    							}
-    			            });
+                    fiComClient.authenticate(apTransId, 
+                            authnChallenge, 
+                            phoneNumber, 
+                            noSpamService, 
+                            eventIdService,
+                            additionalServices, 
+                            new FiComResponseHandler() {  
+                        
+                                @Override
+                                public void onResponse(FiComRequest req, FiComResponse resp) {
+                                    log.info("got resp");
+                                    printResponse(resp, eventId);
+                                    callStateProgressBar.setIndeterminate(false);
+                                }
+                            
+                                @Override
+                                public void onError(FiComRequest req, Throwable throwable) {
+                                    responseBox.setText(throwable.getMessage());
+                                    callStateProgressBar.setIndeterminate(false);
+                                }
+                                
+                                @Override
+                                public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                                    log.info("got progress update");
+                                }
+                            });
                 
             }
             catch (IOException e) {
@@ -186,80 +186,80 @@ public class Authentication {
             }
 
             fiComClient.shutdown();
-    	}
-    	
-    	/**
-    	 * Analyzes the FiComRequest and prints the results to responseBox
-    	 * @param resp
-    	 * @param eventId
-    	 */
-       	private void printResponse(FiComResponse resp, String eventId){
-    		String response = "testi";
-    		Status validationStatus = resp.getAeValidationStatus();
+        }
+        
+        /**
+         * Analyzes the FiComRequest and prints the results to responseBox
+         * @param resp
+         * @param eventId
+         */
+           private void printResponse(FiComResponse resp, String eventId){
+            String response = "testi";
+            Status validationStatus = resp.getAeValidationStatus();
 
-    		try {
-    			response = "MSS Signature: " + 
-    			new String(Base64.encode(resp.getMSS_StatusResp().
-    			getMSS_Signature().getBase64Signature()), "ASCII") +
-    			"\n\n";
-    			response+="Pkcs7" + "\n";
-    			response+="   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber();
-    			response+="   Type: " + resp.getPkcs7Signature().getSignerCert().getType();
-    			response+="   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName();
-    			response+="   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber();
-    			response+="   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n";
-    			response+="   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n";
-    			response+="   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n";
-    			response+="\n";
-    			response+="AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID();
-    			response+="   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD();
-    			response+="   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n";
-    			response+="MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN();
-    			response+="\n";
-    		    response+="CriticalExtensionOIDs:\n";
-    		    response+=resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n";
-    		    //response+="AE validation status code: " + validationStatus.getStatusCode().getValue();
-        		//response+=" (" + validationStatus.getStatusMessage() + ")\n";
-        		try {
-        		    Set<String> oids = resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs();
-        			response +="Event ID: " + eventId + "\n";	
-        			for (String oid : oids) {
-        				response +="   " + oid + "\n";
-        			}
-        			response +="NonCriticalExtensionOIDs:" + "\n";
-        			oids = resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs();
-        			for (String oid : oids) {
-        				response +="   " + oid + "\n";
-        			}
-        		} catch (NullPointerException e){
-    	                log.debug("Unable to get OIDs");
-    	        }
-        		try {
-        			List<PersonIdAttribute> attributes = resp.getPersonIdAttributes();
-    			    response +="PersonIdAttributes: \n";
-            		for(PersonIdAttribute a : attributes) {
-            			response +=a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
-            					+ "\n";
-            		}
-        		} catch (NullPointerException ne){
-        		    log.debug("Unable to get PersonIdAttributes");
-        		}
-    		} catch (FiComException e1) {
-    			log.info(e1);
-    		} catch (UnsupportedEncodingException e) {
-    			log.info("Unsupported encoding", e);
-    		} catch (NullPointerException ne){
-    		    ne.printStackTrace();
-    		}
-    		responseBox.setText(response);
-    	}
-    	
-    	
-    	/**
-    	 * Initializes the response box
-    	 */
-    	private void initResponse() {
-        	responseFrame = new javax.swing.JFrame(eventId);
+            try {
+                response = "MSS Signature: " + 
+                new String(Base64.encode(resp.getMSS_StatusResp().
+                getMSS_Signature().getBase64Signature()), "ASCII") +
+                "\n\n";
+                response+="Pkcs7" + "\n";
+                response+="   Serial: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber();
+                response+="   Type: " + resp.getPkcs7Signature().getSignerCert().getType();
+                response+="   SigAlgName: " + resp.getPkcs7Signature().getSignerCert().getSigAlgName();
+                response+="   SerialNumber: " + resp.getPkcs7Signature().getSignerCert().getSerialNumber();
+                response+="   SigAlgOID: " + resp.getPkcs7Signature().getSignerCert().getSigAlgOID() + "\n";
+                response+="   IssuerX500Principal: " + resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n";
+                response+="   SubjectX500Principal: " + resp.getPkcs7Signature().getSignerCert().getSubjectX500Principal() + "\n";
+                response+="\n";
+                response+="AP   id: " + resp.getMSS_StatusResp().getAP_Info().getAP_ID();
+                response+="   PWD: " + resp.getMSS_StatusResp().getAP_Info().getAP_PWD();
+                response+="   TransID: " + resp.getMSS_StatusResp().getAP_Info().getAP_TransID() + "\n";
+                response+="MobileUser   MSISDN: " + resp.getMSS_StatusResp().getMobileUser().getMSISDN();
+                response+="\n";
+                response+="CriticalExtensionOIDs:\n";
+                response+=resp.getPkcs7Signature().getSignerCert().getIssuerX500Principal() + "\n";
+                //response+="AE validation status code: " + validationStatus.getStatusCode().getValue();
+                //response+=" (" + validationStatus.getStatusMessage() + ")\n";
+                try {
+                    Set<String> oids = resp.getPkcs7Signature().getSignerCert().getNonCriticalExtensionOIDs();
+                    response +="Event ID: " + eventId + "\n";    
+                    for (String oid : oids) {
+                        response +="   " + oid + "\n";
+                    }
+                    response +="NonCriticalExtensionOIDs:" + "\n";
+                    oids = resp.getPkcs7Signature().getSignerCert().getCriticalExtensionOIDs();
+                    for (String oid : oids) {
+                        response +="   " + oid + "\n";
+                    }
+                } catch (NullPointerException e){
+                        log.debug("Unable to get OIDs");
+                }
+                try {
+                    List<PersonIdAttribute> attributes = resp.getPersonIdAttributes();
+                    response +="PersonIdAttributes: \n";
+                    for(PersonIdAttribute a : attributes) {
+                        response +=a.getName().substring(a.getName().indexOf('#')+1) + ": " + a.getStringValue() 
+                                + "\n";
+                    }
+                } catch (NullPointerException ne){
+                    log.debug("Unable to get PersonIdAttributes");
+                }
+            } catch (FiComException e1) {
+                log.info(e1);
+            } catch (UnsupportedEncodingException e) {
+                log.info("Unsupported encoding", e);
+            } catch (NullPointerException ne){
+                ne.printStackTrace();
+            }
+            responseBox.setText(response);
+        }
+        
+        
+        /**
+         * Initializes the response box
+         */
+        private void initResponse() {
+            responseFrame = new javax.swing.JFrame(eventId);
             cancelButton = new javax.swing.JButton();
             jScrollPane1 = new javax.swing.JScrollPane();
             responseBox = new javax.swing.JTextArea();
@@ -267,12 +267,12 @@ public class Authentication {
 
             cancelButton.setText("Cancel");
             cancelButton.addActionListener(new ActionListener() {
-    			public void actionPerformed(ActionEvent e) {
-    				req.cancel();
-    				callStateProgressBar.setIndeterminate(false);
-    				responseFrame.dispose();
-    			}
-    		});
+                public void actionPerformed(ActionEvent e) {
+                    req.cancel();
+                    callStateProgressBar.setIndeterminate(false);
+                    responseFrame.dispose();
+                }
+            });
             
             responseBox.setColumns(20);
             responseBox.setRows(5);
@@ -313,22 +313,22 @@ public class Authentication {
             responseFrame.setVisible(true);
             responseFrame.setResizable(false);
         }
-    	
-    	
+        
+        
     }
-	private static javax.swing.JFrame frame;
+    private static javax.swing.JFrame frame;
     private static javax.swing.JLabel lblNumber;
-	private static javax.swing.JTextField number;  
+    private static javax.swing.JTextField number;  
     private static javax.swing.JPanel pane;
     private static javax.swing.JButton sendButton;
     public static void main(String[] args) {
-		new Authentication().initUI();
-	}
+        new Authentication().initUI();
+    }
     /**
-	 * Initializes the UI
-	 */
+     * Initializes the UI
+     */
     private void initUI() {
-    	frame = new javax.swing.JFrame("Authentication");
+        frame = new javax.swing.JFrame("Authentication");
         pane = new javax.swing.JPanel();
         lblNumber = new javax.swing.JLabel();
         number = new javax.swing.JTextField();
@@ -345,11 +345,11 @@ public class Authentication {
 
         sendButton.setText("Send");
         sendButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				new ResponseWindow(number.getText());
-			}
-		});
-		
+            public void actionPerformed(ActionEvent e) {
+                new ResponseWindow(number.getText());
+            }
+        });
+        
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
         pane.setLayout(jPanel1Layout);

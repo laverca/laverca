@@ -36,7 +36,7 @@ import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
 public class FiComSigReqCaller {
-	
+    
     private static final Log log = LogFactory.getLog(FiComSigReqCaller.class);
     private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
 
@@ -99,10 +99,10 @@ public class FiComSigReqCaller {
                                                  log.info("got error", throwable);
                                              }
 
-											@Override
-											public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-												log.debug("got progress update");
-											}
+                                            @Override
+                                            public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                                                log.debug("got progress update");
+                                            }
                                          });
         }
         catch (IOException e) {
