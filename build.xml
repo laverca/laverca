@@ -121,7 +121,7 @@
              destdir="${apidocs}"
              author="false"
              version="false"
-             Private="true"
+             Private="false"
              use="true"
              useexternalfile="true"
              windowtitle="Laverca">
@@ -134,7 +134,7 @@
         <include name="**/*.java" />
       </fileset>
 			 	
-      <doctitle><![CDATA[<h1>Laverca v${project-version}</h1>]]></doctitle>
+      <doctitle><![CDATA[<h1>Laverca ${project-version}</h1>]]></doctitle>
     </javadoc>
   </target>
 
