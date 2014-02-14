@@ -127,6 +127,7 @@
              windowtitle="Laverca">
       <classpath>
         <path refid="laverca-libs"/>
+        <pathelement location="${datatypes-src}"/>
       </classpath>
     	
       <fileset dir="${core-src}" casesensitive="yes">
