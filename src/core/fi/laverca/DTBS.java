@@ -88,7 +88,6 @@ public class DTBS {
      * Initialize a DTBS without a mime type for <code>toBytes()</code>
      * 
      * @param text
-     * @param encoding
      */
     public DTBS(final String text) {
     	this(text, ENCODING_UTF8);

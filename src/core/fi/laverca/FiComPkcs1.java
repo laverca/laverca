@@ -43,7 +43,7 @@ public class FiComPkcs1 {
     private PKCS1 pkcs1;
 
 	/** 
-     * @param bytes In general, you get this from an MSS_SignatureResp.getSignature() call.
+     * @param pkcs1 In general, you get this from an MSS_SignatureResp.getMSS_Signature() call.
      * @throws IllegalArgumentException
      */
     public FiComPkcs1(PKCS1 pkcs1) throws IllegalArgumentException {
