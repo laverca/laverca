@@ -100,10 +100,7 @@ public class CommonsHTTPSender extends BasicHandler {
     
     /**
      * 
-     * @param cm
-     * @param clientProperties
-     * @param sslSocketFactory if null then using default (new SSLProtocolSocketFactory();).
-     * @param proxySettings
+     * @param hc
      */
     public static void initThreadLocals( HttpClient hc )
     {

@@ -91,8 +91,8 @@ public class EtsiClient {
      * NOTE that if any of the URLs require SSL, you must
      * call JvmSsl.setSSL() before sending any requests. TODO: DO SOMETHING ABOUT IT
      *
-     * @param apIdentifier Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
-     * @param apPassword Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
      * @exception IllegalArgumentException if a parameter value is
      * missing or invalid.
      */
@@ -194,7 +194,7 @@ public class EtsiClient {
      * 
      * @param msisdn  not null.
      * @param messagingMode not null. 
-     * @param dataToBeSigned  not null.
+     * @param dtbs  not null.
      * @param dataToBeDisplayed 
      * @param apTransId not null.
      * @param signatureProfile  not null.
@@ -292,7 +292,7 @@ public class EtsiClient {
     /**
      * Create a status request for a signature response.
      * 
-     * @param apTransID new AP transaction id
+     * @param apTransId new AP transaction id
      * @param sigResp 
      */
     public MSS_StatusReq createStatusRequest(MSS_SignatureResp sigResp,

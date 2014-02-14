@@ -64,8 +64,8 @@ public class FiComAdditionalServices {
 
     /** 
      * Create an AdditionalService for FiCom noSpam codes as per FiCom 2.0
-     * @param String noSpamCodeValue the value of the nospam code
-     * @param boolean verifyValue
+     * @param noSpamCodeValue the value of the nospam code
+     * @param verifyValue
      */
     public static Service createNoSpamService(String noSpamCodeValue, boolean verifyValue) {
         Service s = EtsiAdditionalServices.createService(NO_SPAM_URI);
@@ -88,7 +88,7 @@ public class FiComAdditionalServices {
 
     /**
      * Creates an AdditionalService for FiCom eventId
-     * @param String eventId
+     * @param eventId
      */
     public static Service createEventIdService(String eventId) {
         Service s = EtsiAdditionalServices.createService(EVENT_ID_URI);
