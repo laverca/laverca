@@ -24,11 +24,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Date;
-
 import javax.xml.rpc.ServiceException;
-
 import org.apache.axis.AxisFault;
-import org.apache.axis.MessageContext;
 import org.apache.axis.client.Stub;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +53,6 @@ import org.etsi.uri.TS102204.v1_1_2.MessageAbstractType;
 import org.etsi.uri.TS102204.v1_1_2.MobileUser;
 import org.etsi.uri.TS102204.v1_1_2.SignatureProfile;
 import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
-
 import fi.laverca.ws.MSS_HandshakeBindingStub;
 import fi.laverca.ws.MSS_ProfileQueryBindingStub;
 import fi.laverca.ws.MSS_ReceiptBindingStub;
@@ -408,21 +404,20 @@ public class EtsiClient {
                 port = (MSS_SignatureBindingStub)mssService.getMSS_SignaturePort(MSSP_SI_URL);
             } else if (req instanceof MSS_ReceiptReq) {
                 port = (MSS_ReceiptBindingStub)mssService.getMSS_ReceiptPort(MSSP_RC_URL);
-                // debug..
-            //} else if (req instanceof MSS_HandshakeReq) {
-            //    port = (MSS_HandshakeBindingStub)mssService.getMSS_HandshakePort(MSSP_HS_URL);
-            //    // debug..
+//            } else if (req instanceof MSS_HandshakeReq) {
+//                port = (MSS_HandshakeBindingStub)mssService.getMSS_HandshakePort(MSSP_HS_URL);
             } else if (req instanceof MSS_StatusReq) {
                 port = (MSS_StatusQueryBindingStub)mssService.getMSS_StatusQueryPort(MSSP_ST_URL);
-                // debug..
-            //} else if (req instanceof MSS_ProfileReq) {
-            //    port = (MSS_ProfileQueryBindingStub)mssService.getMSS_ProfileQueryPort(MSSP_PR_URL);
-            //    // debug..
-            //} else if (req instanceof MSS_RegistrationReq) {
-            //    port = (MSS_RegistrationBindingStub)mssService.getMSS_RegistrationPort(MSSP_RG_URL);
+//            } else if (req instanceof MSS_ProfileReq) {
+//                port = (MSS_ProfileQueryBindingStub)mssService.getMSS_ProfileQueryPort(MSSP_PR_URL);
+//            } else if (req instanceof MSS_RegistrationReq) {
+//                port = (MSS_RegistrationBindingStub)mssService.getMSS_RegistrationPort(MSSP_RG_URL);
+            } else {
+                throw new IOException("Invalid request type");
             }
-            if (timeout > 0)
+            if (timeout > 0) {
                 port.setTimeout((int)(timeout*1000) + 1000);
+            }
         }
         catch (ServiceException se) {
             log.debug("ServiceException");
@@ -437,7 +432,7 @@ public class EtsiClient {
             log.error("Can not do port._createCall(), SHOULD NEVER HAPPEN",e);
         }
 
-        MessageContext clientContext = port._getCall().getMessageContext();
+//        MessageContext clientContext = port._getCall().getMessageContext();
 
         try {
             if (port instanceof MSS_SignatureBindingStub) {
@@ -462,7 +457,6 @@ public class EtsiClient {
         }
         throw new IOException("Invalid call parameters");
     }
-
 
 
     /**

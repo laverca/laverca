@@ -120,10 +120,15 @@ public class DTBS {
     }
 
     /**
-     * Retrieve DTBS as a string - if it was a String at creation time.
+     * Retrieve DTBS as a String - if it was a String at creation time.
+     * If the DTBS was not a String, return either 
+     * "-binary DTBS-" or 
+     * "-llegal DTBS-" 
+     * depending on whether the DTBS contains binary data.
      * 
      * @return String
      */
+    @Override
     public String toString() {
         if (this.text != null) {
             return this.text;

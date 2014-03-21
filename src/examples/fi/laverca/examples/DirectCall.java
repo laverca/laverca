@@ -51,7 +51,6 @@ public class DirectCall {
 
         private static final Log log = LogFactory.getLog(DirectCall.class);
         private static FiComRequest req;
-        private static final String CONFIG_LOCATION = "fi/laverca/samples/configuration.xml";
         
         /**
          * Connects to MSSP using SSL and waits for response
@@ -110,11 +109,7 @@ public class DirectCall {
                                     sendButton.setEnabled(true);
                                     callStateProgressBar.setIndeterminate(false);
                                     
-                                    try {
-                                        log.info("MSS signer cert: " + resp.getPkcs1Signature().getSignerCert());
-                                    } catch (FiComException e) {
-                                        log.error("unable to get cert" + e);
-                                    }
+                                    log.info("MSS signer cert: " + resp.getPkcs1Signature().getSignerCert());
                                     
                                     responseBox.setText("MSS signature: " + resp.getPkcs1Signature().getMssSignatureValue() + "\n" + responseBox.getText());
                                     responseBox.setText("MSS signer cn: " + resp.getPkcs1Signature().getSignerCn() + "\n" + responseBox.getText());
@@ -131,6 +126,7 @@ public class DirectCall {
 
                                 @Override
                                 public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                                    // Do nothing
                                 }
                             });
             }
@@ -175,6 +171,7 @@ public class DirectCall {
 
             sendButton.setText("Send");
             sendButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     sendButton.setEnabled(false);
                     connect(number.getText(), textToBeSigned.getText());
@@ -184,6 +181,7 @@ public class DirectCall {
             
             cancelButton.setText("Cancel");
             cancelButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     sendButton.setEnabled(true);
                     req.cancel();
