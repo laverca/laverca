@@ -24,11 +24,9 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -49,6 +47,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 /** 
  * A PKCS7 SignedData element.
  */ 
+@SuppressWarnings("deprecation")
 public class FiComPkcs7 {
     private static final Log log = LogFactory.getLog(FiComPkcs7.class);
 
@@ -99,22 +98,17 @@ public class FiComPkcs7 {
             X509Certificate signerCert = this.getSignerCert();
             String dn = signerCert.getSubjectX500Principal().getName();
 
-            //System.out.println("getSignerCn");
-            //System.out.println(dn);
             String cn = null;
             try {
                 LdapName ldapDn = new LdapName(dn);
                 List<Rdn> rdns = ldapDn.getRdns();
                 for(Rdn r : rdns) {
-                    //System.out.println(r.getType());
-                    //System.out.println(r.getValue());
                     if("CN".equals(r.getType())) {
                         cn = r.getValue().toString();
                     }
                 }
-            }
-            catch(InvalidNameException e) {
-                // TODO
+            } catch(InvalidNameException e) {
+                log.warn("Invalid name", e);
             }
 
             return cn;
@@ -135,9 +129,14 @@ public class FiComPkcs7 {
         ASN1Object asn1 = null;
         try {
             asn1 = ais.readObject();
-        }
-        catch(IOException ioe) {
+        } catch(IOException ioe) {
             throw new IllegalArgumentException("not a pkcs7 signature");
+        } finally {
+            try {
+                ais.close();
+            } catch (IOException e) {
+                // Ignore
+            }
         }
 
         ContentInfo ci = ContentInfo.getInstance(asn1);
@@ -221,22 +220,18 @@ public class FiComPkcs7 {
         LinkedList<X509Certificate> certs = new LinkedList<X509Certificate>();
 
         ASN1Set certSet = sd.getCertificates();
-        Enumeration e = certSet.getObjects();
-        while(e.hasMoreElements()) {
-            Object o = e.nextElement();
+        Enumeration<?> en = certSet.getObjects();
+        while(en.hasMoreElements()) {
+            Object o = en.nextElement();
             try {
                 byte[] certDer = ((DERSequence)o).getEncoded();
                 X509Certificate cert = X509Util.DERtoX509Certificate(certDer);
                 certs.add(cert);
             }
-            catch(IOException e2) {
-                // TODO
+            catch(IOException e) {
+                log.debug("Failed to read cert", e);
             }
         }
-
-        //for(X509Certificate c : certs) {
-        //    System.out.println(c);
-        //}
 
         return certs;
     }
@@ -249,7 +244,7 @@ public class FiComPkcs7 {
         LinkedList<SignerInfo> signerInfos = new LinkedList<SignerInfo>();
 
         ASN1Set siSet = sd.getSignerInfos();
-        Enumeration e = siSet.getObjects();
+        Enumeration<?> e = siSet.getObjects();
         while(e.hasMoreElements()) {
             Object o = e.nextElement();
             try {
@@ -261,11 +256,6 @@ public class FiComPkcs7 {
                 // TODO
             }
         }
-
-        //for(SignerInfo si : signerInfos) {
-        //    System.out.println("issuer "+readIssuer(si));
-        //    System.out.println("serial "+readSerial(si));
-        //}
 
         return signerInfos;
     }
@@ -304,9 +294,7 @@ public class FiComPkcs7 {
         X509Name n1 = new X509Name(dn1);
         X509Name n2 = new X509Name(dn2);
 
-        //System.out.println("comparing n1 with n2 "+n1+" "+n2);
         boolean eq = n1.equals(n2, false);
-        //System.out.println(" "+eq);
 
         return eq;
     }

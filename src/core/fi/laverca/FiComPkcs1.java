@@ -72,7 +72,7 @@ public class FiComPkcs1 {
      * there is only one, but in a general Pkcs1 case, there can be several.
      * 
      */
-    public X509Certificate getSignerCert() throws FiComException {
+    public X509Certificate getSignerCert() {
     	return(X509Util.DERtoX509Certificate(pkcs1.getX509Certificate()));
     }
 
@@ -86,27 +86,21 @@ public class FiComPkcs1 {
             X509Certificate signerCert = this.getSignerCert();
             String dn = signerCert.getSubjectX500Principal().getName();
 
-            //System.out.println("getSignerCn");
-            //System.out.println(dn);
             String cn = null;
             try {
                 LdapName ldapDn = new LdapName(dn);
                 List<Rdn> rdns = ldapDn.getRdns();
                 for(Rdn r : rdns) {
-                    //System.out.println(r.getType());
-                    //System.out.println(r.getValue());
                     if("CN".equals(r.getType())) {
                         cn = r.getValue().toString();
                     }
                 }
-            }
-            catch(InvalidNameException e) {
-                // TODO
+            } catch(InvalidNameException e) {
+                log.warn("Invalid name", e);
             }
 
             return cn;
-        }
-        catch(Throwable t) {
+        } catch(Throwable t) {
             log.error("",t);
             return null;
         }

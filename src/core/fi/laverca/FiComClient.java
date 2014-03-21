@@ -45,9 +45,9 @@ import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
  */
 public class FiComClient {
 	
-	private static final int INITIAL_WAIT    = 20 * 1000;     // Initial wait 20 s   as per MSS_FiCom_Implementation_guideline, section 5.1
-	private static final int SUBSEQUENT_WAIT = 5 * 1000;      // Subsequent wait 5 s as per MSS_FiCom_Implementation_guideline, section 5.1
-	private static final int TIMEOUT         = 5 * 60 * 1000; // Timeout 5 min       as per MSS_FiCom_Implementation_guideline, section 6.4
+	private static final int INITIAL_WAIT    = 20 * 1000;     // Initial wait 20 s   as per MSS FiCom Implementation Guideline, section 5.1
+	private static final int SUBSEQUENT_WAIT = 5  * 1000;     // Subsequent wait 5 s as per MSS FiCom Implementation Guideline, section 5.1
+	private static final int TIMEOUT         = 5 * 60 * 1000; // Timeout 5 min       as per MSS FiCom Implementation Guideline, section 6.4
 	
     private static final Log log = LogFactory.getLog(FiComClient.class);
 
