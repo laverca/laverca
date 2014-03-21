@@ -20,14 +20,14 @@
 package fi.laverca;
 
 /**
- * As per FiCom Soveltamisohje v2.0
+ * As per MSS FiCom Implementation Guideline v2.1
  */
 public class FiComStatusCodes {
 
     public final static int NO_SECONDARY_CODE = -1;
 
     public final static StatusCode      REQUEST_OK                       = new StatusCode(100);
-    public final static StatusCode      SIGNATURE                        = new StatusCode(501);
+    public final static StatusCode      SIGNATURE                        = new StatusCode(500);
     public final static StatusCode      REVOKED_CERTIFICATE              = new StatusCode(501);
     public final static StatusCode      VALID_SIGNATURE                  = new StatusCode(502);
     public final static StatusCode      INVALID_SIGNATURE                = new StatusCode(503);
