@@ -108,7 +108,7 @@ public class BankTransfer {
                             
                             String numberResponding = resp.getMSS_StatusResp().getMobileUser().getMSISDN();
                             if (numberResponding.equals(phoneNumber)) {
-                                fiComClient.sendReceipt(resp, phoneNumber + " successfully authenticated the bank transfer.");
+                                fiComClient.sendReceiptReq(resp, phoneNumber + " successfully authenticated the bank transfer.");
                                 try {
                                     responseBox.setText("\nMSS Signature: " + 
                                             new String(Base64.encode(resp.getMSS_StatusResp().
