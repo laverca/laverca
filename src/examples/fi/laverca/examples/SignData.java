@@ -78,12 +78,10 @@ public class SignData {
      * @param args not used
      */
     public static void main(String[] args) {
-        Long currentTimeMillis = System.currentTimeMillis();
-        eventId = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        eventId = generateEventId();
         initUI();
-        respWindow = new ResponseWindow();
     }
-    
+
     /**
      * Connects to MSSP using SSL and waits for response.
      * @param msisdn
@@ -172,6 +170,15 @@ public class SignData {
 
         fiComClient.shutdown();
     }   
+    
+    /**
+     * Generates a new event id from System.currentTimeMillis()
+     * @return new EventId
+     */
+    private static String generateEventId() {
+        Long currentTimeMillis = System.currentTimeMillis();
+        return "A" + currentTimeMillis.toString().substring(10);
+    }
     
     /**
      * 
@@ -266,6 +273,7 @@ public class SignData {
         browseButton = new JButton();
         scrollPane   = new JScrollPane();
         hashBox      = new JTextArea();
+        respWindow   = new ResponseWindow();
 
         final JFileChooser fileChooser = new JFileChooser();
         
