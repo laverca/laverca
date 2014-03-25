@@ -70,15 +70,13 @@ public class SignData {
     
     private static final Log log = LogFactory.getLog(SignData.class);    
     
-    private static FiComRequest   req;
-    private static String         eventId;
-    
+    private static FiComRequest req;
+        
     /**
      * Creates eventId and starts the UI
      * @param args not used
      */
-    public static void main(String[] args) {
-        eventId = generateEventId();
+    public static void main(String[] args) {        
         initUI();
     }
 
@@ -87,7 +85,7 @@ public class SignData {
      * @param msisdn
      * @param selectedFile
      */
-    protected static void connect(String msisdn, String noSpam, final File selectedFile) {
+    protected static void connect(String msisdn, String noSpam, String eventId, final File selectedFile) {
         
         // Read configuration
         Properties properties = ExampleConf.getProperties();
@@ -122,7 +120,7 @@ public class SignData {
         
         // EventId and NoSpam
         Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
-        Service noSpamService  = FiComAdditionalServices.createNoSpamService("A12", false);
+        Service noSpamService  = FiComAdditionalServices.createNoSpamService(noSpam, false);
         
         // PersonID
         LinkedList<String>  attributeNames     = new LinkedList<String>();
@@ -131,7 +129,7 @@ public class SignData {
         additionalServices.add(personIdService);
         
         try {
-            log.info("Calling sign data");
+            log.info("Calling sign data"); 
             req = 
                 fiComClient.signData(apTransId, 
                         output, 
@@ -161,7 +159,7 @@ public class SignData {
                             public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
                                 log.trace("Got status update");
                             }
-
+    
                         });
         }
         catch (IOException e) {
@@ -308,8 +306,10 @@ public class SignData {
                     hashBox.setText("Please choose a file");
                 } else {
                     log.debug("Creating response window");
-                    respWindow.init();
-                    connect(msisdnField.getText(), noSpamField.getText(), fileChooser.getSelectedFile());     
+                    
+                    String eventId = generateEventId();
+                    respWindow.init(eventId);
+                    connect(msisdnField.getText(), noSpamField.getText(), eventId, fileChooser.getSelectedFile());     
                 } 
             }
         });
@@ -387,6 +387,8 @@ public class SignData {
      */
     private static class ResponseWindow {
                 
+        private String       eventId;
+        
         // Swing
         private JProgressBar progressBar;
         private JButton      cancelButton;
@@ -398,14 +400,14 @@ public class SignData {
          * Creates the object. Call init() to create the actual window.
          */
         public ResponseWindow() {
-            responseFrame = new JFrame(eventId);
-            cancelButton  = new JButton();
-            scrollPane    = new JScrollPane();
-            responseBox   = new JTextArea();
-            progressBar = new JProgressBar();            
+            this.responseFrame = new JFrame(eventId);
+            this.cancelButton  = new JButton();
+            this.scrollPane    = new JScrollPane();
+            this.responseBox   = new JTextArea();
+            this.progressBar = new JProgressBar();            
 
-            cancelButton.setText("Cancel");
-            cancelButton.addActionListener(new ActionListener() {
+            this.cancelButton.setText("Cancel");
+            this.cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     log.info("Request canceled");
@@ -415,12 +417,12 @@ public class SignData {
                 }
             });
             
-            responseBox.setColumns(20);
-            responseBox.setRows(5);
-            scrollPane.setViewportView(responseBox);
+            this.responseBox.setColumns(20);
+            this.responseBox.setRows(5);
+            this.scrollPane.setViewportView(responseBox);
 
             GroupLayout layout = new GroupLayout(responseFrame.getContentPane());
-            responseFrame.getContentPane().setLayout(layout);
+            this.responseFrame.getContentPane().setLayout(layout);
             layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
@@ -455,13 +457,16 @@ public class SignData {
         /**
          * Creates the window and initializes swing components
          */
-        public void init() {
-            responseBox.setText("");
-            progressBar.setIndeterminate(true);
-            responseFrame.setLocation(500, 0);
-            responseFrame.pack();
-            responseFrame.setVisible(true);
-            responseFrame.setResizable(false);
+        public void init(String eventId) {
+            this.eventId = eventId;
+            this.responseFrame.setTitle(this.eventId);
+            
+            this.responseBox.setText("");
+            this.progressBar.setIndeterminate(true);
+            this.responseFrame.setLocation(500, 0);
+            this.responseFrame.pack();
+            this.responseFrame.setVisible(true);
+            this.responseFrame.setResizable(false);
         }
 
         /**
@@ -469,20 +474,19 @@ public class SignData {
          * @param t
          */
         public void setError(Throwable t) {
-            progressBar.setIndeterminate(false);
-            responseBox.setText("Failed to get signature" +
-                                "\nError: " + t.getMessage());
+            this.progressBar.setIndeterminate(false);
+            this.responseBox.setText("Failed to get signature" +
+                                     "\nError: " + t.getMessage());
         }
 
         /**
          * Fills the response area with the received FiComResponse.
          * @param resp Response to parse the MSS Signature and SHA1 text from
-         * @param output
-         * @param selectedFile
+         * @param output byte array to converto to SHA1
          */
         public void setResponse(FiComResponse resp, byte[] output) {
             
-            progressBar.setIndeterminate(false);
+            this.progressBar.setIndeterminate(false);
             String sha1 = SignData.toSHA1String(output);
             Map<String, String> respMap = new LinkedHashMap<String, String>();
 
@@ -520,8 +524,16 @@ public class SignData {
                 while (tmp.length() < longest) {
                     tmp.append(" ");
                 }
-                responseBox.append(tmp.toString() + ": " + respMap.get(s) + "\n");
+                this.responseBox.append(tmp.toString() + ": " + respMap.get(s) + "\n");
             }            
+        }
+        
+        /**
+         * Gets the eventId currently associated with the window
+         * @return String eventId
+         */
+        public String getEventId() {
+            return eventId;
         }
         
     }
