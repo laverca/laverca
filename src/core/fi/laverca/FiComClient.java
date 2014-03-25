@@ -78,7 +78,7 @@ public class FiComClient {
      * @param authnChallenge
      * @param phoneNumber MSISDN of the target user
      * @param noSpamService Service for sending nospam code
-     * @param eventIDService Service containing the wanted EventId for the request
+     * @param eventIdService Service containing the wanted EventId for the request
      * @param additionalServices List of FiCom additionalservices to add to the request
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
