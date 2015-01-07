@@ -17,22 +17,17 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
-import org.etsi.uri.TS102204.v1_1_2.Description;
-import org.etsi.uri.TS102204.v1_1_2.Service;
+/**
+ * As per FiCom Implementation Guideline v2.0
+ */
+public class FiComSignatureProfiles {
 
-public class EtsiAdditionalServices {
-    
-    // basic ETSI services
-    public static Service createService(String uri) {
-        Service s = new Service();
-        Description d = new Description();
-        d.setMssURI(uri);
-        s.setDescription(d);
-        
-        return s;
-    }
-
+    public final static String AUTHENTICATION    = "http://mss.ficom.fi/TS102206/v1.0.0/authentication-profile.xml";
+    public final static String ANONYMOUS         = "http://mss.ficom.fi/TS102206/v1.0.0/anonymous-profile.xml";
+    public final static String SIGNATURE         = "http://mss.ficom.fi/TS102206/v1.0.0/signature-profile.xml";
+    public final static String DIGESTIVE         = "http://mss.ficom.fi/TS102206/v1.0.0/digestive-signature-profile.xml";
+    public final static String CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
     
 }

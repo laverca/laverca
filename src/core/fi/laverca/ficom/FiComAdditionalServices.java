@@ -17,12 +17,14 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import oasis.names.tc.SAML.v2_0.assertion.Attribute;
 import oasis.names.tc.SAML.v2_0.protocol.AttributeQuery;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.AdditionalServiceTypeChoice;
@@ -30,10 +32,13 @@ import org.etsi.uri.TS102204.v1_1_2.AdditionalServiceTypeChoiceItem;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetail;
 import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
+
 import fi.ficom.mss.TS102204.v1_0_0.Description;
 import fi.ficom.mss.TS102204.v1_0_0.NoSpamCode;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
+import fi.laverca.Saml2Util;
+import fi.laverca.etsi.EtsiAdditionalServices;
 
 /**
  * As per FiCom Implementation Guideline v2.0

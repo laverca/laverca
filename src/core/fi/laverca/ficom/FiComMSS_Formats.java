@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 /**
  * As per FiCom Soveltamisohje v2.0

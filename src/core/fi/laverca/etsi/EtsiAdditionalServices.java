@@ -17,17 +17,22 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.etsi;
 
-/** 
- * A PKCS7 SignedData element.
- */ 
-public interface FiComResponseHandler {
+import org.etsi.uri.TS102204.v1_1_2.Description;
+import org.etsi.uri.TS102204.v1_1_2.Service;
 
-    void onError(FiComRequest req, Throwable throwable);
+public class EtsiAdditionalServices {
     
-    void onResponse(FiComRequest req, FiComResponse resp);
-    
-    void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate);
+    // basic ETSI services
+    public static Service createService(String uri) {
+        Service s = new Service();
+        Description d = new Description();
+        d.setMssURI(uri);
+        s.setDescription(d);
+        
+        return s;
+    }
+
     
 }

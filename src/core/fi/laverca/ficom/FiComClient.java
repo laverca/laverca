@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,6 +39,10 @@ import org.etsi.uri.TS102204.v1_1_2.Service;
 import org.etsi.uri.TS102204.v1_1_2.Status;
 import org.etsi.uri.TS102204.v1_1_2.StatusCode;
 import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
+
+import fi.laverca.DTBS;
+import fi.laverca.ProgressUpdate;
+import fi.laverca.etsi.EtsiClient;
 
 /**  
  * An asynchronous client for FiCom -style signature requests.

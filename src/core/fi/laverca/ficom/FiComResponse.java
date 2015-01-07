@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +36,7 @@ import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.Status;
+import fi.laverca.Saml2Util;
 
 /**
  * Asynchronous MSS_StatusResp callback.

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 
 import fi.ficom.mss.TS102204.v1_0_0.PKCS1;
+import fi.laverca.X509Util;
 
 
 /** 
