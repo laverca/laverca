@@ -17,16 +17,18 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -42,6 +44,8 @@ import org.bouncycastle.asn1.pkcs.SignedData;
 import org.bouncycastle.asn1.pkcs.SignerInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
+
+import fi.laverca.X509Util;
 
 
 /** 

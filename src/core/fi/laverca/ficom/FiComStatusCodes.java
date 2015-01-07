@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
 /**
  * As per MSS FiCom Implementation Guideline v2.1

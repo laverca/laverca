@@ -17,17 +17,30 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
-/**
- * As per FiCom Soveltamisohje v2.0
- */
-public class FiComSignatureProfiles {
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-    public final static String AUTHENTICATION    = "http://mss.ficom.fi/TS102206/v1.0.0/authentication-profile.xml";
-    public final static String ANONYMOUS         = "http://mss.ficom.fi/TS102206/v1.0.0/anonymous-profile.xml";
-    public final static String SIGNATURE         = "http://mss.ficom.fi/TS102206/v1.0.0/signature-profile.xml";
-    public final static String DIGESTIVE         = "http://mss.ficom.fi/TS102206/v1.0.0/digestive-signature-profile.xml";
-    public final static String CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
-    
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
+
+public class FiComRequest {
+
+    MSS_SignatureReq           sigReq;
+    MSS_SignatureResp          sigResp;
+    FutureTask<FiComResponse>  ft;
+
+    FiComRequest() {
+        // fields are written by FiComClient during execution
+    }
+
+    /** Wait for a response. Block this thread. */
+    public FiComResponse waitForResponse() throws InterruptedException, ExecutionException {
+        return this.ft.get();
+    }
+
+    public void cancel() {
+        this.ft.cancel(true);
+    }
 }

@@ -17,14 +17,16 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.etsi;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Date;
+
 import javax.xml.rpc.ServiceException;
+
 import org.apache.axis.AxisFault;
 import org.apache.axis.client.Stub;
 import org.apache.commons.logging.Log;
@@ -53,6 +55,8 @@ import org.etsi.uri.TS102204.v1_1_2.MessageAbstractType;
 import org.etsi.uri.TS102204.v1_1_2.MobileUser;
 import org.etsi.uri.TS102204.v1_1_2.SignatureProfile;
 import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
+
+import fi.laverca.DTBS;
 import fi.laverca.ws.MSS_HandshakeBindingStub;
 import fi.laverca.ws.MSS_ProfileQueryBindingStub;
 import fi.laverca.ws.MSS_ReceiptBindingStub;
@@ -83,7 +87,7 @@ public class EtsiClient {
 
     /** 
      * NOTE that if any of the URLs require SSL, you must
-     * call JvmSsl.setSSL() before sending any requests. TODO: DO SOMETHING ABOUT IT
+     * call JvmSsl.setSSL() before sending any requests.
      *
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
      * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
@@ -128,7 +132,7 @@ public class EtsiClient {
     
     /**
      * NOTE that if any of the URLs require SSL, you must
-     * call JvmSsl.setSSL() before sending any requests. TODO: DO SOMETHING ABOUT IT
+     * call JvmSsl.setSSL() before sending any requests.
      *
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
      * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
@@ -217,12 +221,13 @@ public class EtsiClient {
     /**
      * Creates a signature request. 
      * 
-     * @param msisdn  not null.
-     * @param messagingMode not null. 
-     * @param dtbs  not null.
-     * @param dataToBeDisplayed 
      * @param apTransId not null.
-     * @param signatureProfile  not null.
+     * @param msisdn not null.
+     * @param dtbs not null.
+     * @param dataToBeDisplayed 
+     * @param signatureProfile not null.
+     * @param mss_format not null.
+     * @param messagingMode not null. 
      */
     public MSS_SignatureReq createSignatureRequest(String apTransId,
                                                    String msisdn,

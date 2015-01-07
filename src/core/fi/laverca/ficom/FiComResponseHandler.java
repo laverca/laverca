@@ -17,17 +17,19 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.ficom;
 
-@SuppressWarnings("serial")
-public class FiComException extends Exception {
+import fi.laverca.ProgressUpdate;
 
-    public FiComException(String message) {
-        super(message);
-    }
+/** 
+ * A PKCS7 SignedData element.
+ */ 
+public interface FiComResponseHandler {
+
+    void onError(FiComRequest req, Throwable throwable);
     
-    public FiComException(Throwable cause) {
-        super(cause);
-    }
+    void onResponse(FiComRequest req, FiComResponse resp);
+    
+    void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate);
     
 }
