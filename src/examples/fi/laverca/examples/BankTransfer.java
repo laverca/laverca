@@ -30,13 +30,13 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
-import fi.laverca.FiComAdditionalServices;
-import fi.laverca.FiComClient;
-import fi.laverca.FiComRequest;
-import fi.laverca.FiComResponse;
-import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
+import fi.laverca.ficom.FiComAdditionalServices;
+import fi.laverca.ficom.FiComClient;
+import fi.laverca.ficom.FiComRequest;
+import fi.laverca.ficom.FiComResponse;
+import fi.laverca.ficom.FiComResponseHandler;
 
 /**
  * Sample for demonstrating a bank transfer and sending a receipt.

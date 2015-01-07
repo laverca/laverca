@@ -27,13 +27,13 @@ import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
-import fi.laverca.FiComAdditionalServices;
-import fi.laverca.FiComClient;
-import fi.laverca.FiComRequest;
-import fi.laverca.FiComResponse;
-import fi.laverca.FiComResponseHandler;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
+import fi.laverca.ficom.FiComAdditionalServices;
+import fi.laverca.ficom.FiComClient;
+import fi.laverca.ficom.FiComRequest;
+import fi.laverca.ficom.FiComResponse;
+import fi.laverca.ficom.FiComResponseHandler;
 
 public class FiComSigReqCaller {
     

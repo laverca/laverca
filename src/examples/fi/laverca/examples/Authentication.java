@@ -35,13 +35,13 @@ import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.ficom.mss.TS102204.v1_0_0.Status;
 import fi.laverca.DTBS;
-import fi.laverca.FiComAdditionalServices;
-import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
-import fi.laverca.FiComClient;
-import fi.laverca.FiComException;
-import fi.laverca.FiComRequest;
-import fi.laverca.FiComResponse;
-import fi.laverca.FiComResponseHandler;
+import fi.laverca.ficom.FiComAdditionalServices;
+import fi.laverca.ficom.FiComClient;
+import fi.laverca.ficom.FiComException;
+import fi.laverca.ficom.FiComRequest;
+import fi.laverca.ficom.FiComResponse;
+import fi.laverca.ficom.FiComResponseHandler;
+import fi.laverca.ficom.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
