@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -48,16 +49,18 @@ import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 import org.etsi.uri.TS102204.v1_1_2.Service;
-import fi.laverca.FiComAdditionalServices;
-import fi.laverca.FiComAdditionalServices.PersonIdAttribute;
-import fi.laverca.FiComClient;
-import fi.laverca.FiComRequest;
-import fi.laverca.FiComResponse;
-import fi.laverca.FiComResponseHandler;
+
+import fi.laverca.ficom.FiComAdditionalServices;
+import fi.laverca.ficom.FiComClient;
+import fi.laverca.ficom.FiComRequest;
+import fi.laverca.ficom.FiComResponse;
+import fi.laverca.ficom.FiComResponseHandler;
+import fi.laverca.ficom.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 
