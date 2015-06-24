@@ -1,7 +1,5 @@
 [![Build Status](https://api.travis-ci.org/laverca/laverca.png)](https://travis-ci.org/laverca/laverca)
 
-## DESCRIPTION
-
 Laverca is an open-source Java API for requesting signatures using mobile 
 signature services.
 
@@ -18,7 +16,7 @@ In addition to the ETSI features, Laverca includes the FiCom 2.0 features
 specified in Finland.
 
 
-## REQUIREMENTS
+## Requirements
 
   Laverca API
 
@@ -44,7 +42,7 @@ specified in Finland.
     http://ant.apache.org/manual/index.html
 
 
-## EXAMPLES
+## Example
 
     Laverca ships with example implementations. The examples are included 
     in the examples directory.
@@ -77,7 +75,7 @@ specified in Finland.
     in: http://demo.methics.fi/demo-environment/application-providers/
 
         
-## FEATURES
+## Features
 
     1. Supports synchronic and asynchronic client-server.
          (FiComClient for C/S asynch, EtsiClient for synchronic)
@@ -104,7 +102,7 @@ specified in Finland.
 
 
 
-## COPYRIGHT AND LICENSE
+## Copyright and License
 
 See the [LICENSE](https://github.com/laverca/laverca/blob/master/LICENSE) file
 
