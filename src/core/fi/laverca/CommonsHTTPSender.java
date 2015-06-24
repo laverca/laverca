@@ -127,29 +127,7 @@ public class CommonsHTTPSender extends BasicHandler {
     public void invoke(MessageContext msgContext)
             throws AxisFault
             {
-        // Sometimes there could be use for HttpGet in SOAP. Maybe.
-        // We don't support it at the moment, but see AXIS 1.4:
-        /*
-            boolean posting = true;
-            
-            // If we're SOAP 1.2, allow the web method to be set from the
-            // MessageContext.
-            if (msgContext.getSOAPConstants() == SOAPConstants.SOAP12_CONSTANTS) {
-                String webMethod = msgContext.getStrProp(SOAP12Constants.PROP_WEBMETHOD);
-                if (webMethod != null) {
-                    posting = webMethod.equals(HTTPConstants.HEADER_POST);
-                }
-            }
 
-            HttpBaseMethod method = null;
-            if (posting) {
-              method = new HttpPost(targetURL.toString());
-            } else {
-              method = new HttpGet(targetURL.toString());
-            }
-            ..etc..
-         */
-        
         HttpPost post = null;
         HttpResponse response = null;
         if (log.isDebugEnabled()) {
