@@ -113,6 +113,8 @@
   <target name="gzip" depends="dist">
 	<tar compression="gzip" longfile="gnu" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
   </target>
+
+  <target name="test" depends="build"/>
   
   <target name="apidocs"
           description="Generates Laverca documentation.">
