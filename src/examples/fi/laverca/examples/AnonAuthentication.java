@@ -195,9 +195,9 @@ public class AnonAuthentication {
     private void initGUI() {
  
         // Init frame & panels
-        JFrame frame = new JFrame("Anon authentication");
-        JPanel panel = new JPanel();
-        JScrollPane jScrollPane = new JScrollPane();
+        final JFrame frame = new JFrame("Anon authentication");
+        final JPanel panel = new JPanel();
+        final JScrollPane jScrollPane = new JScrollPane();
 
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
@@ -212,8 +212,8 @@ public class AnonAuthentication {
         });
 
         // Init phone number field
-        JLabel  lblNumber = new JLabel();
-        JTextField number = new JTextField();
+        final JLabel  lblNumber = new JLabel();
+        final JTextField number = new JTextField();
         lblNumber.setText("Phone number");
         number.setText(DEFAULT_MSISDN);
 
