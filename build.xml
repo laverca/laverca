@@ -97,10 +97,10 @@
     <copy todir="${dist}" file="${datatypes-lib}" />
     <copy todir="${dist}/examples" file="${examples-lib}" />
     
-    <copy todir="${dist}" file="README" />
+    <copy todir="${dist}" file="README.md" />
     <copy todir="${dist}" file="CHANGELOG" />
-  	<copy todir="${dist}" file="LICENSE" />
-  	<copy todir="${dist}" file="NOTICE" />
+  	<copy todir="${dist}" file="LICENSE"   />
+  	<copy todir="${dist}" file="NOTICE"    />
 
   </target>
   
