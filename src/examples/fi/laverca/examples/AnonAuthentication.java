@@ -21,161 +21,219 @@ package fi.laverca.examples;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
+
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.WindowConstants;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.DTBS;
+import fi.laverca.JvmSsl;
+import fi.laverca.ProgressUpdate;
 import fi.laverca.ficom.FiComAdditionalServices;
+import fi.laverca.ficom.FiComAdditionalServices.PersonIdAttribute;
 import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.ficom.FiComResponseHandler;
-import fi.laverca.ficom.FiComAdditionalServices.PersonIdAttribute;
-import fi.laverca.JvmSsl;
-import fi.laverca.ProgressUpdate;
 
 /**
- * Sample for demonstrating anonymous authentication. 
+ * Example application for demonstrating anonymous authentication.
+ * 
+ * <ul>
+ * <li>Creates a swing UI 
+ * <li>Requests the user's gender
+ * </ul>
+ * 
+ * <p>Uses the following FiCom AdditionalServices:
+ * <ul>
+ * <li>EventID
+ * <li>NoSpamCode
+ * <li>PersonID
+ * </ul>
+ * 
  */
-
 public class AnonAuthentication {
 
     private static final Log log = LogFactory.getLog(AnonAuthentication.class);
-    private static FiComRequest req;
+    
+    private static final String DEFAULT_MSISDN   = "+35847001001";
+    private static final String FIXED_NOSPAMCODE = "A12";
+    
+    private FiComClient  client;
+    private FiComRequest req;
+    private Properties   conf;
 
+    /**
+     * Initializes this example
+     */
+    private void init() {
+        
+        this.conf = ExampleConf.getProperties();
+        
+        log.info("Setting up ssl");
+        JvmSsl.setSSL(this.conf.getProperty(ExampleConf.TRUSTSTORE_FILE),
+                      this.conf.getProperty(ExampleConf.TRUSTSTORE_PASSWORD),
+                      this.conf.getProperty(ExampleConf.KEYSTORE_FILE),
+                      this.conf.getProperty(ExampleConf.KEYSTORE_PASSWORD),
+                      this.conf.getProperty(ExampleConf.KEYSTORE_TYPE));
+        
+        final String apId  = this.conf.getProperty(ExampleConf.AP_ID);
+        final String apPwd = this.conf.getProperty(ExampleConf.AP_PASSWORD);
+
+        final String msspSignatureUrl = this.conf.getProperty(ExampleConf.SIGNATURE_URL);
+        final String msspStatusUrl    = this.conf.getProperty(ExampleConf.STATUS_URL);
+        final String msspReceiptUrl   = this.conf.getProperty(ExampleConf.RECEIPT_URL);
+
+        log.info("Creating FiComClient");
+        this.client = new FiComClient(apId, 
+                                      apPwd, 
+                                      msspSignatureUrl, 
+                                      msspStatusUrl, 
+                                      msspReceiptUrl);
+    }
+    
     
     /**
-     * Connects to MSSP using SSL and waits for response.
-     * @param phoneNumber
+     * Authenticates to the MSSP with the FiCom anonymous profile
+     * 
+     * @param phoneNumber MSISDN of the user
      */
-    private static void connect(final String phoneNumber) {
+    private void authenticate(final String phoneNumber) {
         
-        Properties properties = ExampleConf.getProperties();
-        
-        log.info("setting up ssl");
-        JvmSsl.setSSL(properties.getProperty(ExampleConf.TRUSTSTORE_FILE),
-                properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD),
-                properties.getProperty(ExampleConf.KEYSTORE_FILE),
-                properties.getProperty(ExampleConf.KEYSTORE_PASSWORD),
-                properties.getProperty(ExampleConf.KEYSTORE_TYPE));
-        
-        String apId  = properties.getProperty(ExampleConf.AP_ID);
-        String apPwd = properties.getProperty(ExampleConf.AP_PASSWORD);
-
-        String msspSignatureUrl    = properties.getProperty(ExampleConf.SIGNATURE_URL);
-        String msspStatusUrl       = properties.getProperty(ExampleConf.STATUS_URL);
-        String msspReceiptUrl      = properties.getProperty(ExampleConf.RECEIPT_URL);
-
-        log.info("creating FiComClient");
-        FiComClient fiComClient = new FiComClient(apId, 
-                                                  apPwd, 
-                                                  msspSignatureUrl, 
-                                                  msspStatusUrl, 
-                                                  msspReceiptUrl);
-        
-        Long currentTimeMillis = System.currentTimeMillis();
-        String apTransId = "A"+currentTimeMillis;
-        final String eventId = "A"+ currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
+        // Generate IDs
+        final Long currentTimeMillis = System.currentTimeMillis();
+        final String apTransId = "A" + currentTimeMillis;
+        final String eventId   = "A" + currentTimeMillis.toString().substring(currentTimeMillis.toString().length()-4);
         
         byte[] authnChallenge = new DTBS(apTransId, DTBS.ENCODING_UTF8).toBytes();
 
-        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
-        Service noSpamService = FiComAdditionalServices.createNoSpamService("A12", false);
-        LinkedList<Service> additionalServices = new LinkedList<Service>();
-        LinkedList<String> attributeNames = new LinkedList<String>();
-        attributeNames.add(FiComAdditionalServices.PERSON_ID_GENDER);
-        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+        // Add additional services
+        LinkedList<Service> additionalServices = new LinkedList<Service>();        
+        
+        Service eventIdService  = FiComAdditionalServices.createEventIdService(eventId);
+        Service noSpamService   = FiComAdditionalServices.createNoSpamService(FIXED_NOSPAMCODE, false);
+        Service personIdService = FiComAdditionalServices.createPersonIdService(FiComAdditionalServices.PERSON_ID_GENDER);
+        
+        additionalServices.add(eventIdService);
+        additionalServices.add(noSpamService);
         additionalServices.add(personIdService);
         
+        // Create response handler
+        FiComResponseHandler handler = new FiComResponseHandler() {
+            @Override
+            public void onResponse(FiComRequest req, FiComResponse resp) {
+                log.info("Got response");
+                displayResponse(eventId, resp, null);
+            }
+
+            @Override
+            public void onError(FiComRequest req, Throwable throwable) {
+                log.info("Got error");
+                displayResponse(eventId, null, throwable);
+            }
+
+            @Override
+            public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
+                // Ignore
+            }
+        };
+        
+        // Attempt to authenticate
         try {
-            log.info("calling authenticateAnon");
-            req = 
-                fiComClient.authenticateAnon(apTransId, 
-                        authnChallenge, 
-                        phoneNumber, 
-                        noSpamService, 
-                        eventIdService,
-                        additionalServices, 
-                        new FiComResponseHandler() {
-                            @Override
-                            public void onResponse(FiComRequest req, FiComResponse resp) {
-                                log.info("got resp");
-                                sendButton.setEnabled(true);
-                                callStateProgressBar.setIndeterminate(false);
-                                responseBox.setText("\n" + responseBox.getText());
-                                try{
-                                    for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
-                                        log.info(a.getStringValue());
-                                        responseBox.setText(a.getStringValue() + " " + responseBox.getText());
-                                    }
-                                } catch (NullPointerException e){
-                                    log.warn("No Person ID Attributes found!");
-                                }
-                                
-                                responseBox.setText("Event ID: " + eventId + "\nAdditional attributes:\n" + responseBox.getText());
-                            }
-            
-                            @Override
-                            public void onError(FiComRequest req, Throwable throwable) {
-                                callStateProgressBar.setIndeterminate(false);
-                                responseBox.setText(throwable.getMessage());
-                            }
-
-                            @Override
-                            public void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate) {
-                                
-                            }
-                        });
-        }
-        catch (IOException e) {
-            log.info("error establishing connection", e);
+            log.info("Authenticating");
+            this.req = client.authenticateAnon(apTransId, 
+                                               authnChallenge, 
+                                               phoneNumber, 
+                                               noSpamService, 
+                                               eventIdService,
+                                               additionalServices, 
+                                               handler);
+        } catch (IOException e) {
+            log.info("Error establishing connection", e);
         }
 
-        fiComClient.shutdown();
     }
     
     /**
      * Main method
      * @param args
      */
-    public static void main(String[] args) {    
-        initComponents();
+    public static void main(String[] args) {
+        AnonAuthentication main = new AnonAuthentication();
+        main.initGUI();
+        main.init();
     }
+    
+    // GUI
+
+    private JProgressBar callState;
+    private JButton      sendButton;
+    private JButton      cancelButton;
+    private JTextArea    responseBox;
     
     /**
      * Initializes the swing GUI
      */
-    private static void initComponents() {
+    private void initGUI() {
+ 
+        // Init frame & panels
+        JFrame frame = new JFrame("Anon authentication");
+        JPanel panel = new JPanel();
+        JScrollPane jScrollPane = new JScrollPane();
 
-        frame = new javax.swing.JFrame("Anon authentication");
-        pane = new javax.swing.JPanel();
-        lblNumber = new javax.swing.JLabel();
-        number = new javax.swing.JTextField();
-        sendButton = new javax.swing.JButton();
-        callStateProgressBar = new javax.swing.JProgressBar();
-        cancelButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        responseBox = new javax.swing.JTextArea();
-
-        frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
         frame.setResizable(false);
+        
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                // Close client & exit
+                client.shutdown();
+                System.exit(0);
+            }
+        });
 
+        // Init phone number field
+        JLabel  lblNumber = new JLabel();
+        JTextField number = new JTextField();
         lblNumber.setText("Phone number");
+        number.setText(DEFAULT_MSISDN);
 
-        number.setText("+35847001001");
+        // Init progress bar & response box
+        this.callState    = new JProgressBar();
+        this.responseBox  = new JTextArea();
+        this.responseBox.setColumns(20);
+        this.responseBox.setRows(5);
+        jScrollPane.setViewportView(this.responseBox);
+        
+        // Init buttons
+        this.cancelButton = new JButton();
+        this.sendButton   = new JButton();
 
-        sendButton.setText("Send");
-        sendButton.addActionListener(new ActionListener() {
+        this.sendButton.setText("Send");
+        this.sendButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 sendButton.setEnabled(false);
-                callStateProgressBar.setIndeterminate(true);
-                connect(number.getText());
+                callState.setIndeterminate(true);
+                authenticate(number.getText());
             }
         });
 
@@ -184,76 +242,105 @@ public class AnonAuthentication {
             public void actionPerformed(ActionEvent e) {
                 sendButton.setEnabled(true);
                 req.cancel();
-                callStateProgressBar.setIndeterminate(false);
+                callState.setIndeterminate(false);
             }
         });
-        responseBox.setColumns(20);
-        responseBox.setRows(5);
-        jScrollPane1.setViewportView(responseBox);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(pane);
-        pane.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
+        
+        // Init layout
+        GroupLayout panelLayout = new GroupLayout(panel);
+        panel.setLayout(panelLayout);
+        panelLayout.setHorizontalGroup(
+                panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(panelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(number, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                                                .addComponent(lblNumber, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(jScrollPane, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                                .addGroup(panelLayout.createSequentialGroup()
+                                        .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                                .addComponent(number, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                                                .addComponent(lblNumber, GroupLayout.Alignment.LEADING))
                                                 .addGap(85, 85, 85))
-                                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                                        .addComponent(sendButton)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(callStateProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(cancelButton)))
+                                                .addGroup(panelLayout.createSequentialGroup()
+                                                        .addComponent(this.sendButton)
+                                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                                        .addComponent(this.callState, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                                        .addComponent(this.cancelButton)))
                                                         .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
+        panelLayout.setVerticalGroup(
+                panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(panelLayout.createSequentialGroup()
                         .addComponent(lblNumber)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(cancelButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(callStateProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
-                                .addComponent(sendButton))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(number, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(this.cancelButton, GroupLayout.Alignment.TRAILING)
+                                .addComponent(this.callState, GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                                .addComponent(this.sendButton))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane, GroupLayout.PREFERRED_SIZE, 226, GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
         );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(frame.getContentPane());
-        frame.getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+        
+        GroupLayout frameLayout = new GroupLayout(frame.getContentPane());
+        frame.getContentPane().setLayout(frameLayout);
+        frameLayout.setHorizontalGroup(
+                frameLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(GroupLayout.Alignment.TRAILING, frameLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addComponent(pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        frameLayout.setVerticalGroup(
+                frameLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(frameLayout.createSequentialGroup()
+                        .addComponent(panel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
         );
 
         frame.pack();
     }
+    
+    /**
+     * Display the received response on the GUI
+     * 
+     * @param resp FiComResponse
+     * @param eventId Sent EventID
+     * @param t received error
+     */
+    private void displayResponse(final String        eventId,
+                                 final FiComResponse resp,
+                                 final Throwable     t) {
+        
+        StringBuilder responseMsg = new StringBuilder();
+        responseMsg.append("Event ID: " + eventId + "\n");
+        
+        sendButton.setEnabled(true);
+        
+        if (resp != null) {
+            callState.setIndeterminate(false);
+            
+            if (resp.getPersonIdAttributes() != null) {
+                responseMsg.append("Additional attributes:\n");
+                for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
+                    String name  = a.getName();
+                    String value = a.getStringValue();
+                    
+                    log.info(name + " " + value);
+                    responseMsg.append(name + " " + value + "\n");
+                }
+            } else {
+                log.warn("No Person ID Attributes found!");
+            }
+        } else {
+            callState.setIndeterminate(false);
+            responseMsg.append("Error: " + t.getMessage());
+        }
+        
+        this.responseBox.setText(responseMsg.toString());
+        log.info("Responding:\n" + responseMsg.toString());
+    }
 
-    private static javax.swing.JFrame frame;
-    protected static javax.swing.JProgressBar callStateProgressBar;
-    private static javax.swing.JButton cancelButton;
-    private static javax.swing.JPanel pane;
-    private static javax.swing.JScrollPane jScrollPane1;
-    private static javax.swing.JLabel lblNumber;
-    private static javax.swing.JTextField number;
-    private static javax.swing.JTextArea responseBox;
-    private static javax.swing.JButton sendButton;
 }

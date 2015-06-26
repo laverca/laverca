@@ -47,7 +47,12 @@ public class ExampleConf {
     public static final String STATUS_URL          = "mssp.status.url";
     public static final String RECEIPT_URL         = "mssp.receipt.url";
     
-    public static Properties getProperties(String confPath){
+    /**
+     * Get the properties object of this configuration
+     * @param confPath Configuration file path
+     * @return Java Properties containing the configuration
+     */
+    public static Properties getProperties(final String confPath){
         File f = new File(confPath);
         Properties properties = new Properties();
         FileInputStream is;
@@ -61,6 +66,7 @@ public class ExampleConf {
         return properties;
     }
 
+    
     public static Properties getProperties(){
         return getProperties(CONF_LOCATION);
     }
