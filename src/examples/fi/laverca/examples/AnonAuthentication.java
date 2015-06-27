@@ -166,8 +166,12 @@ public class AnonAuthentication {
                                                eventIdService,
                                                additionalServices, 
                                                handler);
-        } catch (IOException e) {
-            log.info("Error establishing connection", e);
+            
+            // Display Event ID
+            this.displayResponse(eventId, null, null);
+        } catch (IOException ioe) {
+            this.displayResponse(eventId, null, ioe);
+            log.info("Error establishing connection: " + ioe.getMessage());
         }
 
     }
@@ -318,7 +322,7 @@ public class AnonAuthentication {
         responseMsg.append("Event ID: " + eventId + "\n");
         
         sendButton.setEnabled(true);
-        
+       
         if (resp != null) {
             callState.setIndeterminate(false);
             
@@ -334,13 +338,13 @@ public class AnonAuthentication {
             } else {
                 log.warn("No Person ID Attributes found!");
             }
-        } else {
+        }
+        if (t != null) {
             callState.setIndeterminate(false);
             responseMsg.append("Error: " + t.getMessage());
         }
         
         this.responseBox.setText(responseMsg.toString());
-        log.info("Responding:\n" + responseMsg.toString());
     }
 
 }
