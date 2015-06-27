@@ -35,25 +35,27 @@ import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
 import fi.ficom.mss.TS102204.v1_0_0.Description;
 import fi.ficom.mss.TS102204.v1_0_0.NoSpamCode;
+import fi.ficom.mss.TS102204.v1_0_0.PostalAddress;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
 import fi.laverca.Saml2Util;
 import fi.laverca.etsi.EtsiAdditionalServices;
 
 /**
- * As per FiCom Implementation Guideline v2.0
+ * FiCom specific AdditionalServices
+ * <p>As per FiCom Implementation Guideline v2.0
  */
 public class FiComAdditionalServices {
+    
     private static final Log log = LogFactory.getLog(FiComAdditionalServices.class);
 
-    //TODO REVIEW
     public static final String NO_SPAM_URI    = "http://mss.ficom.fi/TS102204/v1.0.0#noSpam";
     public static final String EVENT_ID_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#eventId";
     public static final String USER_LANG_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#userLang";
     public static final String PERSON_ID_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#personIdentity";
-    public static final String VALIDATE_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#validate"; //http://uri.etsi.org/TS102204/v1.1.2#validate
+    public static final String VALIDATE_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#validate";
 
-    //personid attributes
+    // PersonID attributes
     public static final String PERSON_ID_HETU       = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#hetu";
     public static final String PERSON_ID_SATU       = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#satu";
     public static final String PERSON_ID_ADDRESS    = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#address";
@@ -68,11 +70,14 @@ public class FiComAdditionalServices {
     
 
     /** 
-     * Create an AdditionalService for FiCom noSpam codes as per FiCom 2.0
+     * Creates an AdditionalService for FiCom NoSpam service
+     * 
      * @param noSpamCodeValue the value of the nospam code
-     * @param verifyValue
+     * @param verifyValue Set NoSpamCode verify flag on / off
+     * @return FiCom NoSpam AdditionalService
      */
-    public static Service createNoSpamService(String noSpamCodeValue, boolean verifyValue) {
+    public static Service createNoSpamService(final String  noSpamCodeValue, 
+                                              final boolean verifyValue) {
         Service s = EtsiAdditionalServices.createService(NO_SPAM_URI);
 
         NoSpamCode noSpamObject = new NoSpamCode();
@@ -92,10 +97,11 @@ public class FiComAdditionalServices {
     }
 
     /**
-     * Creates an AdditionalService for FiCom eventId
-     * @param eventId
+     * Creates an AdditionalService for FiCom EventID service
+     * @param eventId Event ID as a String
+     * @return FiCom EventID AdditionalService
      */
-    public static Service createEventIdService(String eventId) {
+    public static Service createEventIdService(final String eventId) {
         Service s = EtsiAdditionalServices.createService(EVENT_ID_URI);
 
         AdditionalServiceTypeChoice astc = new AdditionalServiceTypeChoice();
@@ -106,10 +112,15 @@ public class FiComAdditionalServices {
         return s;
     }
 
-    public static Service createUserLangService(String userLang) {
+    /**
+     * Creates an AdditionalService for FiCom user language service
+     * @param userLang
+     * @return FiCom UserLang AdditionalService
+     */
+    public static Service createUserLangService(final String userLang) {
         Service s = EtsiAdditionalServices.createService(USER_LANG_URI);
 
-        AdditionalServiceTypeChoice astc = new AdditionalServiceTypeChoice();
+        AdditionalServiceTypeChoice      astc = new AdditionalServiceTypeChoice();
         AdditionalServiceTypeChoiceItem astci = new AdditionalServiceTypeChoiceItem();
         astc.addAdditionalServiceTypeChoiceItem(astci);
         astci.setUserLang(userLang);
@@ -118,8 +129,8 @@ public class FiComAdditionalServices {
     }
     
     /**
-     * Helper method for creating a Validation Service.
-     * @return Created Service
+     * Creates an AdditionalService for FiCom validation service
+     * @return FiCom Validation AdditionalService
      */
     public static Service createValidateService() {
     	Service s = EtsiAdditionalServices.createService(VALIDATE_URI);
@@ -129,34 +140,41 @@ public class FiComAdditionalServices {
     /**
      * Creates a new PersonId Service from the given attribute names.
      * @param attributeNames List of attribute names to put in the PersonId Service
-     * @return Created Service
+     * @return FiCom PersonID AdditionalService
      */
-    public static Service createPersonIdService(List<String> attributeNames) {
+    public static Service createPersonIdService(final List<String> attributeNames) {
         AttributeQuery aq = Saml2Util.createAttributeQuery(null, null, attributeNames);
         return createAttributeQueryService(PERSON_ID_URI, aq);
     }
     
 
     /**
-     * Creates a new PersonId Service from one attribute name.
-     * @param attributeName Attribtue name to put in the PersonId Service
-     * @return Created Service
+     * Creates a new PersonId Service from the given attribute names.
+     * @param attributeName List of attribute names to put in the PersonId Service
+     * @return FiCom PersonID AdditionalService
      */    
-    public static Service createPersonIdService(String attributeName) {
+    public static Service createPersonIdService(final String ... attributeName) {
         List<String> attrNames = new ArrayList<String>();
-        attrNames.add(attributeName);
+        if (attributeName != null) {
+            for (String s : attributeName) {
+                if (s != null) {
+                    attrNames.add(s);
+                }
+            }
+        }
         return createPersonIdService(attrNames);
     }
 
     /** 
      * Create an AdditionalService for SAML2 AttributeQuery
      * @param attributeQuery SAML2 attribute query, as per FiCom 2.0.
-     * @return Created Service
+     * @return Created AdditionalService
      */
-    public static Service createAttributeQueryService(String uri, AttributeQuery attributeQuery) {
-        Service s = EtsiAdditionalServices.createService(PERSON_ID_URI);
+    public static Service createAttributeQueryService(final String         uri, 
+                                                      final AttributeQuery attributeQuery) {
+        Service s = EtsiAdditionalServices.createService(uri);
 
-        AdditionalServiceTypeChoice astc = new AdditionalServiceTypeChoice();
+        AdditionalServiceTypeChoice      astc = new AdditionalServiceTypeChoice();
         AdditionalServiceTypeChoiceItem astci = new AdditionalServiceTypeChoiceItem();
         astc.addAdditionalServiceTypeChoiceItem(astci);
         astci.setAttributeQuery(attributeQuery);
@@ -164,20 +182,33 @@ public class FiComAdditionalServices {
         return s;
     }
 
+    /**
+     * FiCom PersonID AdditionalService attribute
+     *
+     */
     public static class PersonIdAttribute {
-        Attribute samlAttribute;
         
-        PersonIdAttribute(Attribute samlAttribute) {
+        private Attribute samlAttribute;
+        
+        public PersonIdAttribute(Attribute samlAttribute) {
             if(samlAttribute == null) {
                 throw new IllegalArgumentException("null attribute not allowed.");
             }
             this.samlAttribute = samlAttribute;
         }
         
+        /**
+         * Get the attribute name
+         * @return
+         */
         public String getName() {
             return this.samlAttribute.getName();
         }
         
+        /**
+         * Get the attribute value as String
+         * @return
+         */
         public String getStringValue() {
             try {
                 if (PERSON_ID_ADDRESS.equals(this.samlAttribute.getName())){
@@ -205,23 +236,30 @@ public class FiComAdditionalServices {
         
         /**
          * Pretty print postal address 
-         * There is no standard way to print postal address. Laverca uses comma separated values.
-         * @param pa PostalAddress class to be printed
-         * @return Pretty print of PostalAddress or null if the given PostalAddress was null.
+         * <p>There is no standard way to print a postal address. 
+         * <br>Laverca uses comma separated values.
+         * 
+         * @param pa PostalAddress to be printed
+         * @return Postal address CSV or null if the given PostalAddress was null.
          */
-        private String postalAddressToString(fi.ficom.mss.TS102204.v1_0_0.PostalAddress pa){
+        private String postalAddressToString(final PostalAddress pa){
             if (pa == null) {
                 return null;
             }
-            return pa.getName() + ", " + 
-                   pa.getStreetAddress() + ", " + 
-                   pa.getPostalCode() + " " +
-                   pa.getTown() + ", " +
+            return pa.getName()          + ", " +
+                   pa.getStreetAddress() + ", " +
+                   pa.getPostalCode()    + ", " +
+                   pa.getTown()          + ", " +
                    pa.getCountry();
         }
     }
 
-    public static ServiceResponses readServiceResponses(StatusDetail sd) {
+    /**
+     * Read ServiceResponses from a StatusDetail element
+     * @param sd StatusDetail
+     * @return ServiceResponses or null
+     */
+    public static ServiceResponses readServiceResponses(final StatusDetail sd) {
         if(sd == null) {
             return null;
         }
@@ -238,19 +276,29 @@ public class FiComAdditionalServices {
         return sr;
     }
 
-    public static ServiceResponse readServiceResponse(StatusDetail sd, String serviceUri) {
+    /**
+     * Read a specific ServiceResponse from a StatusDetail element
+     *
+     * @param sd StatusDetail
+     * @param serviceUri URI of the ServiceResponse
+     * @return single ServiceResponse or null
+     */
+    public static ServiceResponse readServiceResponse(final StatusDetail sd, 
+                                                      final String       serviceUri) {
         if(sd == null) {
             return null;
         }
         ServiceResponses sr = readServiceResponses(sd);
-        // note that this assumes only one service response for a given uri
-        // it's an ok assumption in FiCom 2.0.
+        // Note that this assumes only one service response for a given URI
+        // It is an ok assumption in FiCom 2.0.
         for(ServiceResponse sResp : sr.getServiceResponse()) {
             Description d = sResp.getDescription();
-            String dUri = d.getMssURI();
-            if(serviceUri.equals(dUri))
+            String   dUri = d.getMssURI();
+            if(serviceUri.equals(dUri)) {
                 return sResp;
+            }
         }
         return null;
     }
+    
 }

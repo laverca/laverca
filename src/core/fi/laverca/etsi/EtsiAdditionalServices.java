@@ -22,17 +22,24 @@ package fi.laverca.etsi;
 import org.etsi.uri.TS102204.v1_1_2.Description;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
+/**
+ * ETSI specific AdditionalServices
+ *
+ */
 public class EtsiAdditionalServices {
     
-    // basic ETSI services
-    public static Service createService(String uri) {
-        Service s = new Service();
+    /**
+     * Create a basic ETSI Service element
+     * @param uri AdditionalService URI
+     * @return Created Service
+     */
+    public static Service createService(final String uri) {
+        Service     s = new Service();
         Description d = new Description();
         d.setMssURI(uri);
         s.setDescription(d);
         
         return s;
     }
-
     
 }
