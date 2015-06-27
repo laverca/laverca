@@ -22,7 +22,6 @@ package fi.laverca.etsi;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.util.Date;
 
 import javax.xml.rpc.ServiceException;
@@ -436,14 +435,14 @@ public class EtsiClient {
                 port = (MSS_SignatureBindingStub)mssService.getMSS_SignaturePort(MSSP_SI_URL);
             } else if (req instanceof MSS_ReceiptReq) {
                 port = (MSS_ReceiptBindingStub)mssService.getMSS_ReceiptPort(MSSP_RC_URL);
-//            } else if (req instanceof MSS_HandshakeReq) {
-//                port = (MSS_HandshakeBindingStub)mssService.getMSS_HandshakePort(MSSP_HS_URL);
+            } else if (req instanceof MSS_HandshakeReq) {
+                port = (MSS_HandshakeBindingStub)mssService.getMSS_HandshakePort(MSSP_HS_URL);
             } else if (req instanceof MSS_StatusReq) {
                 port = (MSS_StatusQueryBindingStub)mssService.getMSS_StatusQueryPort(MSSP_ST_URL);
-//            } else if (req instanceof MSS_ProfileReq) {
-//                port = (MSS_ProfileQueryBindingStub)mssService.getMSS_ProfileQueryPort(MSSP_PR_URL);
-//            } else if (req instanceof MSS_RegistrationReq) {
-//                port = (MSS_RegistrationBindingStub)mssService.getMSS_RegistrationPort(MSSP_RG_URL);
+            } else if (req instanceof MSS_ProfileReq) {
+                port = (MSS_ProfileQueryBindingStub)mssService.getMSS_ProfileQueryPort(MSSP_PR_URL);
+            } else if (req instanceof MSS_RegistrationReq) {
+                port = (MSS_RegistrationBindingStub)mssService.getMSS_RegistrationPort(MSSP_RG_URL);
             }
 
             if (port == null) {
@@ -462,41 +461,35 @@ public class EtsiClient {
                 port._createCall();
             }
         } catch (Exception e) {
-            // huh?  should never happen..
-            log.error("Can not do port._createCall(), SHOULD NEVER HAPPEN",e);
+            log.fatal("Could not do port._createCall()", e);
         }
 
-//        MessageContext clientContext = port._getCall().getMessageContext();
 
-        try {
-            if (port instanceof MSS_SignatureBindingStub) {
-                return ((MSS_SignatureBindingStub)port).   MSS_Signature((MSS_SignatureReq)req);
-            } else if (port instanceof MSS_StatusQueryBindingStub) {
-                return ((MSS_StatusQueryBindingStub)port). MSS_StatusQuery((MSS_StatusReq)req);
-            } else if (port instanceof MSS_ReceiptBindingStub) {
-                return ((MSS_ReceiptBindingStub)port).     MSS_Receipt((MSS_ReceiptReq)req);
-            } else if (port instanceof MSS_HandshakeBindingStub) {
-                return ((MSS_HandshakeBindingStub)port).   MSS_Handshake((MSS_HandshakeReq)req);
-            } else if (port instanceof MSS_ProfileQueryBindingStub) {
-                return ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSS_ProfileReq)req);
-            } else if (port instanceof MSS_RegistrationBindingStub) {
-                return ((MSS_RegistrationBindingStub)port).MSS_Registration((MSS_RegistrationReq)req);
-            }
-        } catch (AxisFault af) {
-            log.error("AxisFault", af);
-            throw af;
-        } catch (RemoteException re) {
-            log.error("RemoteException", re);
-            throw re;
+        if (port instanceof MSS_SignatureBindingStub) {
+            return ((MSS_SignatureBindingStub)port).MSS_Signature((MSS_SignatureReq)req);
+        } else if (port instanceof MSS_StatusQueryBindingStub) {
+            return ((MSS_StatusQueryBindingStub)port).MSS_StatusQuery((MSS_StatusReq)req);
+        } else if (port instanceof MSS_ReceiptBindingStub) {
+            return ((MSS_ReceiptBindingStub)port).MSS_Receipt((MSS_ReceiptReq)req);
+        } else if (port instanceof MSS_HandshakeBindingStub) {
+            return ((MSS_HandshakeBindingStub)port).MSS_Handshake((MSS_HandshakeReq)req);
+        } else if (port instanceof MSS_ProfileQueryBindingStub) {
+            return ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSS_ProfileReq)req);
+        } else if (port instanceof MSS_RegistrationBindingStub) {
+            return ((MSS_RegistrationBindingStub)port).MSS_Registration((MSS_RegistrationReq)req);
         }
+
         throw new IOException("Invalid call parameters");
     }
 
 
     /**
      * Return whether s is a valid xs:NCName String.
+     * 
+     * @param s String to test
+     * @return true if s is a valid xs:NCName
      */
-    public static boolean isNCName(String s) {
+    public static boolean isNCName(final String s) {
         if (s == null) {
             return false;
         }
