@@ -19,7 +19,7 @@
 
 package fi.laverca.ficom;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import oasis.names.tc.SAML.v2_0.assertion.Assertion;
@@ -39,7 +39,7 @@ import fi.ficom.mss.TS102204.v1_0_0.Status;
 import fi.laverca.Saml2Util;
 
 /**
- * Asynchronous MSS_StatusResp callback.
+ * Asynchronous MSS_StatusResp callback response.
  */
 public class FiComResponse {
     private static final Log log = LogFactory.getLog(FiComResponse.class);
@@ -48,35 +48,39 @@ public class FiComResponse {
     MSS_SignatureResp originalSigResp;
     MSS_StatusResp    finalStatusResp;
 
-    FiComResponse( MSS_SignatureReq  originalSigReq,
-                   MSS_SignatureResp originalSigResp,
-                   MSS_StatusResp    finalStatusResp
-    ) { 
+    FiComResponse( final MSS_SignatureReq  originalSigReq,
+                   final MSS_SignatureResp originalSigResp,
+                   final MSS_StatusResp    finalStatusResp) { 
         this.originalSigReq  = originalSigReq;
         this.originalSigResp = originalSigResp;
         this.finalStatusResp = finalStatusResp;
     }
 
-    /** @return null if the signature is not in this format. */
+    /** 
+     * Get the PKCS7 signature from this response
+     * @return PKCS7 signature or null if the signature is not in this format. 
+     */
     public FiComPkcs7 getPkcs7Signature() {
         try {
         	if(this.finalStatusResp == null)
-                throw new RuntimeException("illegal state. Null statusResp.");
+                throw new RuntimeException("Illegal state. Null statusResp.");
 
             if(this.finalStatusResp.getMSS_Signature() == null)
-                throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
+                throw new RuntimeException("Illegal state. Null statusResp.MSS_Signature");
             
             FiComPkcs7 p7 = new FiComPkcs7(this.finalStatusResp.getMSS_Signature().getBase64Signature());
             return p7;
-        }
-        catch(IllegalArgumentException iae) {
+        } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs7?", iae);
             return null;
         }
 
     }
     
-    /** @return null if the signature is not in this format. */
+    /** 
+     * Get the PKCS1 signature from this response
+     * @return PKCS1 signature or null if the signature is not in this format. 
+     */    
     public FiComPkcs1 getPkcs1Signature() {
         try {
         	if(this.finalStatusResp == null)
@@ -87,44 +91,48 @@ public class FiComResponse {
             
             FiComPkcs1 p1 = new FiComPkcs1(this.finalStatusResp.getMSS_Signature().getPKCS1());
             return p1;
-        }
-        catch(IllegalArgumentException iae) {
+        } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs1?", iae);
             return null;
         }
-
     }
 
-    /** @return a list of attributes as per the PersonIdentity additional service. 
-     * @return null if the MSS_Status response does not include a PersonID response.
+    /** 
+     * Get available PersonID attributes from this response
+     * 
+     * @return A list of attributes as per the PersonIdentity additional service. 
+     *         <br>null if the MSS_Status response does not include a PersonID response.
      */
     public List<FiComAdditionalServices.PersonIdAttribute> getPersonIdAttributes() {
         try {
-        	ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(this.finalStatusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
+        	ServiceResponse sResp   = FiComAdditionalServices.readServiceResponse(this.finalStatusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
 
-            Response samlpResp = sResp.getResponse();
-            Assertion assertion = Saml2Util.parseFromResponse(samlpResp);
+            Response      samlpResp = sResp.getResponse();
+            Assertion     assertion = Saml2Util.parseFromResponse(samlpResp);
             AttributeStatement stmt = Saml2Util.parseFromAssertion(assertion);
-            List<Attribute> attrs = Saml2Util.parseFromAttributeStatement(stmt);
+            List<Attribute>   attrs = Saml2Util.parseFromAttributeStatement(stmt);
 
-            LinkedList<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = 
-                new LinkedList<FiComAdditionalServices.PersonIdAttribute>(); 
+            List<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = 
+                new ArrayList<FiComAdditionalServices.PersonIdAttribute>(); 
 
-            for(Attribute samlAttribute : attrs) 
+            for(Attribute samlAttribute : attrs) {
                 fiComAttrs.add(new FiComAdditionalServices.PersonIdAttribute(samlAttribute));
-
+            }
+                
             return fiComAttrs;
-        }
-        catch (NullPointerException e){
+        } catch (NullPointerException e){
+            log.error("Failed to fetch PersonID attributes");
         	return null;
-        }
-        catch(Throwable t) {
-        	log.error("", t);
+        } catch(Throwable t) {
+            log.error("Failed to fetch PersonID attributes: " + t.getMessage());
             return null;
         }
     }
 
-    /** The final MSS_StatusResp message */
+    /** 
+     * Get the last MSS_StatusResp message
+     * @return MSS_StatusResp
+     */
     public MSS_StatusResp getMSS_StatusResp() {
         return this.finalStatusResp;
     }
@@ -146,21 +154,22 @@ public class FiComResponse {
 			}
 			return validationStatus;
     	} catch (NullPointerException e){
-    		return null;
-    	} catch (Throwable t) {
-    		log.error("", t);
-    		return null;
+            log.error("Failed to fetch PersonID attributes");
+            return null;    	
+        } catch (Throwable t) {
+            log.error("Failed to fetch PersonID attributes: " + t.getMessage());
+            return null;
     	}
     }
 
     /**
+     * Check if this response has a valid signature
      * 
      * @return true if HMSSP and AE validations return VALID_SIGNATURE
      */
-    
     public boolean isValid() {
     	try {
-    		long statusCode = this.finalStatusResp.getStatus().getStatusCode().getValue();
+    		long    statusCode = this.finalStatusResp.getStatus().getStatusCode().getValue();
 	    	boolean aeStatusOk; 
 	
 	    	try {
@@ -168,15 +177,16 @@ public class FiComResponse {
 	    			FiComStatusCodes.VALID_SIGNATURE.getValue();
 	    	} catch (NullPointerException e) {
 	
-	    		if (getAeValidationStatus() == null) 
+	    		if (getAeValidationStatus() == null) {
 	    			aeStatusOk = true;
-	    		else 
+	    		} else {
 	    			aeStatusOk = false;
+	    		}
 	    	}
 	
 	    	return statusCode == FiComStatusCodes.VALID_SIGNATURE.getValue() && aeStatusOk; 
     	} catch (Throwable t) {
-    		log.error("", t);
+    		log.error("Failed to check response validity: " + t.getMessage());
     		return false;
     	}
     }

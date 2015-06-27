@@ -36,7 +36,7 @@ import fi.laverca.X509Util;
 
 
 /** 
- * A PKCS1 SignedData element.
+ * A PKCS1 signature wrapper.
  */ 
 public class FiComPkcs1 {
     private static final Log log = LogFactory.getLog(FiComPkcs1.class);
@@ -47,40 +47,45 @@ public class FiComPkcs1 {
      * @param pkcs1 In general, you get this from an MSS_SignatureResp.getMSS_Signature() call.
      * @throws IllegalArgumentException
      */
-    public FiComPkcs1(PKCS1 pkcs1) throws IllegalArgumentException {
+    public FiComPkcs1(final PKCS1 pkcs1) throws IllegalArgumentException {
     	
         if(pkcs1 == null) {
             throw new IllegalArgumentException("can't construct a PKCS1 SignedData element from null input.");
         }
         
         this.pkcs1 = pkcs1;
-		
     }
     
+    /**
+     * Get the MSS Signature value
+     * @return MSS Signature as a String
+     */
     public String getMssSignatureValue() {
     	String signature = null;
     	try {
         	signature = new String(Base64.encode(pkcs1.getSignatureValue()), "ASCII");
 		} catch (UnsupportedEncodingException e) {
-			log.error("unable to decode signature" + e);
+			log.error("Unable to decode signature: " + e.getMessage());
 		}
 		return signature;
     }
 
     /**
      * Look up the Certificate of the signer of this signature. 
-     * Note that this only looks up the first signer. In MSSP signatures,
+     * <p>Note that this only looks up the first signer. In MSSP signatures,
      * there is only one, but in a general Pkcs1 case, there can be several.
      * 
+     * @return Signer certificate
      */
     public X509Certificate getSignerCert() {
     	return(X509Util.DERtoX509Certificate(pkcs1.getX509Certificate()));
     }
 
     /**
-     * Convenience method. Equivalent to calling getSignerCert and
+     * Get the signer CN. 
+     * <p>Equivalent to calling getSignerCert and
      * then parsing out the CN from the certificate's Subject field.
-     * @return null if there's a problem.
+     * @return Signer's CN or null if there's a problem.
      */
     public String getSignerCn() {
         try {
@@ -101,8 +106,8 @@ public class FiComPkcs1 {
             }
 
             return cn;
-        } catch(Throwable t) {
-            log.error("",t);
+        } catch (Throwable t) {
+            log.error("Failed to get Signer cert " + t.getMessage());
             return null;
         }
     }

@@ -22,14 +22,30 @@ package fi.laverca.ficom;
 import fi.laverca.ProgressUpdate;
 
 /** 
- * A PKCS7 SignedData element.
+ * Interface for FiCom response handling
+ * 
  */ 
 public interface FiComResponseHandler {
 
-    void onError(FiComRequest req, Throwable throwable);
+    /**
+     * Called when the response is a fault
+     * @param req Sent request
+     * @param throwable received throwable
+     */
+    void onError(FiComRequest req, Throwable throwable); 
     
+    /**
+     * Called when the non-fault response is received
+     * @param req  Sent request
+     * @param resp Received response
+     */
     void onResponse(FiComRequest req, FiComResponse resp);
     
+    /**
+     * Called when a Status response is received but the transaction is outstanding.
+     * @param req Sent request
+     * @param prgUpdate Received progress update containing details on the status response
+     */
     void onOutstandingProgress(FiComRequest req, ProgressUpdate prgUpdate);
     
 }

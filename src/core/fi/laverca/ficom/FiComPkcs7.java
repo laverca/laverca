@@ -21,8 +21,8 @@ package fi.laverca.ficom;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.naming.InvalidNameException;
@@ -47,23 +47,23 @@ import org.bouncycastle.asn1.x509.X509Name;
 
 import fi.laverca.X509Util;
 
-
 /** 
- * A PKCS7 SignedData element.
+ * A PKCS7 signature wrapper.
  */ 
-@SuppressWarnings("deprecation")
 public class FiComPkcs7 {
+    
     private static final Log log = LogFactory.getLog(FiComPkcs7.class);
 
     private SignedData _sd;
 
     /** 
+     * 
      * @param bytes In general, you get this from an MSS_SignatureResp.getSignature() call.
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if bytes is null or the amount of signer certificates found is not equal to one
      */
     public FiComPkcs7(byte[] bytes) throws IllegalArgumentException {
         if(bytes == null) {
-            throw new IllegalArgumentException("can't construct a PKCS7 SignedData element from null input.");
+            throw new IllegalArgumentException("Can't construct a PKCS7 SignedData element from null input.");
         }
 
         this._sd = bytesToPkcs7SignedData(bytes);
@@ -74,10 +74,12 @@ public class FiComPkcs7 {
     }
 
     /**
-     * Look up the Certificate of the signer of this signature. 
-     * Note that this only looks up the first signer. In MSSP signatures,
+     * Look up the certificate of the signer of this signature. 
+     * <p>Note that this only looks up the <b>first signer</b>. In MSSP signatures,
      * there is only one, but in a general Pkcs7 case, there can be several.
      * 
+     * @return X509 signer certificate
+     * @throws FiComException if the amount of signer certificates found is not equal to one
      */
     public X509Certificate getSignerCert() throws FiComException {
         List<X509Certificate> allSignerCerts = getSignerCerts(this._sd);
@@ -95,7 +97,7 @@ public class FiComPkcs7 {
     /**
      * Convenience method. Equivalent to calling getSignerCert and
      * then parsing out the CN from the certificate's Subject field.
-     * @return null if there's a problem.
+     * @return Signer CN or null if there's a problem.
      */
     public String getSignerCn() {
         try {
@@ -116,13 +118,17 @@ public class FiComPkcs7 {
             }
 
             return cn;
-        }
-        catch(Throwable t) {
-            log.error("",t);
+        }  catch(Throwable t) {
+            log.error("Failed to get signer CN: " + t.getMessage());
             return null;
         }
     }
 
+    /**
+     * Convert a byte array to a PKCS7 SignedData object
+     * @param bytes byte array
+     * @return PKCS7 SignedData object
+     */
     public static SignedData bytesToPkcs7SignedData(byte[] bytes) {
 
         if(bytes == null) {
@@ -130,7 +136,7 @@ public class FiComPkcs7 {
         }
 
         ASN1InputStream ais = new ASN1InputStream(bytes);
-        ASN1Object asn1 = null;
+        ASN1Object     asn1 = null;
         try {
             asn1 = ais.readObject();
         } catch(IOException ioe) {
@@ -156,9 +162,13 @@ public class FiComPkcs7 {
     }
 
     /**
-     * Return the certificates used to sign a PKCS7 SignedData.
+     * Read the certificates used to sign a PKCS7 SignedData.
+     * 
+     * @param sd PKCS7 SignedData
+     * @return List of X509 certificates
+     * @throws FiComException if no certificate or signer info is found from the data
      */
-    public static List<X509Certificate> getSignerCerts(SignedData sd) throws FiComException {
+    public static List<X509Certificate> getSignerCerts(final SignedData sd) throws FiComException {
 
         // 0. Setup. 
         // 1. Read PKCS7.Certificates to get all possible certs.
@@ -170,10 +180,10 @@ public class FiComPkcs7 {
         if(sd == null) {
             throw new IllegalArgumentException("null input");
         }
-        LinkedList<X509Certificate> signerCerts = new LinkedList<X509Certificate>();
+        List<X509Certificate> signerCerts = new ArrayList<X509Certificate>();
 
         // 1. Read PKCS7.Certificates to get all possible certs.
-        log.debug("read all certs");
+        log.debug("Read all certs");
         List<X509Certificate> certs = readCerts(sd);
         
         if (certs.isEmpty()) {
@@ -216,12 +226,17 @@ public class FiComPkcs7 {
         return signerCerts;
     }
 
-    public static List<X509Certificate> readCerts(SignedData sd) {
+    /**
+     * Read all certificates from a SignedData
+     * @param sd data
+     * @return all X509 certificates
+     */
+    public static List<X509Certificate> readCerts(final SignedData sd) {
         if(sd == null) {
             return null;
         }
 
-        LinkedList<X509Certificate> certs = new LinkedList<X509Certificate>();
+        List<X509Certificate> certs = new ArrayList<X509Certificate>();
 
         ASN1Set certSet = sd.getCertificates();
         Enumeration<?> en = certSet.getObjects();
@@ -240,12 +255,17 @@ public class FiComPkcs7 {
         return certs;
     }
 
-    public static List<SignerInfo> readSignerInfos(SignedData sd) {
+    /**
+     * Read SignerInfo elements from a SignedData
+     * @param sd data
+     * @return SignerInfo element list
+     */
+    public static List<SignerInfo> readSignerInfos(final SignedData sd) {
         if(sd == null) {
             return null;
         }
 
-        LinkedList<SignerInfo> signerInfos = new LinkedList<SignerInfo>();
+        List<SignerInfo> signerInfos = new ArrayList<SignerInfo>();
 
         ASN1Set siSet = sd.getSignerInfos();
         Enumeration<?> e = siSet.getObjects();
@@ -264,32 +284,47 @@ public class FiComPkcs7 {
         return signerInfos;
     }
 
-    public static String readSerial(SignerInfo si) {
+    /**
+     * Read the Serial element from a SignedData
+     * @param si data
+     * @return Serial as String
+     */
+    public static String readSerial(final SignerInfo si) {
         if(si == null) {
             return null;
         }
 
         IssuerAndSerialNumber ias = si.getIssuerAndSerialNumber();
-        DERInteger serialDER  = ias.getCertificateSerialNumber();
+        DERInteger      serialDER = ias.getCertificateSerialNumber();
 
         return serialDER.getPositiveValue().toString();
     }
 
-    public static String readIssuer(SignerInfo si) {
+    /**
+     * Read the Issuer from a SignedData
+     * @param si data
+     * @return Issuer as String
+     */
+    public static String readIssuer(final SignerInfo si) {
         if(si == null) {
             return null;
         }
 
         IssuerAndSerialNumber ias = si.getIssuerAndSerialNumber();
-        X500Name   issuerName = ias.getName();
+        X500Name       issuerName = ias.getName();
 
         return issuerName.toString();
     }
 
-
-    /** Return true if two Distinguished Names are equal, ignoring 
-     *  delimiters and order of elements.
+    /** 
+     * Return true if two Distinguished Names are equal, ignoring 
+     * delimiters and order of elements.
+     * 
+     * @param dn1 First Distinguished name
+     * @param dn2 Second Distinguished name
+     * @return true if DNs are equal, false otherwise
      */
+    @SuppressWarnings("deprecation")
     public static boolean dnsEqual(String dn1, String dn2) {
         if(dn1 == null || dn2 == null) {
             return false;

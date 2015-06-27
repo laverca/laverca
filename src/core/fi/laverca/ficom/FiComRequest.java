@@ -35,11 +35,17 @@ public class FiComRequest {
         // fields are written by FiComClient during execution
     }
 
-    /** Wait for a response. Block this thread. */
+    /** 
+     * Wait for a response. 
+     * <p>Blocks current thread. 
+     */
     public FiComResponse waitForResponse() throws InterruptedException, ExecutionException {
         return this.ft.get();
     }
 
+    /**
+     * Cancel the sent request.
+     */
     public void cancel() {
         this.ft.cancel(true);
     }

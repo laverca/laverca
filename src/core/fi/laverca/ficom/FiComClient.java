@@ -319,16 +319,12 @@ public class FiComClient {
             _sigResp = etsiClient.send(sigReq);
             log.debug("Got resp");
             fiReq.sigResp = _sigResp;
-        }
-        catch(AxisFault af) {
+        } catch(AxisFault af) {
             log.error("Got SOAP fault", af);
-            //throw af;
             handler.onError(fiReq, af);
-        }
-        catch(IOException ioe) {
+        } catch(IOException ioe) {
             log.error("Got IOException ", ioe);
             throw ioe;
-            //handler.onError(fiReq, ioe);
         }
         
         final MSS_SignatureResp fSigResp = _sigResp;
