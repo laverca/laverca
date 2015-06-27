@@ -449,7 +449,7 @@ public class EtsiClient {
                 throw new IOException("Invalid request type");
             }
             if (timeout > 0) {
-                port.setTimeout((int)(timeout*1000) + 1000);
+                port.setTimeout((int)(timeout*1000)); // TODO: Is the SignatureReq TimeOut really seconds instead of milliseconds?
             }
         }
         catch (ServiceException se) {
