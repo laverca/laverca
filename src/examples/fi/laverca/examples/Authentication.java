@@ -189,7 +189,6 @@ public class Authentication extends AuthnGUI {
 
     }
     
-    
     /**
      * Main method
      * @param args
@@ -197,7 +196,9 @@ public class Authentication extends AuthnGUI {
     public static void main(String[] args) {
         Authentication main = new Authentication();
         main.init();
-        main.initGUI(main.client, main.req);
+        main.initGUI(main.client, 
+                     main.req,
+                     "Authentication");
     }
 
 }

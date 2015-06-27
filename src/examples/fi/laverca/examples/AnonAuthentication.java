@@ -168,7 +168,9 @@ public class AnonAuthentication extends AuthnGUI {
     public static void main(String[] args) {
         AnonAuthentication main = new AnonAuthentication();
         main.init();
-        main.initGUI(main.client, main.req);
+        main.initGUI(main.client, 
+                     main.req, 
+                     "Anon Authentication");
     }
 
 }

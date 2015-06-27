@@ -45,12 +45,14 @@ public abstract class AuthnGUI {
      * Initializes the swing GUI
      * @param client FiComClient implementation
      * @param req    FiComRequest 
+     * @param windowName name of the GUI window
      */
     protected void initGUI(final FiComClient client,
-                           final FiComRequest req) {
+                           final FiComRequest req,
+                           final String windowName) {
  
         // Init frame & panels
-        final JFrame frame = new JFrame("Anon authentication");
+        final JFrame frame = new JFrame(windowName);
         final JPanel panel = new JPanel();
         final JScrollPane jScrollPane = new JScrollPane();
 
