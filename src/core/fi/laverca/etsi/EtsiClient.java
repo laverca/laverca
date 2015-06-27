@@ -451,9 +451,8 @@ public class EtsiClient {
             if (timeout > 0) {
                 port.setTimeout((int)(timeout*1000)); // TODO: Is the SignatureReq TimeOut really seconds instead of milliseconds?
             }
-        }
-        catch (ServiceException se) {
-            log.debug("ServiceException");
+        } catch (ServiceException se) {
+            log.debug("Failed to get port: " + se.getMessage());
             throw new IOException(se.getMessage());
         }
         try {
