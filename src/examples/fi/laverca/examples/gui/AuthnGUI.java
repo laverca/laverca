@@ -186,8 +186,10 @@ public abstract class AuthnGUI {
                 responseMsg.append("Additional attributes:\n");
                 for(PersonIdAttribute a : resp.getPersonIdAttributes()) {
                     String name  = a.getName();
-                    String value = a.getStringValue();                    
-                    responseMsg.append(name + " " + value + "\n");
+                    String value = a.getStringValue();
+                    if (value != null && !value.isEmpty()) {
+                        responseMsg.append(name + " " + value + "\n");
+                    }
                 }
             } else {
                 log.warn("No Person ID Attributes found!");
