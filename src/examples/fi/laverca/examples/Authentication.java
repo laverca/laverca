@@ -39,7 +39,22 @@ import fi.laverca.ficom.FiComResponse;
 import fi.laverca.ficom.FiComResponseHandler;
 
 /**
- * Sample for demonstrating authentication. 
+ * Example application for demonstrating authentication.
+ * 
+ * <ul>
+ * <li>Creates a swing UI 
+ * <li>Requests all supported PersonID attributes from the user
+ * <li>Requests validation
+ * </ul>
+ * 
+ * <p>Uses the following FiCom AdditionalServices:
+ * <ul>
+ * <li>EventID
+ * <li>NoSpamCode
+ * <li>PersonID
+ * <li>Validate
+ * </ul>
+ * 
  */
 public class Authentication extends AuthnGUI {
     
