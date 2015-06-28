@@ -32,6 +32,7 @@ import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 import fi.laverca.DTBS;
 import fi.laverca.JvmSsl;
 import fi.laverca.etsi.EtsiClient;
+import fi.laverca.examples.util.ExampleConf;
 import fi.laverca.ficom.FiComMSS_Formats;
 import fi.laverca.ficom.FiComSignatureProfiles;
 

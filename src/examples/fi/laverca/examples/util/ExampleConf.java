@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.examples;
+package fi.laverca.examples.util;
 
 import java.io.File;
 import java.io.FileInputStream;

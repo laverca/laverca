@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
+import fi.laverca.examples.util.ExampleConf;
 import fi.laverca.ficom.FiComAdditionalServices;
 import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
