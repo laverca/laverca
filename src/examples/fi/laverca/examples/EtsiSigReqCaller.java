@@ -36,18 +36,19 @@ import fi.laverca.ficom.FiComMSS_Formats;
 import fi.laverca.ficom.FiComSignatureProfiles;
 
 /**
+ * Simple signature request example
  * 
- * ETSI Signature request example
+ * <ul>
+ * <li>Sends a SignatureRequest with DTBS "sign this"
+ * <li>Uses synchronous messaging mode
+ * <li>No AdditionalServices
+ * </ul>
  *
  */
 public class EtsiSigReqCaller {
     
     private static final Log log = LogFactory.getLog(EtsiSigReqCaller.class);
 
-    /**
-     * 
-     * @param args
-     */
     public static void main(String[] args) {
        
         // Load properties
@@ -68,24 +69,18 @@ public class EtsiSigReqCaller {
         String msspSignatureUrl    = properties.getProperty(ExampleConf.SIGNATURE_URL);
         String msspStatusUrl       = properties.getProperty(ExampleConf.STATUS_URL);
         String msspReceiptUrl      = properties.getProperty(ExampleConf.RECEIPT_URL);
-        String msspRegistrationUrl = "http://nevermind";
-        String msspProfileUrl      = "http://nevermind";
-        String msspHandshakeUrl    = "http://nevermind";
         
         // Create client
         EtsiClient etsiClient = new EtsiClient(apId, 
                                                apPwd, 
                                                msspSignatureUrl, 
                                                msspStatusUrl, 
-                                               msspReceiptUrl, 
-                                               msspRegistrationUrl, 
-                                               msspProfileUrl, 
-                                               msspHandshakeUrl);
+                                               msspReceiptUrl);
 
         String apTransId = "A" + System.currentTimeMillis();
         String msisdn    = "+35847001001";
         
-        // Create Data to be Signed
+        // Create DataToBeSigned
         DTBS dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
                         
         MSS_SignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, // AP Transaction ID
@@ -96,24 +91,22 @@ public class EtsiSigReqCaller {
                                                                     FiComMSS_Formats.PKCS7,  // MSS Format
                                                                     MessagingModeType.SYNCH  // Messaging Mode
                                                                     );
-
+        
         MSS_SignatureResp sigResp = null;
         
         try {
             sigResp = etsiClient.send(sigReq);
-        } 
-        catch(AxisFault af) {
-            log.error("got soap fault", af);
+        } catch(AxisFault af) {
+            log.error("Got SOAP fault", af);
             return;
-        } 
-        catch(IOException ioe) {
-            log.error("got IOException ", ioe);
+        } catch(IOException ioe) {
+            log.error("Got IOException ", ioe);
             return;
         }
         
-        log.info("got resp");
-        log.info(" statuscode " + sigResp.getStatus().getStatusCode().getValue());
-        log.info(" signature  " + sigResp.getMSS_Signature());
+        log.info("Got response");
+        log.info("  StatusCode   : " + sigResp.getStatus().getStatusCode().getValue());
+        log.info("  StatusMessage: " + sigResp.getStatus().getStatusMessage());
     }
 
 }
