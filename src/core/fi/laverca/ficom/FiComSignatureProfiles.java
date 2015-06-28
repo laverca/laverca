@@ -20,6 +20,7 @@
 package fi.laverca.ficom;
 
 /**
+ * FiCom MSS Signature Profile URIs
  * As per FiCom Implementation Guideline v2.0
  */
 public class FiComSignatureProfiles {
