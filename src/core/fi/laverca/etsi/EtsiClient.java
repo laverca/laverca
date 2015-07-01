@@ -107,17 +107,17 @@ public class EtsiClient {
                        String msspReceiptUrl,
                        String msspRegistrationUrl,
                        String msspProfileUrl,
-                       String msspHandshakeUrl
-    )
+                       String msspHandshakeUrl)
     throws IllegalArgumentException
     {
         if (apId != null)
-            this.apId = apId; 
-        else 
+            this.apId = apId;
+        else
             throw new IllegalArgumentException("null apId not allowed.");
-        if (apPwd != null) 
+        
+        if (apPwd != null)
             this.apPwd = apPwd;
-        else 
+        else
             throw new IllegalArgumentException("null apPwd not allowed.");
 
         this.setAeAddress(msspSignatureUrl,
@@ -234,8 +234,7 @@ public class EtsiClient {
                                                    String dataToBeDisplayed,
                                                    String signatureProfile,
                                                    String mss_format,
-                                                   MessagingModeType messagingMode
-    ) {
+                                                   MessagingModeType messagingMode) {
         MSS_SignatureReq req = new MSS_SignatureReq();
         
         this.initializeRequestMessage(req, apTransId);
