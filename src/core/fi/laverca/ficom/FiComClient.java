@@ -410,12 +410,12 @@ public class FiComClient {
                             }
                         } catch (IOException ioe) {
                             log.trace("Got IOException", ioe);
-                            //throw ioe;
-                            try {
-                                handler.onError(fiReq, ioe);
-                            } finally {
-                                break LOOP;
-                            }
+                            throw ioe;
+                            //try {
+                            //    handler.onError(fiReq, ioe);
+                            //} finally {
+                            //    break LOOP;
+                            //}
                         }
                     }
 
