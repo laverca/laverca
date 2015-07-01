@@ -20,7 +20,8 @@
 package fi.laverca.ficom;
 
 /**
- * As per MSS FiCom Implementation Guideline v2.1
+ * FiCom MSS Status Codes
+ * <p>As per MSS FiCom Implementation Guideline v2.1
  */
 public class FiComStatusCodes {
 

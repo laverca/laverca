@@ -26,7 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * As per FiCom Soveltamisohje v2.0
+ * FiCom MSS Error Codes
+ * <p>As per MSS FiCom Implementation Guideline v2.1
  */
 public class FiComErrorCodes {
     private static final Log log = LogFactory.getLog(FiComErrorCodes.class);

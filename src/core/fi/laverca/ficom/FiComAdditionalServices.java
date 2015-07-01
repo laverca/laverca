@@ -43,7 +43,7 @@ import fi.laverca.etsi.EtsiAdditionalServices;
 
 /**
  * FiCom specific AdditionalServices
- * <p>As per FiCom Implementation Guideline v2.0
+ * <p>As per MSS FiCom Implementation Guideline v2.1
  */
 public class FiComAdditionalServices {
     
