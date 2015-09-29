@@ -86,9 +86,9 @@ public class FiComPkcs7 {
         int certsFound = allSignerCerts.size();
         
         if (certsFound < 1) {
-        	throw new FiComException("Signer cert not found.");
+            throw new FiComException("Signer cert not found.");
         } else if (certsFound > 1) {
-        	throw new FiComException("Expected a single signer cert but found " + certsFound + ".");
+            throw new FiComException("Expected a single signer cert but found " + certsFound + ".");
         }
         
         return allSignerCerts.get(0);
@@ -118,7 +118,7 @@ public class FiComPkcs7 {
             }
 
             return cn;
-        }  catch(Throwable t) {
+        } catch(Throwable t) {
             log.error("Failed to get signer CN: " + t.getMessage());
             return null;
         }
@@ -156,9 +156,7 @@ public class FiComPkcs7 {
             throw new IllegalArgumentException("not a pkcs7 signature");
         }
 
-        SignedData sd = SignedData.getInstance(ci.getContent());
-
-        return sd;
+        return SignedData.getInstance(ci.getContent());
     }
 
     /**
@@ -187,38 +185,38 @@ public class FiComPkcs7 {
         List<X509Certificate> certs = readCerts(sd);
         
         if (certs.isEmpty()) {
-        	throw new FiComException("PKCS7 SignedData certificates not found");
+            throw new FiComException("PKCS7 SignedData certificates not found");
         }
 
         // 2. Read PKCS7.SignerInfo to get all signers.
-        log.debug("read signerinfo");
+        log.debug("Read SignerInfo");
         List<SignerInfo> signerInfos = readSignerInfos(sd);
         
         if (signerInfos.isEmpty()) {
-        	throw new FiComException("PKCS7 SignedData signerInfo not found");
+            throw new FiComException("PKCS7 SignedData signerInfo not found");
         }
 
         // 3. Verify that signerInfo cert details match the cert on hand
-        log.debug("matching cert and signerInfo details");
+        log.debug("Matching cert and signerInfo details");
         for(SignerInfo si : signerInfos) {
-        	for(X509Certificate theCert : certs) {
-	            String siIssuer = readIssuer(si);
-	            String siSerial = readSerial(si);
+            for(X509Certificate theCert : certs) {
+                String siIssuer = readIssuer(si);
+                String siSerial = readSerial(si);
 
-	            String cIssuer = theCert.getIssuerDN().toString();
-	            String cSerial = theCert.getSerialNumber().toString();
-	
-	            if(dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
-	                signerCerts.add(theCert);
-	                log.debug("cert does match signerInfo");
-	            	log.debug("signerInfo issuer:serial=" + siIssuer + ":" + siSerial);
-	            	log.debug("certificates issuer:serial=" + cIssuer + ":" + cSerial);
-	            } else {
-	            	log.debug("cert does not match signerInfo");
-	            	log.debug("signerInfo issuer:serial=" + siIssuer + ":" + siSerial);
-	            	log.debug("certificates issuer:serial=" + cIssuer + ":" + cSerial);
-	            }
-        	}
+                String cIssuer = theCert.getIssuerDN().toString();
+                String cSerial = theCert.getSerialNumber().toString();
+    
+                if(dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
+                    signerCerts.add(theCert);
+                    log.debug("Cert does match signerInfo");
+                    log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
+                    log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
+                } else {
+                    log.debug("Cert does not match signerInfo");
+                    log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
+                    log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
+                }
+            }
         }
 
         // 4. Return the list.
@@ -229,7 +227,7 @@ public class FiComPkcs7 {
     /**
      * Read all certificates from a SignedData
      * @param sd data
-     * @return all X509 certificates
+     * @return all X509 certificates or null
      */
     public static List<X509Certificate> readCerts(final SignedData sd) {
         if(sd == null) {
@@ -246,8 +244,7 @@ public class FiComPkcs7 {
                 byte[] certDer = ((DERSequence)o).getEncoded();
                 X509Certificate cert = X509Util.DERtoX509Certificate(certDer);
                 certs.add(cert);
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 log.debug("Failed to read cert", e);
             }
         }
@@ -258,13 +255,13 @@ public class FiComPkcs7 {
     /**
      * Read SignerInfo elements from a SignedData
      * @param sd data
-     * @return SignerInfo element list
+     * @return SignerInfo element list or null
      */
     public static List<SignerInfo> readSignerInfos(final SignedData sd) {
         if(sd == null) {
             return null;
         }
-
+        
         List<SignerInfo> signerInfos = new ArrayList<SignerInfo>();
 
         ASN1Set siSet = sd.getSignerInfos();
@@ -272,12 +269,10 @@ public class FiComPkcs7 {
         while(e.hasMoreElements()) {
             Object o = e.nextElement();
             try {
-                //byte[] siDer = ((DERSequence)o).getEncoded();
                 SignerInfo si = SignerInfo.getInstance(o);
                 signerInfos.add(si);
-            }
-            catch(RuntimeException ex) {
-                // TODO
+            } catch (RuntimeException ex) {
+                log.trace("SignerInfo " + o + " not found");
             }
         }
 
@@ -333,9 +328,7 @@ public class FiComPkcs7 {
         X509Name n1 = new X509Name(dn1);
         X509Name n2 = new X509Name(dn2);
 
-        boolean eq = n1.equals(n2, false);
-
-        return eq;
+        return n1.equals(n2, false);
     }
 
 }
