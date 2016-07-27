@@ -197,17 +197,17 @@ public class FiComPkcs7 {
         }
 
         // 3. Verify that signerInfo cert details match the cert on hand
-        log.debug("Matching cert and signerInfo details");
-        for(SignerInfo si : signerInfos) {
-            for(X509Certificate theCert : certs) {
+        log.debug("Matching cert and SignerInfo details");
+        for (SignerInfo si : signerInfos) {
+            for (X509Certificate c : certs) {
                 String siIssuer = readIssuer(si);
                 String siSerial = readSerial(si);
 
-                String cIssuer = theCert.getIssuerDN().toString();
-                String cSerial = theCert.getSerialNumber().toString();
+                String cIssuer = c.getIssuerDN().toString();
+                String cSerial = c.getSerialNumber().toString();
     
-                if(dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
-                    signerCerts.add(theCert);
+                if (dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
+                    signerCerts.add(c);
                     log.debug("Cert does match signerInfo");
                     log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
                     log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
@@ -220,7 +220,7 @@ public class FiComPkcs7 {
         }
 
         // 4. Return the list.
-        log.debug("returning "+signerCerts.size()+" certs");
+        log.debug("Returning " + signerCerts.size() + " certs");
         return signerCerts;
     }
 
@@ -230,7 +230,7 @@ public class FiComPkcs7 {
      * @return all X509 certificates or null
      */
     public static List<X509Certificate> readCerts(final SignedData sd) {
-        if(sd == null) {
+        if (sd == null) {
             return null;
         }
 
@@ -258,7 +258,7 @@ public class FiComPkcs7 {
      * @return SignerInfo element list or null
      */
     public static List<SignerInfo> readSignerInfos(final SignedData sd) {
-        if(sd == null) {
+        if (sd == null) {
             return null;
         }
         
@@ -285,7 +285,7 @@ public class FiComPkcs7 {
      * @return Serial as String
      */
     public static String readSerial(final SignerInfo si) {
-        if(si == null) {
+        if (si == null) {
             return null;
         }
 
@@ -301,7 +301,7 @@ public class FiComPkcs7 {
      * @return Issuer as String
      */
     public static String readIssuer(final SignerInfo si) {
-        if(si == null) {
+        if (si == null) {
             return null;
         }
 
@@ -321,7 +321,7 @@ public class FiComPkcs7 {
      */
     @SuppressWarnings("deprecation")
     public static boolean dnsEqual(String dn1, String dn2) {
-        if(dn1 == null || dn2 == null) {
+        if (dn1 == null || dn2 == null) {
             return false;
         }
 
