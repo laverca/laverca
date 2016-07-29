@@ -77,8 +77,8 @@ specified in Finland.
         
 ## Features
 
-    1. Supports synchronic and asynchronic client-server.
-         (FiComClient for C/S asynch, EtsiClient for synchronic)
+    1. Supports synchronous and asynchronous client-server communication.
+         (FiComClient for C/S asynch, EtsiClient for synchronous)
     2. Strong mutual identification and encryption between all message routing entities.
          (JvmSsl)
     3. Strong mutual identification and encryption between AP and AE including a password (AP_PWD).
