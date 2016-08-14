@@ -19,8 +19,11 @@
 
 package fi.laverca.ficom;
 
-@SuppressWarnings("serial")
-public class FiComException extends Exception {
+import fi.laverca.mss.MssException;
+
+public class FiComException extends MssException {
+
+    private static final long serialVersionUID = 1L;
 
     public FiComException(String message) {
         super(message);

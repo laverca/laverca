@@ -28,8 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.Service;
 
-import fi.laverca.DTBS;
-import fi.laverca.JvmSsl;
 import fi.laverca.ProgressUpdate;
 import fi.laverca.examples.gui.AuthnGUI;
 import fi.laverca.examples.util.ExampleConf;
@@ -38,6 +36,8 @@ import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.ficom.FiComResponseHandler;
+import fi.laverca.util.DTBS;
+import fi.laverca.util.JvmSsl;
 
 /**
  * Example application for demonstrating authentication.

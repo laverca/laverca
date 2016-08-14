@@ -36,7 +36,7 @@
  * Again modified by Matti Aarnio to fit in Kiuru MSSP core services.
  */
 
-package fi.laverca;
+package fi.laverca.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -90,6 +90,7 @@ import org.apache.http.util.EntityUtils;
  * A replacement of the default Axis Commons HTTP sender that makes it
  * possible to share a connection manager among RoamingClient instances.
  */
+// TODO: Clean up deprecated code & update Commons HTTP Client lib
 public class CommonsHTTPSender extends BasicHandler {
     
     private static Log log = LogFactory.getLog(CommonsHTTPSender.class);
@@ -110,9 +111,10 @@ public class CommonsHTTPSender extends BasicHandler {
         settings.set(hc);
     }
     
-    boolean httpChunkStream = true; //Use HTTP chunking or not.
+    boolean httpChunkStream = true; // Use HTTP chunking or not.
     
     public CommonsHTTPSender() {
+        // Empty constructor
     }
     
     /**
@@ -125,14 +127,13 @@ public class CommonsHTTPSender extends BasicHandler {
      */
     @Override
     public void invoke(MessageContext msgContext)
-            throws AxisFault
-            {
+        throws AxisFault
+    {
 
         HttpPost post = null;
         HttpResponse response = null;
         if (log.isDebugEnabled()) {
-            log.debug(Messages.getMessage("enter00",
-                    "CommonsHTTPSender::invoke"));
+            log.debug(Messages.getMessage("enter00", "CommonsHTTPSender::invoke"));
         }
         try {
             
@@ -169,6 +170,12 @@ public class CommonsHTTPSender extends BasicHandler {
             
             HttpContext localContext = new BasicHttpContext();
             
+            if (httpClient == null) {
+                // We might end up here if initThreadLocals() was not properly called
+                log.fatal("Initialization failed: No HTTPClient");
+                throw new AxisFault("Initialization failed: No HTTPClient");
+            }
+            
             response = httpClient.execute(post, localContext);
             int returnCode = response.getStatusLine().getStatusCode();
             
@@ -183,23 +190,17 @@ public class CommonsHTTPSender extends BasicHandler {
                     SOAPConstants.SOAP12_CONSTANTS) {
                 // For now, if we're SOAP 1.2, fall through, since the range of
                 // valid result codes is much greater
-            } else if ((contentType != null) && !contentType.equals("text/html")
-                    && ((returnCode > 499) && (returnCode < 600))) {
-                
+            } else if ((contentType != null) && !contentType.equals("text/html") && ((returnCode > 499) && (returnCode < 600))) {
                 // SOAP Fault should be in here - so fall through
+                
             } else {
                 String statusMessage = response.getStatusLine().getReasonPhrase();
-                AxisFault fault = new AxisFault("HTTP",
-                        "(" + returnCode + ")"
-                                + statusMessage, null,
-                                null);
+                AxisFault fault = new AxisFault("HTTP", "(" + returnCode + ")" + statusMessage, null, null);
+                
                 try {
                     String body = getResponseBodyAsString(response);
-                    fault.setFaultDetailString(Messages.getMessage("return01",
-                            "" + returnCode,
-                            body));
-                    fault.addFaultDetail(Constants.QNAME_FAULTDETAIL_HTTPERRORCODE,
-                            Integer.toString(returnCode));
+                    fault.setFaultDetailString(Messages.getMessage("return01", "" + returnCode, body));
+                    fault.addFaultDetail(Constants.QNAME_FAULTDETAIL_HTTPERRORCODE, Integer.toString(returnCode));
                     throw fault;
                 } finally {
                     HttpClientUtils.closeQuietly(response);

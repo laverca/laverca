@@ -38,8 +38,8 @@ import fi.ficom.mss.TS102204.v1_0_0.NoSpamCode;
 import fi.ficom.mss.TS102204.v1_0_0.PostalAddress;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
-import fi.laverca.Saml2Util;
 import fi.laverca.etsi.EtsiAdditionalServices;
+import fi.laverca.util.Saml2Util;
 
 /**
  * FiCom specific AdditionalServices

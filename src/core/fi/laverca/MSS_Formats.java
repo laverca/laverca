@@ -17,14 +17,15 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
-import fi.laverca.ResponseHandler;
+/**
+ * MSS Format URIs
+ * <p>As per FiCom Implementation Guideline v2.0
+ */
+public class MSS_Formats {
 
-/** 
- * Interface for FiCom response handling
- * 
- */ 
-public interface FiComResponseHandler extends ResponseHandler<FiComRequest, FiComResponse> {
-
+    public final static String PKCS7 = "http://uri.etsi.org/TS102204/v1.1.2#PKCS7";
+    public final static String PKCS1 = "http://mss.ficom.fi/TS102204/v1.0.0#PKCS1";
+    
 }

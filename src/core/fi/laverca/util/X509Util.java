@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.util;
 
 import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;

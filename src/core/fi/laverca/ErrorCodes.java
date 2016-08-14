@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
 import javax.xml.namespace.QName;
 
@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
  * FiCom MSS Error Codes
  * <p>As per MSS FiCom Implementation Guideline v2.1
  */
-public class FiComErrorCodes {
-    private static final Log log = LogFactory.getLog(FiComErrorCodes.class);
+public class ErrorCodes {
+    private static final Log log = LogFactory.getLog(ErrorCodes.class);
 
     public static final String FICOM_NS_URI = "http://mss.ficom.fi/TS102204/v1.0.0#";
     public static final String FICOM_PREFIX = "fi";

@@ -17,14 +17,34 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
-import fi.laverca.ResponseHandler;
 
 /** 
- * Interface for FiCom response handling
+ * Interface for MSS response handling
  * 
  */ 
-public interface FiComResponseHandler extends ResponseHandler<FiComRequest, FiComResponse> {
+public interface ResponseHandler<Req, Resp> {
 
+    /**
+     * Called when the response is a fault
+     * @param req Sent request
+     * @param throwable received throwable
+     */
+    void onError(Req req, Throwable throwable); 
+    
+    /**
+     * Called when the non-fault response is received
+     * @param req  Sent request
+     * @param resp Received response
+     */
+    void onResponse(Req req, Resp resp);
+    
+    /**
+     * Called when a Status response is received but the transaction is outstanding.
+     * @param req Sent request
+     * @param prgUpdate Received progress update containing details on the status response
+     */
+    void onOutstandingProgress(Req req, ProgressUpdate prgUpdate);
+    
 }

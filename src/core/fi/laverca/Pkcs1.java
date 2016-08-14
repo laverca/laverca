@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
@@ -32,14 +32,14 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 
 import fi.ficom.mss.TS102204.v1_0_0.PKCS1;
-import fi.laverca.X509Util;
+import fi.laverca.util.X509Util;
 
 
 /** 
  * A PKCS1 signature wrapper.
  */ 
-public class FiComPkcs1 {
-    private static final Log log = LogFactory.getLog(FiComPkcs1.class);
+public class Pkcs1 {
+    private static final Log log = LogFactory.getLog(Pkcs1.class);
 
     private PKCS1 pkcs1;
 
@@ -47,7 +47,7 @@ public class FiComPkcs1 {
      * @param pkcs1 In general, you get this from an MSS_SignatureResp.getMSS_Signature() call.
      * @throws IllegalArgumentException
      */
-    public FiComPkcs1(final PKCS1 pkcs1) throws IllegalArgumentException {
+    public Pkcs1(final PKCS1 pkcs1) throws IllegalArgumentException {
     	
         if(pkcs1 == null) {
             throw new IllegalArgumentException("can't construct a PKCS1 SignedData element from null input.");

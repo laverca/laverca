@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca.util;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;

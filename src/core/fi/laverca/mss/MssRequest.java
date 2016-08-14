@@ -17,18 +17,37 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca.mss;
 
-import fi.laverca.mss.MssRequest;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-/**
- * FiCom request handle
- *
- */
-public class FiComRequest extends MssRequest<FiComResponse> {
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 
-    public FiComRequest() {
+public abstract class MssRequest<Resp> {
+
+    public MSS_SignatureReq          sigReq;
+    public MSS_SignatureResp         sigResp;
+    public FutureTask<Resp>  ft;
+
+    public MssRequest() {
         // fields are written by the client class during execution
+    }
+
+    /** 
+     * Wait for a response. 
+     * <p>Blocks current thread. 
+     */
+    public Resp waitForResponse() throws InterruptedException, ExecutionException {
+        return this.ft.get();
+    }
+
+    /**
+     * Cancel the sent request.
+     */
+    public void cancel() {
+        this.ft.cancel(true);
     }
     
 }

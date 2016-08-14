@@ -17,14 +17,23 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca.etsi;
 
-import fi.laverca.ResponseHandler;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
+import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 
-/** 
- * Interface for FiCom response handling
- * 
- */ 
-public interface FiComResponseHandler extends ResponseHandler<FiComRequest, FiComResponse> {
+import fi.laverca.mss.MssResponse;
+
+/**
+ * Asynchronous MSS_StatusResp callback response.
+ */
+public class EtsiResponse extends MssResponse {
+
+    public EtsiResponse(final MSS_SignatureReq originalSigReq,
+                        final MSS_SignatureResp originalSigResp, 
+                        final MSS_StatusResp finalStatusResp) {
+        super(originalSigReq, originalSigResp, finalStatusResp);
+    }
 
 }

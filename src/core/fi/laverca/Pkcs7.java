@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
@@ -45,14 +45,15 @@ import org.bouncycastle.asn1.pkcs.SignerInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
 
-import fi.laverca.X509Util;
+import fi.laverca.ficom.FiComException;
+import fi.laverca.util.X509Util;
 
 /** 
  * A PKCS7 signature wrapper.
  */ 
-public class FiComPkcs7 {
+public class Pkcs7 {
     
-    private static final Log log = LogFactory.getLog(FiComPkcs7.class);
+    private static final Log log = LogFactory.getLog(Pkcs7.class);
 
     private SignedData _sd;
 
@@ -61,7 +62,7 @@ public class FiComPkcs7 {
      * @param bytes In general, you get this from an MSS_SignatureResp.getSignature() call.
      * @throws IllegalArgumentException if bytes is null or the amount of signer certificates found is not equal to one
      */
-    public FiComPkcs7(byte[] bytes) throws IllegalArgumentException {
+    public Pkcs7(byte[] bytes) throws IllegalArgumentException {
         if(bytes == null) {
             throw new IllegalArgumentException("Can't construct a PKCS7 SignedData element from null input.");
         }
