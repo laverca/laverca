@@ -76,7 +76,7 @@ public class EtsiAsynchSign {
                                                    msisdn,    // MSISDN
                                                    dtbs,      // Data to be signed
                                                    dtbs.toString(),                   // Data to be displayed
-                                                   null,
+                                                   null,                              // Additional services
                                                    SignatureProfiles.FICOM_SIGNATURE, // Signature profile
                                                    MSS_Formats.PKCS7,                 // MSS Format
                                                    MessagingModeType.ASYNCHCLIENTSERVER);
