@@ -88,7 +88,7 @@ public class EtsiAsynchSign {
             public void onResponse(EtsiRequest req, EtsiResponse resp) {
                 log.info("Got response");
                 log.info("  StatusCode   : " + resp.getStatusCode());
-                log.info("  StatusMessage: " + resp.getStatusMessage());            
+                log.info("  StatusMessage: " + resp.getStatusMessage());
             }
 
             @Override

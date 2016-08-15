@@ -19,7 +19,6 @@ import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 import org.etsi.uri.TS102204.v1_1_2.Status;
 import org.etsi.uri.TS102204.v1_1_2.StatusCode;
 
-import fi.laverca.etsi.EtsiClient;
 import fi.laverca.ficom.FiComException;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssRequest;

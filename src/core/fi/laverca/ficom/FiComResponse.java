@@ -37,13 +37,13 @@ import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.Status;
 import fi.laverca.StatusCodes;
-import fi.laverca.etsi.EtsiResponse;
+import fi.laverca.mss.MssResponse;
 import fi.laverca.util.Saml2Util;
 
 /**
  * Asynchronous MSS_StatusResp callback response.
  */
-public class FiComResponse extends EtsiResponse {
+public class FiComResponse extends MssResponse {
     
     private static final Log log = LogFactory.getLog(FiComResponse.class);
 

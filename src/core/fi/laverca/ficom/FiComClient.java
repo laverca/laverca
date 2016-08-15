@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
 import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
