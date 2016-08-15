@@ -56,10 +56,10 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
         throws IllegalArgumentException
     {
         this.mssClient = new MssClient(apId, 
-                                        apPwd, 
-                                        msspSignatureUrl, 
-                                        msspStatusUrl, 
-                                        msspReceiptUrl);
+                                       apPwd, 
+                                       msspSignatureUrl, 
+                                       msspStatusUrl, 
+                                       msspReceiptUrl);
 
         this.threadExecutor = Executors.newCachedThreadPool();
     }
