@@ -35,19 +35,17 @@ import org.apache.commons.logging.LogFactory;
 public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service implements MSS_SignatureService {
 
     private static Log log = LogFactory.getLog(MSS_SignatureServiceLocator.class);
-/*
+
     public MSS_SignatureServiceLocator() {
         super();
         log.debug("MSS_SignatureServiceLocator()");
-        setEngineConfiguration((String)null); // default client-config.wsdd file
     }
 
     public MSS_SignatureServiceLocator(org.apache.axis.EngineConfiguration config) {
         super(config);
         log.debug("MSS_SignatureServiceLocator(EngineConfiguration)");
-        _config = config; // ready to use config!
     }
-
+    /*
     public MSS_SignatureServiceLocator(String wsdlLoc, QName sName) throws ServiceException {
         super(wsdlLoc, sName);
         log.debug("MSS_SignatureServiceLocator(wsdlLoc='"+wsdlLoc+"', sName='"+sName+"')");
