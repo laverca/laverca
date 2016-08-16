@@ -69,7 +69,6 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param additionalServices List of FiCom additionalservices to add to the request
      * @param signatureProfile Signature profile to use
      * @param mssFormat MSS Format to use.
-     * @param handler FiComResponseHandler for receiving asynch responses.
      */
     public FiComRequest createRequest(final String apTransId, 
                                       final DTBS dtbs,
@@ -121,7 +120,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(String, DTBS, String, Service, Service, List, String, String, FiComResponseHandler)
+     * @see #call(FiComRequest, FiComResponseHandler)
      */
     public FiComRequest authenticate(final String apTransId,
                                      final byte[] authnChallenge,
@@ -156,7 +155,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request. 
-     * @see #call(String, DTBS, String, Service, Service, List, String, String, FiComResponseHandler)
+     * @see #call(FiComRequest, FiComResponseHandler)
      */
     public FiComRequest authenticateAnon(final String apTransId,
                                          final byte[] authnChallenge,
@@ -192,7 +191,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(String, DTBS, String, Service, Service, List, String, String, FiComResponseHandler)
+     * @see #call(FiComRequest, FiComResponseHandler)
      */
     public FiComRequest signText(final String apTransId,
                                  final String textToBeSigned,
@@ -229,7 +228,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(String, DTBS, String, Service, Service, List, String, String, FiComResponseHandler)
+     * @see #call(FiComRequest, FiComResponseHandler)
      */
     public FiComRequest signData(final String apTransId,
                                  final byte [] digestToBeSigned,
@@ -265,7 +264,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(String, DTBS, String, Service, Service, List, String, String, FiComResponseHandler)
+     * @see #call(FiComRequest, FiComResponseHandler)
      */
     public FiComRequest consent(final String apTransId,
                                  final String textToBeConsentedTo,

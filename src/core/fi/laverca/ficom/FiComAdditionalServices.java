@@ -167,6 +167,7 @@ public class FiComAdditionalServices {
 
     /** 
      * Create an AdditionalService for SAML2 AttributeQuery
+     * @param uri AdditionalService URI
      * @param attributeQuery SAML2 attribute query, as per FiCom 2.0.
      * @return Created AdditionalService
      */
@@ -199,7 +200,7 @@ public class FiComAdditionalServices {
         
         /**
          * Get the attribute name
-         * @return
+         * @return Name of the attribute
          */
         public String getName() {
             return this.samlAttribute.getName();
@@ -207,7 +208,7 @@ public class FiComAdditionalServices {
         
         /**
          * Get the attribute value as String
-         * @return
+         * @return Value of the attribute
          */
         public String getStringValue() {
             try {

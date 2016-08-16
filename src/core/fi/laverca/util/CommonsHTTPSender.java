@@ -91,6 +91,7 @@ import org.apache.http.util.EntityUtils;
  * possible to share a connection manager among RoamingClient instances.
  */
 // TODO: Clean up deprecated code & update Commons HTTP Client lib
+@SuppressWarnings({"serial", "deprecation"})
 public class CommonsHTTPSender extends BasicHandler {
     
     private static Log log = LogFactory.getLog(CommonsHTTPSender.class);
@@ -100,10 +101,10 @@ public class CommonsHTTPSender extends BasicHandler {
     private static final ThreadLocal<HttpClient> settings = new ThreadLocal<HttpClient>();
     
     /**
-     * 
-     * @param hc
+     * Initializes the thread local HTTP client
+     * @param hc HttpClient
      */
-    public static void initThreadLocals( HttpClient hc )
+    public static void initThreadLocals(final HttpClient hc)
     {
         log.debug("initThreadLocals()");
         log.debug("  sslSocketFactory = "+hc);
@@ -123,10 +124,10 @@ public class CommonsHTTPSender extends BasicHandler {
      *
      * @param msgContext the messsage context
      *
-     * @throws AxisFault
+     * @throws AxisFault if there was an error sending the SOAP message
      */
     @Override
-    public void invoke(MessageContext msgContext)
+    public void invoke(final MessageContext msgContext)
         throws AxisFault
     {
 
@@ -296,14 +297,14 @@ public class CommonsHTTPSender extends BasicHandler {
      * @param msgContext the message context
      * @param tmpURL the url to post to.
      *
-     * @throws Exception
+     * @throws Exception if any error occurred
      */
-    private void addContextInfo(HttpPost method,
-            HttpClient httpClient,
-            MessageContext msgContext,
-            URL tmpURL)
-                    throws Exception {
-        
+    private void addContextInfo(final HttpPost method,
+                                final HttpClient httpClient,
+                                final MessageContext msgContext,
+                                final URL tmpURL)
+        throws Exception 
+    {    
         HttpParams params = method.getParams();
         
         if (msgContext.getTimeout() != 0) {
@@ -376,7 +377,7 @@ public class CommonsHTTPSender extends BasicHandler {
         // Transfer MIME headers of SOAPMessage to HTTP headers.
         MimeHeaders mimeHeaders = msg.getMimeHeaders();
         if (mimeHeaders != null) {
-            for (Iterator i = mimeHeaders.getAllHeaders(); i.hasNext(); ) {
+            for (Iterator<?> i = mimeHeaders.getAllHeaders(); i.hasNext(); ) {
                 MimeHeader mimeHeader = (MimeHeader) i.next();
                 //HEADER_CONTENT_TYPE and HEADER_SOAP_ACTION are already set.
                 //Let's not duplicate them.
@@ -391,13 +392,12 @@ public class CommonsHTTPSender extends BasicHandler {
         }
         
         // process user defined headers for information.
-        Hashtable userHeaderTable =
-                (Hashtable) msgContext.getProperty(HTTPConstants.REQUEST_HEADERS);
+        Hashtable<?,?> userHeaderTable = (Hashtable<?,?>) msgContext.getProperty(HTTPConstants.REQUEST_HEADERS);
         
         if (userHeaderTable != null) {
-            for (Iterator e = userHeaderTable.entrySet().iterator();
+            for (Iterator<?> e = userHeaderTable.entrySet().iterator();
                     e.hasNext();) {
-                Map.Entry me = (Map.Entry) e.next();
+                Map.Entry<?,?> me = (Map.Entry<?,?>) e.next();
                 Object keyObj = me.getKey();
                 
                 if (null == keyObj) {
@@ -460,7 +460,6 @@ public class CommonsHTTPSender extends BasicHandler {
         };
                     }
     
-    @SuppressWarnings("deprecation")
     private static class MessageRequestEntity implements HttpEntity {
         
         private HttpPost method;

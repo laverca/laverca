@@ -71,7 +71,7 @@ public class Saml2Util {
      * 
      * @param nameIdContent Content for the NameID element
      * @param sPProvidedID  SP Provider ID
-     * @return
+     * @return SAML2 Subject
      */
     public static Subject createSubject(final String nameIdContent, 
                                         final String sPProvidedID) {
@@ -92,10 +92,10 @@ public class Saml2Util {
     /**
      * Create a SAML2 AttributeQuery element
      * 
-     * @param nameIdContent
-     * @param sPProvidedID
-     * @param attributeNames
-     * @return
+     * @param nameIdContent Content for the NameID element
+     * @param sPProvidedID  SP Provider ID
+     * @param attributeNames List of attribute names to add to the query
+     * @return SAML2 AttributeQuery
      */
     public static AttributeQuery createAttributeQuery(final String nameIdContent, 
                                                       final String sPProvidedID, 

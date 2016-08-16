@@ -31,7 +31,7 @@ import org.apache.axis.client.Stub;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-@SuppressWarnings("serial")
+@SuppressWarnings({"serial", "rawtypes"})
 public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service implements MSS_SignatureService {
 
     private static Log log = LogFactory.getLog(MSS_SignatureServiceLocator.class);
@@ -45,80 +45,6 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
         super(config);
         log.debug("MSS_SignatureServiceLocator(EngineConfiguration)");
     }
-    /*
-    public MSS_SignatureServiceLocator(String wsdlLoc, QName sName) throws ServiceException {
-        super(wsdlLoc, sName);
-        log.debug("MSS_SignatureServiceLocator(wsdlLoc='"+wsdlLoc+"', sName='"+sName+"')");
-        setEngineConfiguration((String)null); // default client-config.wsdd file
-    }
-
-    public MSS_SignatureServiceLocator(String fname) {
-        super();
-        log.debug("MSS_SignatureServiceLocator()");
-        setEngineConfiguration(fname);
-    }
-
-    static private EngineConfiguration _config;
-*/
-    /**
-     * Pick runtime Axis Client Engine Configuration from set value.
-     *<p>
-     * We support only one instance of client configuration at any
-     * time.
-     */
-/*
-    public EngineConfiguration getEngineConfiguration() {
-        if (_config != null)
-            return _config;
-
-        return super.getEngineConfiguration();
-    }
-*/
-
-    /**
-     * Axis client engine configuration setter.
-     *<p>
-     * Tells name of the file, and depending on class-loader
-     * may even pick it up from jar-file.
-     *<p>
-     * Default file is <code>client-config.wsdd</code>.
-     */
-/*
-    public void setEngineConfiguration(String fname) {
-        if (fname == null) fname="server-config.wsdd";
-        InputStream is = null;
-        try {
-            // Load-location depends on class-loader
-            is = MSS_SignatureServiceLocator.class.getResourceAsStream(fname);
-            setEngineConfiguration(is);
-
-        } catch (Exception e) {
-            // ignore
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception e) {
-                    // ignore..
-                }
-            }
-        }
-    }
-*/
-
-    /**
-     * Axis client engine configuration setter.
-     *<p>
-     * Has generic InputStream type input, into which
-     * the caller may choose to inject anything - including
-     * 
-     */
-/*
-    public void setEngineConfiguration(InputStream is) {
-        _config = new FileProvider(is);
-    }
-*/
-
 
     // Use to get a proxy class for MSS_SignaturePort
     private String MSS_SignaturePort_address = "https://127.0.0.1:8443";
@@ -430,15 +356,21 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
         }
     }
 
-    public void setMSS_HandshakePortEndpointAddress(String address) {
-        MSS_HandshakePort_address = address;
+    /**
+     * Set the MSS_Handshake port address
+     * @param address Address to set
+     */
+    public void setMSS_HandshakePortEndpointAddress(final String address) {
+        this.MSS_HandshakePort_address = address;
     }
 
     /**
      * For the given interface, get the stub implementation.
      * If this service has no port for the given interface,
      * then ServiceException is thrown.
+     * @param serviceEndpointInterface Interface class reference
      */
+    @Override
     public Remote getPort(Class serviceEndpointInterface) throws ServiceException {
         try {
             if (MSS_SignaturePortType.class.isAssignableFrom(serviceEndpointInterface)) {
@@ -487,7 +419,10 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
      * For the given interface, get the stub implementation.
      * If this service has no port for the given interface,
      * then ServiceException is thrown.
+     * @param portName Name of the port
+     * @param serviceEndpointInterface Interface class reference
      */
+    @Override
     public Remote getPort(QName portName, Class serviceEndpointInterface) throws ServiceException {
         if (portName == null) {
             return getPort(serviceEndpointInterface);
@@ -521,12 +456,14 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
         }
     }
 
+    @Override
     public QName getServiceName() {
         return new QName("http://laverca.fi/mssp", "MSS_SignatureService");
     }
 
     private java.util.HashSet<QName> ports = null;
 
+    @Override
     public java.util.Iterator<QName> getPorts() {
         if (ports == null) {
             ports = new java.util.HashSet<QName>();
@@ -543,39 +480,45 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
 
     /**
     * Set the endpoint address for the specified port name.
+    * @param portName Name of the port
+    * @param address Address to set
+    * @throws ServiceException if the port name is not recognized
     */
-    public void setEndpointAddress(String portName, String address) throws ServiceException {
+    public void setEndpointAddress(final String portName, final String address) throws ServiceException {
         
         if ("MSS_SignaturePort".equals(portName)) {
-            setMSS_SignaturePortEndpointAddress(address);
+            this.setMSS_SignaturePortEndpointAddress(address);
         }
         else if ("MSS_StatusQueryPort".equals(portName)) {
-            setMSS_StatusQueryPortEndpointAddress(address);
+            this.setMSS_StatusQueryPortEndpointAddress(address);
         }
         else if ("MSS_ReceiptPort".equals(portName)) {
-            setMSS_ReceiptPortEndpointAddress(address);
+            this.setMSS_ReceiptPortEndpointAddress(address);
         }
         else if ("MSS_NotificationPort".equals(portName)) {
-            setMSS_NotificationPortEndpointAddress(address);
+            this.setMSS_NotificationPortEndpointAddress(address);
         }
         else if ("MSS_RegistrationPort".equals(portName)) {
-            setMSS_RegistrationPortEndpointAddress(address);
+            this.setMSS_RegistrationPortEndpointAddress(address);
         }
         else if ("MSS_ProfileQueryPort".equals(portName)) {
-            setMSS_ProfileQueryPortEndpointAddress(address);
+            this.setMSS_ProfileQueryPortEndpointAddress(address);
         }
         else if ("MSS_HandshakePort".equals(portName)) {
-            setMSS_HandshakePortEndpointAddress(address);
+            this.setMSS_HandshakePortEndpointAddress(address);
         }
         else { // Unknown Port Name
-            throw new ServiceException(" Cannot set Endpoint Address for Unknown Port" + portName);
+            throw new ServiceException("Cannot set Endpoint Address for Unknown Port" + portName);
         }
     }
 
     /**
     * Set the endpoint address for the specified port name.
+    * @param portName Name of the port
+    * @param address Address to set
+    * @throws ServiceException if the port name is not recognized
     */
-    public void setEndpointAddress(QName portName, String address) throws ServiceException {
-        setEndpointAddress(portName.getLocalPart(), address);
+    public void setEndpointAddress(final QName portName, final String address) throws ServiceException {
+        this.setEndpointAddress(portName.getLocalPart(), address);
     }
 }

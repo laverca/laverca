@@ -56,7 +56,7 @@ public class EtsiClient extends ClientHelper<EtsiRequest, EtsiResponse> {
      * @param additionalServices List of FiCom additionalservices to add to the request
      * @param signatureProfile Signature profile to use
      * @param mssFormat MSS Format to use.
-     * @param handler FiComResponseHandler for receiving asynch responses.
+     * @param messagingMode Messaging mode to use
      */
     public EtsiRequest createRequest(final String apTransId, 
                                      final String msisdn,

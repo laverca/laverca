@@ -240,7 +240,8 @@ public class FiComCharsetLimiter {
     /**
      * Convert the input java String UCS2 byte array per
      * ETSI TS 123 038 + ETSI TS 102223 "Text string" format.
-     *
+     * @param inputString String to convert
+     * @return UCS2 byte[]
      */
     public static byte[] toUCS2(String inputString) {
 

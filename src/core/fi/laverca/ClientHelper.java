@@ -41,12 +41,12 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
 
     /**
      * 
-     * @param apId
-     * @param apPwd
-     * @param msspSignatureUrl
-     * @param msspStatusUrl
-     * @param msspReceiptUrl
-     * @throws IllegalArgumentException
+     * @param apId AP_ID
+     * @param apPwd AP_PWD
+     * @param msspSignatureUrl URL for MSS_Signature service
+     * @param msspStatusUrl URL for MSS_Status service
+     * @param msspReceiptUrl URL for MSS_Receipt service
+     * @throws IllegalArgumentException if apId or apPwd is null
      */
     public ClientHelper(final String apId,             // AP settings
                         final String apPwd, 
@@ -205,7 +205,8 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
     /**
      * Sends a receipt request.
      * @param fiResp The receipt request to send
-     * @param message 
+     * @param message Message to display 
+     * @return received receipt response
      * @throws IOException if the receipt sending fails
      * @throws IllegalArgumentException if the given Response is null
      */
@@ -219,28 +220,29 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
         
         log.debug("Sending receipt");
         MSS_ReceiptReq receiptReq = this.mssClient.createReceiptRequest(fiResp.originalSigResp, 
-                                                                    fiResp.originalSigReq.getAP_Info().getAP_TransID(), 
-                                                                    message);
+                                                                        fiResp.originalSigReq.getAP_Info().getAP_TransID(), 
+                                                                        message);
         receiptReq.setMobileUser(fiResp.originalSigReq.getMobileUser());
         return this.mssClient.send(receiptReq);
     }
 
     private static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
+    
     protected long parseStatus(final Status status) {
-        if(status == null)
-            return NO_STATUS;
+        if(status == null) return NO_STATUS;
+        
         StatusCode sc = status.getStatusCode();
-        if(sc == null)
-            return NO_STATUS;
+        if(sc == null) return NO_STATUS;
+        
         return sc.getValue();
     }
 
     /**
      * Checks whether the given StatusResp contains an MSS_Signature
-     * @param statResp
+     * @param statResp StatusResponse to check
      * @return true if signature was found, false otherwise
      */
-    protected static boolean isDone(MSS_StatusResp statResp) {
+    protected static boolean isDone(final MSS_StatusResp statResp) {
         if(statResp == null) {
             return false;
         }
@@ -255,7 +257,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
         try {
             this.threadExecutor.shutdown();
         } catch (Throwable t) {
-            log.trace("FiComClient failed to shut down properly", t);
+            log.trace(this.getClass().getSimpleName() + " failed to shut down properly", t);
         }
     }
     

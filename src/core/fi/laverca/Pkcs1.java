@@ -45,12 +45,12 @@ public class Pkcs1 {
 
 	/** 
      * @param pkcs1 In general, you get this from an MSS_SignatureResp.getMSS_Signature() call.
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if the input is null
      */
     public Pkcs1(final PKCS1 pkcs1) throws IllegalArgumentException {
     	
         if(pkcs1 == null) {
-            throw new IllegalArgumentException("can't construct a PKCS1 SignedData element from null input.");
+            throw new IllegalArgumentException("Can't construct a PKCS1 SignedData element from null input.");
         }
         
         this.pkcs1 = pkcs1;

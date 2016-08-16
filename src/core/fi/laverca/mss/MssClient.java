@@ -148,7 +148,7 @@ public class MssClient {
                       String msspSignatureUrl,
                       String msspStatusUrl,
                       String msspReceiptUrl) {
-        this (apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
+        this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
     }
 
     /**
@@ -295,7 +295,7 @@ public class MssClient {
      * 
      * @param sigResp MSS_SignatureResponse on which the receipt request is constructed
      * @param apTransId each new MSS request needs a new apTransID
-     * @param message 
+     * @param message Message to display
      */
     public MSS_ReceiptReq createReceiptRequest( MSS_SignatureResp sigResp, 
                                                 String apTransId,

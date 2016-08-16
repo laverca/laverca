@@ -38,6 +38,9 @@ public abstract class MssRequest<Resp> {
     /** 
      * Wait for a response. 
      * <p>Blocks current thread. 
+     * @return Response
+     * @throws InterruptedException if the wait was interrupted
+     * @throws ExecutionException if the wait was aborted
      */
     public Resp waitForResponse() throws InterruptedException, ExecutionException {
         return this.ft.get();

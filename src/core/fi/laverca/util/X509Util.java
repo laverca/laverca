@@ -38,7 +38,12 @@ import org.apache.commons.logging.LogFactory;
 public class X509Util {
     private static Log log = LogFactory.getLog(X509Util.class);
 
-    public static X509Certificate DERtoX509Certificate(byte[] der) {
+    /**
+     * Convert a DER certificate to X509Certificate
+     * @param der Certificate to convert
+     * @return Converted certificate as X509Certificate or null if the conversion failed
+     */
+    public static X509Certificate DERtoX509Certificate(final byte[] der) {
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(der);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -49,7 +54,12 @@ public class X509Util {
         return null;
     }
 
-    public static byte[] X509CertificateToDER(X509Certificate cert) {
+    /**
+     * Convert an X509 certificate to byte[] DER
+     * @param cert Certificate to convert
+     * @return Converted certificate as byte[] DER or null if the conversion failed
+     */
+    public static byte[] X509CertificateToDER(final X509Certificate cert) {
         try {
             return cert.getEncoded();
         } catch (Exception e) {
@@ -59,8 +69,12 @@ public class X509Util {
     }
 
     
-    /** return SHA-1 hash of the cert. */
-    public static byte[] certHash(byte[] cert) {
+    /** 
+     * Calculates a SHA-1 hash of the given byte[] certificate
+     * @param cert Certificate as byte[]
+     * @return SHA-1 hash of the cert  or null if the calculation failed
+     */
+    public static byte[] certHash(final byte[] cert) {
         if(cert == null) {
             return null;
         }
@@ -76,11 +90,22 @@ public class X509Util {
         return hash;
     }
     
-    public static String parseSubjectCn(X509Certificate cert) {
+    /**
+     * Parse the CN part from the given certificate's Subject
+     * @param cert Certificate
+     * @return CN as String
+     */
+    public static String parseSubjectCn(final X509Certificate cert) {
         return parseSubjectName(cert, "CN");
     }
 
-    public static String parseSubjectName(X509Certificate cert, String rdnType) {
+    /**
+     * Parse the given RND type from the given certificate's subject
+     * @param cert Certificate
+     * @param rdnType RND type
+     * @return parsed value as String
+     */
+    public static String parseSubjectName(final X509Certificate cert, final String rdnType) {
         String dn = cert.getSubjectX500Principal().getName();
     
         String name = null;
@@ -92,8 +117,7 @@ public class X509Util {
                     name = r.getValue().toString();
                 }
             }
-        }
-        catch(InvalidNameException e) {
+        } catch(InvalidNameException e) {
             log.error(e);
         }
         
