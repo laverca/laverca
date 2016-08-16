@@ -51,12 +51,11 @@ public class EtsiClient extends ClientHelper<EtsiRequest, EtsiResponse> {
      * @param dtbd Data to be displayed
      * @param dtbs Data to be signed
      * @param msisdn MSISDN of the target user
-     * @param noSpamService Service for sending nospam code
-     * @param eventIDService Service containing the wanted EventId for the request
      * @param additionalServices List of FiCom additionalservices to add to the request
      * @param signatureProfile Signature profile to use
      * @param mssFormat MSS Format to use.
      * @param messagingMode Messaging mode to use
+     * @return Created request
      */
     public EtsiRequest createRequest(final String apTransId, 
                                      final String msisdn,

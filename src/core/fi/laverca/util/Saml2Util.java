@@ -141,7 +141,7 @@ public class Saml2Util {
     /** 
      * Read the first AttributeStatement from inside an Assertion. 
      * 
-     * @param assertion
+     * @param assertion The SAML2 Assertion
      * @return The first AttributeStatement or null
      */
     public static AttributeStatement parseFromAssertion(final Assertion assertion) {
@@ -163,7 +163,7 @@ public class Saml2Util {
      * @param as Attribute statement
      * @return List of attributes
      */
-    public static List<Attribute> parseFromAttributeStatement(AttributeStatement as) {
+    public static List<Attribute> parseFromAttributeStatement(final AttributeStatement as) {
         try {
             List<Attribute>         attributes = new LinkedList<Attribute>();
             AttributeStatementTypeItem[] items = as.getAttributeStatementTypeItem();

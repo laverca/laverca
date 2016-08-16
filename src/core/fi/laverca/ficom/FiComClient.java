@@ -31,6 +31,7 @@ import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 
 import fi.laverca.ClientHelper;
 import fi.laverca.MSS_Formats;
+import fi.laverca.ResponseHandler;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.util.DTBS;
 
@@ -69,6 +70,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param additionalServices List of FiCom additionalservices to add to the request
      * @param signatureProfile Signature profile to use
      * @param mssFormat MSS Format to use.
+     * @return created FiComRequest
      */
     public FiComRequest createRequest(final String apTransId, 
                                       final DTBS dtbs,
@@ -112,7 +114,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * Convenience method for sending an authentication request
      * 
      * @param apTransId AP Transaction ID
-     * @param authnChallenge
+     * @param authnChallenge Data to be signed
      * @param phoneNumber MSISDN of the target user
      * @param noSpamService Service for sending nospam code
      * @param eventIdService Service containing the wanted EventId for the request
@@ -120,7 +122,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(FiComRequest, FiComResponseHandler)
+     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest authenticate(final String apTransId,
                                      final byte[] authnChallenge,
@@ -147,7 +149,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * Convenience method for sending an anonymous authentication request
      * 
      * @param apTransId AP Transaction ID
-     * @param authnChallenge
+     * @param authnChallenge Data to be signed
      * @param phoneNumber MSISDN of the target user
      * @param noSpamService Service for sending nospam code
      * @param eventIDService Service containing the wanted EventId for the request
@@ -155,7 +157,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request. 
-     * @see #call(FiComRequest, FiComResponseHandler)
+     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest authenticateAnon(final String apTransId,
                                          final byte[] authnChallenge,
@@ -183,7 +185,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * Convenience method for sending a text sig request
      * 
      * @param apTransId AP Transaction ID
-     * @param textToBeSigned
+     * @param textToBeSigned Data to be signed
      * @param phoneNumber MSISDN of the target user
      * @param noSpamService Service for sending nospam code
      * @param eventIDService Service containing the wanted EventId for the request
@@ -191,7 +193,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(FiComRequest, FiComResponseHandler)
+     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest signText(final String apTransId,
                                  final String textToBeSigned,
@@ -220,7 +222,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * Convenience method for sending a data sign request
      * 
      * @param apTransId AP Transaction ID
-     * @param digestToBeSigned
+     * @param digestToBeSigned Data to be signed
      * @param phoneNumber MSISDN of the target user
      * @param noSpamService Service for sending nospam code
      * @param eventIDService Service containing the wanted EventId for the request
@@ -228,7 +230,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(FiComRequest, FiComResponseHandler)
+     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest signData(final String apTransId,
                                  final byte [] digestToBeSigned,
@@ -256,7 +258,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * Convenience method for sending a consent request
      * 
      * @param apTransId AP Transaction ID
-     * @param textToBeConsentedTo
+     * @param textToBeConsentedTo Data to be signed
      * @param phoneNumber MSISDN of the target user
      * @param noSpamService Service for sending nospam code
      * @param eventIDService Service containing the wanted EventId for the request
@@ -264,7 +266,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see #call(FiComRequest, FiComResponseHandler)
+     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest consent(final String apTransId,
                                  final String textToBeConsentedTo,

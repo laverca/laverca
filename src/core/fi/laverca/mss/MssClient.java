@@ -88,7 +88,7 @@ public class MssClient {
     /** 
      * <b>NOTE:</b> 
      * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL()} OR set the engine configuration before sending any requests.
+     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
      * 
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
      * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
@@ -135,7 +135,7 @@ public class MssClient {
     /**
      * <b>NOTE:</b> 
      * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL()} OR set the engine configuration before sending any requests.
+     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
      *
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
      * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
@@ -143,11 +143,11 @@ public class MssClient {
      * @param msspStatusUrl       Connection URL to the AE for status query requests. 
      * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
      */
-    public MssClient( String apId,
-                      String apPwd,
-                      String msspSignatureUrl,
-                      String msspStatusUrl,
-                      String msspReceiptUrl) {
+    public MssClient(final String apId,
+                     final String apPwd,
+                     final String msspSignatureUrl,
+                     final String msspStatusUrl,
+                     final String msspReceiptUrl) {
         this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
     }
 
@@ -205,7 +205,7 @@ public class MssClient {
      * @param mat Message to fill
      * @param apTransId AP Transaction ID
      */
-    private void initializeRequestMessage(MessageAbstractType mat, String apTransId) {
+    private void initializeRequestMessage(final MessageAbstractType mat, final String apTransId) {
         if(mat == null)
             throw new IllegalArgumentException("can't fill a null mat");
     
@@ -232,21 +232,22 @@ public class MssClient {
     /**
      * Creates a signature request. 
      * 
-     * @param apTransId not null.
-     * @param msisdn not null.
-     * @param dtbs not null.
-     * @param dataToBeDisplayed 
-     * @param signatureProfile not null.
-     * @param mss_format not null.
-     * @param messagingMode not null. 
+     * @param apTransId AP Transaction ID - not null.
+     * @param msisdn MSISDN of the mobile user - not null.
+     * @param dtbs Data to be Signed - not null.
+     * @param dataToBeDisplayed Data to be displayed - may be null. 
+     * @param signatureProfile Signature profile to use - not null.
+     * @param mss_format MSS_Format to use - not null.
+     * @param messagingMode Messaging mode to use - not null.
+     * @return Created signature request
      */
-    public MSS_SignatureReq createSignatureRequest(String apTransId,
-                                                   String msisdn,
-                                                   DTBS dtbs,
-                                                   String dataToBeDisplayed,
-                                                   String signatureProfile,
-                                                   String mss_format,
-                                                   MessagingModeType messagingMode) {
+    public MSS_SignatureReq createSignatureRequest(final String apTransId,
+                                                   final String msisdn,
+                                                   final DTBS dtbs,
+                                                   final String dataToBeDisplayed,
+                                                   final String signatureProfile,
+                                                   final String mss_format,
+                                                   final MessagingModeType messagingMode) {
         MSS_SignatureReq req = new MSS_SignatureReq();
         
         this.initializeRequestMessage(req, apTransId);
@@ -296,11 +297,12 @@ public class MssClient {
      * @param sigResp MSS_SignatureResponse on which the receipt request is constructed
      * @param apTransId each new MSS request needs a new apTransID
      * @param message Message to display
+     * @return Created MSS_ReceiptReq
      */
-    public MSS_ReceiptReq createReceiptRequest( MSS_SignatureResp sigResp, 
-                                                String apTransId,
-                                                String message
-                                                ) {
+    public MSS_ReceiptReq createReceiptRequest(final MSS_SignatureResp sigResp, 
+                                               final String apTransId,
+                                               final String message) 
+    {
         MSS_ReceiptReq req = new MSS_ReceiptReq();
         
         this.initializeRequestMessage(req, apTransId);
@@ -333,11 +335,14 @@ public class MssClient {
      * Create a status request for a signature response.
      * 
      * @param apTransId new AP transaction id
-     * @param sigResp 
+     * @param sigResp Original MSS_SignatureResp
+     * @return Created MSS_StatusReq
+     * @throws IllegalArgumentException if the given signature response does not contain all the necessary data to create an MSS_StatusReq
      */
-    public MSS_StatusReq createStatusRequest(MSS_SignatureResp sigResp,
-                                             String apTransId
-                                             ) throws IllegalArgumentException {
+    public MSS_StatusReq createStatusRequest(final MSS_SignatureResp sigResp,
+                                             final String apTransId) 
+        throws IllegalArgumentException
+    {
         MSS_StatusReq req = new MSS_StatusReq();
         
         this.initializeRequestMessage(req, apTransId);
@@ -364,12 +369,13 @@ public class MssClient {
     /**
      * Send the MSS_SignatureRequest to MSS system receiving answer
      * @param req the MSS_SignatureReq
-     * @throws IOException if a HTTP communication error
+     * @return received MSS_SignatureResp
+     * @throws IOException if a HTTP communication error occurs
      * @throws IllegalArgumentException if req is null
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_SignatureResp send(MSS_SignatureReq req) throws IOException {
+    public MSS_SignatureResp send(final MSS_SignatureReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null SignatureReq");
         
         if (req.getAdditionalServices() != null) {
@@ -383,12 +389,13 @@ public class MssClient {
     /**
      * Send the MSS_ReceiptRequest to MSS system receiving answer
      * @param req the MSS_ReceiptReq
-     * @throws IOException if a HTTP communication error
+     * @return received MSS_ReceiptResp
+     * @throws IOException if a HTTP communication error occurs
      * @throws IllegalArgumentException if req is null
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_ReceiptResp send(MSS_ReceiptReq req) throws IOException {
+    public MSS_ReceiptResp send(final MSS_ReceiptReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
         return (MSS_ReceiptResp)send((MessageAbstractType)req);
     }
@@ -396,12 +403,13 @@ public class MssClient {
     /**
      * Send the MSS_HandshakeRequest to MSS system receiving answer
      * @param req the MSS_HandshakeReq
-     * @throws IOException if a HTTP communication error
+     * @return received MSS_HandshakeResp
+     * @throws IOException if a HTTP communication error occurs
      * @throws IllegalArgumentException if req is null
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_HandshakeResp send(MSS_HandshakeReq req) throws IOException {
+    public MSS_HandshakeResp send(final MSS_HandshakeReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
         return (MSS_HandshakeResp)send((MessageAbstractType)req);
     }
@@ -409,12 +417,13 @@ public class MssClient {
     /**
      * Send the MSS_StatusRequest to MSS system receiving answer
      * @param req the MSS_StatusReq
-     * @throws IOException if a HTTP communication error
+     * @return received MSS_StatusResp
+     * @throws IOException if a HTTP communication error occurs
      * @throws IllegalArgumentException if req is null
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_StatusResp send(MSS_StatusReq req) throws IOException {
+    public MSS_StatusResp send(final MSS_StatusReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null StatusReq");
         return (MSS_StatusResp)send((MessageAbstractType)req);
     }
@@ -422,12 +431,13 @@ public class MssClient {
     /**
      * Send the MSS_ProfileRequest to MSS system receiving answer
      * @param req the MSS_ProfileReq
-     * @throws IOException if a HTTP communication error
+     * @return received MSS_ProfileResp
+     * @throws IOException if a HTTP communication error occurs
      * @throws IllegalArgumentException if req is null
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_ProfileResp send(MSS_ProfileReq req) throws IOException {
+    public MSS_ProfileResp send(final MSS_ProfileReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
         return (MSS_ProfileResp)send((MessageAbstractType)req);
     }
@@ -435,12 +445,13 @@ public class MssClient {
     /**
      * Send the MSS_RegistrationRequest to MSS system receiving answer
      * @param req the MSS_RegistrationReq
-     * @throws IOException if a HTTP communication error
+     * @return received MSS_RegistrationResp
+     * @throws IOException if a HTTP communication error occurs
      * @throws IllegalArgumentException if req is null
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_RegistrationResp send(MSS_RegistrationReq req) throws IOException {
+    public MSS_RegistrationResp send(final MSS_RegistrationReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null RegistrationReq");
         return (MSS_RegistrationResp)send((MessageAbstractType)req);
     }
@@ -451,8 +462,8 @@ public class MssClient {
      * @param req Abstract request type
      * @throws IOException if a HTTP communication error occurred i.e. a SOAP fault was generated by the <i>local</i> SOAP client stub.
      */
-    private MessageAbstractType send(MessageAbstractType req)
-    throws AxisFault, IOException
+    private MessageAbstractType send(final MessageAbstractType req)
+        throws AxisFault, IOException
     {
         Stub port = null;
         try {

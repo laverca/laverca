@@ -101,8 +101,8 @@ public class DTBS {
      * Converter of incoming DTBS to byte-array, if the incoming
      * form happened to be a String, otherwise returning it as is.
      * 
-     * @return byte-array
-     * @throws RunTimeException when no text or data is found
+     * @return byte[]
+     * @throws RuntimeException when no text or data is found
      */
     public byte[] toBytes() {
         if (this.data != null) {
@@ -163,7 +163,7 @@ public class DTBS {
      * Length of DTBS data, either the string, or the byte-array
      * 
      * @return int - length of data
-     * @throws RunTimeException when no text or data is found
+     * @throws RuntimeException when no text or data is found
      */
     public int length() {
         if (this.text != null) {

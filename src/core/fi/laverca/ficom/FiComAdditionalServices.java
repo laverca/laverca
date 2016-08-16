@@ -114,7 +114,7 @@ public class FiComAdditionalServices {
 
     /**
      * Creates an AdditionalService for FiCom user language service
-     * @param userLang
+     * @param userLang User language value as per MSS FiCom Implentation guideline v2.1
      * @return FiCom UserLang AdditionalService
      */
     public static Service createUserLangService(final String userLang) {
