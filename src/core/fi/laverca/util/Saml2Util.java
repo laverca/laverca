@@ -19,8 +19,8 @@
 
 package fi.laverca.util;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import oasis.names.tc.SAML.v2_0.assertion.Assertion;
@@ -45,8 +45,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class Saml2Util {
     
-    private static final Log log = LogFactory.getLog(Saml2Util.class);
-
     /**
      * Fill required SAML2 request fields: 
      * <ul>
@@ -95,7 +93,7 @@ public class Saml2Util {
      * @param nameIdContent Content for the NameID element
      * @param sPProvidedID  SP Provider ID
      * @param attributeNames List of attribute names to add to the query
-     * @return SAML2 AttributeQuery
+     * @return new SAML2 AttributeQuery
      */
     public static AttributeQuery createAttributeQuery(final String nameIdContent, 
                                                       final String sPProvidedID, 
@@ -125,16 +123,18 @@ public class Saml2Util {
      * @return The first Assertion element or null
      */
     public static Assertion parseFromResponse(final Response response) {
-        try {
-            for(ResponseTypeChoiceItem item : response.getResponseTypeChoice().getResponseTypeChoiceItem()) {
-                if(item.getAssertion() != null) {
-                    return item.getAssertion();
-                }
+        if (response == null) return null;
+        if (response.getResponseTypeChoice() == null) return null;
+        if (response.getResponseTypeChoice().getResponseTypeChoiceItem() == null) return null;
+
+        for(ResponseTypeChoiceItem item : response.getResponseTypeChoice().getResponseTypeChoiceItem()) {
+            if(item != null && 
+               item.getAssertion() != null) 
+            {
+                return item.getAssertion();
             }
-        } catch(Throwable t) {
-            log.error("", t);
         }
-        
+
         return null;
     }
 
@@ -145,15 +145,18 @@ public class Saml2Util {
      * @return The first AttributeStatement or null
      */
     public static AttributeStatement parseFromAssertion(final Assertion assertion) {
-        try {
-            for(AssertionTypeChoiceItem item : assertion.getAssertionTypeChoice().getAssertionTypeChoiceItem()) {
-                if(item.getAttributeStatement() != null)
-                    return item.getAttributeStatement();
-            }
-        } catch(Throwable t) {
-            log.error("",t);
-        }
+        if (assertion == null) return null;
+        if (assertion.getAssertionTypeChoice() == null) return null;
+        if (assertion.getAssertionTypeChoice().getAssertionTypeChoiceItem() == null) return null;
         
+        for(AssertionTypeChoiceItem item : assertion.getAssertionTypeChoice().getAssertionTypeChoiceItem()) {
+            if(item != null && 
+               item.getAttributeStatement() != null) 
+            {
+                return item.getAttributeStatement();
+            }
+        }
+
         return null;
     }
 
@@ -161,22 +164,21 @@ public class Saml2Util {
      * Read the Attributes from inside an AttributeStatement. 
      * 
      * @param as Attribute statement
-     * @return List of attributes
+     * @return List of attributes (may be empty)
      */
     public static List<Attribute> parseFromAttributeStatement(final AttributeStatement as) {
-        try {
-            List<Attribute>         attributes = new LinkedList<Attribute>();
-            AttributeStatementTypeItem[] items = as.getAttributeStatementTypeItem();
-            for (AttributeStatementTypeItem item : items) {
+        List<Attribute> attributes = new ArrayList<Attribute>();
+
+        if (as == null) return attributes;
+        if (as.getAttributeStatementTypeItem() == null) return attributes;
+        
+        for (AttributeStatementTypeItem item : as.getAttributeStatementTypeItem()) {
+            if (item != null) {
                 Attribute attribute = item.getAttribute();
                 attributes.add(attribute);
             }
-            return attributes;
-        } catch (Throwable t) {
-            log.error("", t);
         }
-        
-        return null;
+        return attributes;
     }
 
 }
