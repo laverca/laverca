@@ -68,13 +68,12 @@ public class FiComResponse extends MssResponse {
             AttributeStatement stmt = Saml2Util.parseFromAssertion(assertion);
             List<Attribute>   attrs = Saml2Util.parseFromAttributeStatement(stmt);
 
-            List<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = 
-                new ArrayList<FiComAdditionalServices.PersonIdAttribute>(); 
-
+            List<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = new ArrayList<FiComAdditionalServices.PersonIdAttribute>(); 
+            
             for(Attribute samlAttribute : attrs) {
                 fiComAttrs.add(new FiComAdditionalServices.PersonIdAttribute(samlAttribute));
             }
-                
+            
             return fiComAttrs;
         } catch (NullPointerException e){
             log.error("Failed to fetch PersonID attributes");
@@ -87,7 +86,7 @@ public class FiComResponse extends MssResponse {
     
     /**
      * 
-     * @return AE validation status, null if no AE validation was done
+     * @return AE validation status, null if no AE validation was done or if an error occurred
      */
     public Status getAeValidationStatus() {
         try{

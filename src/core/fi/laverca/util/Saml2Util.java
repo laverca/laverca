@@ -37,9 +37,6 @@ import oasis.names.tc.SAML.v2_0.protocol.RequestAbstractType;
 import oasis.names.tc.SAML.v2_0.protocol.Response;
 import oasis.names.tc.SAML.v2_0.protocol.ResponseTypeChoiceItem;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * A collection of helper methods for commonplace SAML2 tasks.
  */
