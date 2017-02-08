@@ -1,22 +1,28 @@
 Laverca Changelog
 =================
     
-    23.07.2013 1.2
+    2016-08-17 1.21     
+      Improved support for standard ETSI TS 102 204 requests
+        - Better support for Asynch-Client-Server mode via EtsiClient class
+      Support for Axis EngineConfiguration
+      Code & javadoc cleanup
+
+    2013-07-23 1.2
       Default configuration uses a working AE server.
       Changed structure of the release.
       Implemented correct HttpClient fault and handler processing.
       PKCS7 SignedData.certificates may contain multiple certificates.
       Updated finnish documentation
 
-    09.11.2012 1.11
+    2012-11-09 1.11
       Fixed FiComClient loop getting stuck due to missing catch
       Removed invalid configurations and certs
       
-    11.10.2012 1.1
+    2012-10-11 1.1
       Updated readme (bug id 3575958)
       Added missing datatypes-src folder to the release package
 
-    27.09.2012 1.1 RC 1
+    2012-09-27 1.1 RC 1
       Cleaned up and updated libraries:
         - Upgraded Commons HTTPClient to HTTPComponents
         - Removed Commons Configuration, 
@@ -27,21 +33,21 @@ Laverca Changelog
       Fixed getting address from FiCom response
       Fixed bugs 3529730, 3529086, 3414397, 3393586
 
-    30.06.2011 1.0
+    2011-06-30 1.0
       PKCS1 support
       AE validation support
       Receipt support in FiComClient
 
-    22.06.2011 0.95
+    2011-06-22 0.95
       Minor bugfixes. Altered the way DTBS works. 
       Added support for AE validation.
 
-    20.06.2011 0.94 
+    2011-06-20 0.94 
       First version in SourceForge. Apache 2.0 License
 
-    April-May 0.91...0.93 
+    2011-05-01 .0.93 
       Minor bugfixes according to review and testing feedback.
 
-    07.04.2011 0.90
+    2011-04-07 0.90
       Initial version distributed privately for review.
 
