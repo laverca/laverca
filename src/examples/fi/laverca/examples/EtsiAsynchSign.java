@@ -1,40 +1,23 @@
-/* ==========================================
- * Laverca Project
- * https://sourceforge.net/projects/laverca/
- * ==========================================
- * Copyright 2015 Laverca Project
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package fi.laverca.examples;
-
 import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 
 import fi.laverca.MSS_Formats;
+import fi.laverca.ProgressUpdate;
 import fi.laverca.SignatureProfiles;
+import fi.laverca.etsi.EtsiClient;
+import fi.laverca.etsi.EtsiRequest;
+import fi.laverca.etsi.EtsiResponse;
+import fi.laverca.etsi.EtsiResponseHandler;
 import fi.laverca.examples.util.ExampleConf;
-import fi.laverca.mss.MssClient;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
+
 
 /**
  * Simple signature request example
@@ -47,7 +30,7 @@ import fi.laverca.util.JvmSsl;
  * </ul>
  *
  */
-public class EtsiSign {
+public class EtsiAsynchSign {
     
     private static final Log log = LogFactory.getLog(EtsiSign.class);
 
@@ -77,7 +60,7 @@ public class EtsiSign {
         String msspReceiptUrl      = properties.getProperty(ExampleConf.RECEIPT_URL);
         
         // Create client
-        MssClient etsiClient = new MssClient(apId, 
+        EtsiClient etsiClient = new EtsiClient(apId, 
                                                apPwd, 
                                                msspSignatureUrl, 
                                                msspStatusUrl, 
@@ -89,19 +72,39 @@ public class EtsiSign {
         // Create DataToBeSigned
         DTBS dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
                         
-        MSS_SignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, // AP Transaction ID
-                                                                    msisdn,    // MSISDN
-                                                                    dtbs,      // Data to be signed
-                                                                    null,      // Data to be displayed
-                                                                    SignatureProfiles.FICOM_SIGNATURE, // Signature profile
-                                                                    MSS_Formats.PKCS7,                 // MSS Format
-                                                                    MessagingModeType.SYNCH);          // Messaging Mode
-                                                                    
-        
-        MSS_SignatureResp sigResp = null;
+        EtsiRequest req = etsiClient.createRequest(apTransId, // AP Transaction ID
+                                                   msisdn,    // MSISDN
+                                                   dtbs,      // Data to be signed
+                                                   dtbs.toString(),                   // Data to be displayed
+                                                   null,                              // Additional services
+                                                   SignatureProfiles.FICOM_SIGNATURE, // Signature profile
+                                                   MSS_Formats.PKCS7,                 // MSS Format
+                                                   MessagingModeType.ASYNCHCLIENTSERVER);
+                                                                            
+        // Create response handler
+        EtsiResponseHandler handler = new EtsiResponseHandler() {
+            
+            @Override
+            public void onResponse(EtsiRequest req, EtsiResponse resp) {
+                log.info("Got response");
+                log.info("  StatusCode   : " + resp.getStatusCode());
+                log.info("  StatusMessage: " + resp.getStatusMessage());
+            }
+
+            @Override
+            public void onError(EtsiRequest req, Throwable throwable) {
+                log.info("Got an error");
+                log.error("", throwable);
+            }
+
+            @Override
+            public void onOutstandingProgress(EtsiRequest req, ProgressUpdate prgUpdate) {
+                log.info("Got progress update");
+            }
+        };
         
         try {
-            sigResp = etsiClient.send(sigReq);
+            etsiClient.call(req, handler);
         } catch(AxisFault af) {
             log.error("Got SOAP fault", af);
             return;
@@ -110,9 +113,6 @@ public class EtsiSign {
             return;
         }
         
-        log.info("Got response");
-        log.info("  StatusCode   : " + sigResp.getStatus().getStatusCode().getValue());
-        log.info("  StatusMessage: " + sigResp.getStatus().getStatusMessage());
     }
 
 }

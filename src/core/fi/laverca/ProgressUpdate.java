@@ -20,7 +20,8 @@
 package fi.laverca;
 
 /**
- * Object containing information about outstanding transaction.
+ * Object containing information about an outstanding transaction.
+ * (Status code 504)
  */
 public class ProgressUpdate {
 	

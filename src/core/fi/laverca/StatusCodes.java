@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
 /**
  * FiCom MSS Status Codes
  * <p>As per MSS FiCom Implementation Guideline v2.1
  */
-public class FiComStatusCodes {
+public class StatusCodes {
 
     public final static int NO_SECONDARY_CODE = -1;
 

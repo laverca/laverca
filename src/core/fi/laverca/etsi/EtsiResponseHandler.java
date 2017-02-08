@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca.etsi;
 
 import fi.laverca.ResponseHandler;
 
 /** 
- * Interface for FiCom response handling
+ * Interface for ETSI response handling
  * 
  */ 
-public interface FiComResponseHandler extends ResponseHandler<FiComRequest, FiComResponse> {
+public interface EtsiResponseHandler extends ResponseHandler<EtsiRequest, EtsiResponse> {
 
 }

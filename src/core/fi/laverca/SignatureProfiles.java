@@ -17,15 +17,18 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca;
 
 /**
- * FiCom MSS Format URIs
- * <p>As per FiCom Implementation Guideline v2.0
+ * FiCom MSS Profile URIs
+ * <p>As per MSS FiCom Implementation Guideline v2.1
  */
-public class FiComMSS_Formats {
+public class SignatureProfiles {
 
-    public final static String PKCS7 = "http://uri.etsi.org/TS102204/v1.1.2#PKCS7";
-    public final static String PKCS1 = "http://mss.ficom.fi/TS102204/v1.0.0#PKCS1";
+    public final static String FICOM_AUTHENTICATION    = "http://mss.ficom.fi/TS102206/v1.0.0/authentication-profile.xml";
+    public final static String FICOM_ANONYMOUS         = "http://mss.ficom.fi/TS102206/v1.0.0/anonymous-profile.xml";
+    public final static String FICOM_SIGNATURE         = "http://mss.ficom.fi/TS102206/v1.0.0/signature-profile.xml";
+    public final static String FICOM_DIGESTIVE         = "http://mss.ficom.fi/TS102206/v1.0.0/digestive-signature-profile.xml";
+    public final static String FICOM_CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
     
 }

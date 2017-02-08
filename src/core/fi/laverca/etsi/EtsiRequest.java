@@ -17,18 +17,18 @@
  * limitations under the License.
  */
 
-package fi.laverca.ficom;
+package fi.laverca.etsi;
+
+import fi.laverca.mss.MssRequest;
 
 /**
- * FiCom MSS Profile URIs
- * <p>As per MSS FiCom Implementation Guideline v2.1
+ * ETSI Signature Request handle
+ *
  */
-public class FiComSignatureProfiles {
+public class EtsiRequest extends MssRequest<EtsiResponse> {
 
-    public final static String AUTHENTICATION    = "http://mss.ficom.fi/TS102206/v1.0.0/authentication-profile.xml";
-    public final static String ANONYMOUS         = "http://mss.ficom.fi/TS102206/v1.0.0/anonymous-profile.xml";
-    public final static String SIGNATURE         = "http://mss.ficom.fi/TS102206/v1.0.0/signature-profile.xml";
-    public final static String DIGESTIVE         = "http://mss.ficom.fi/TS102206/v1.0.0/digestive-signature-profile.xml";
-    public final static String CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
-    
+    public EtsiRequest() {
+        // fields are written by the client class during execution
+    }
+
 }

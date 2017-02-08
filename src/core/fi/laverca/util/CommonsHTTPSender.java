@@ -36,7 +36,7 @@
  * Again modified by Matti Aarnio to fit in Kiuru MSSP core services.
  */
 
-package fi.laverca;
+package fi.laverca.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -90,6 +90,8 @@ import org.apache.http.util.EntityUtils;
  * A replacement of the default Axis Commons HTTP sender that makes it
  * possible to share a connection manager among RoamingClient instances.
  */
+// TODO: Clean up deprecated code & update Commons HTTP Client lib
+@SuppressWarnings({"serial", "deprecation"})
 public class CommonsHTTPSender extends BasicHandler {
     
     private static Log log = LogFactory.getLog(CommonsHTTPSender.class);
@@ -99,10 +101,10 @@ public class CommonsHTTPSender extends BasicHandler {
     private static final ThreadLocal<HttpClient> settings = new ThreadLocal<HttpClient>();
     
     /**
-     * 
-     * @param hc
+     * Initializes the thread local HTTP client
+     * @param hc HttpClient
      */
-    public static void initThreadLocals( HttpClient hc )
+    public static void initThreadLocals(final HttpClient hc)
     {
         log.debug("initThreadLocals()");
         log.debug("  sslSocketFactory = "+hc);
@@ -110,9 +112,10 @@ public class CommonsHTTPSender extends BasicHandler {
         settings.set(hc);
     }
     
-    boolean httpChunkStream = true; //Use HTTP chunking or not.
+    boolean httpChunkStream = true; // Use HTTP chunking or not.
     
     public CommonsHTTPSender() {
+        // Empty constructor
     }
     
     /**
@@ -121,18 +124,17 @@ public class CommonsHTTPSender extends BasicHandler {
      *
      * @param msgContext the messsage context
      *
-     * @throws AxisFault
+     * @throws AxisFault if there was an error sending the SOAP message
      */
     @Override
-    public void invoke(MessageContext msgContext)
-            throws AxisFault
-            {
+    public void invoke(final MessageContext msgContext)
+        throws AxisFault
+    {
 
         HttpPost post = null;
         HttpResponse response = null;
         if (log.isDebugEnabled()) {
-            log.debug(Messages.getMessage("enter00",
-                    "CommonsHTTPSender::invoke"));
+            log.debug(Messages.getMessage("enter00", "CommonsHTTPSender::invoke"));
         }
         try {
             
@@ -169,6 +171,12 @@ public class CommonsHTTPSender extends BasicHandler {
             
             HttpContext localContext = new BasicHttpContext();
             
+            if (httpClient == null) {
+                // We might end up here if initThreadLocals() was not properly called
+                log.fatal("Initialization failed: No HTTPClient");
+                throw new AxisFault("Initialization failed: No HTTPClient");
+            }
+            
             response = httpClient.execute(post, localContext);
             int returnCode = response.getStatusLine().getStatusCode();
             
@@ -183,23 +191,17 @@ public class CommonsHTTPSender extends BasicHandler {
                     SOAPConstants.SOAP12_CONSTANTS) {
                 // For now, if we're SOAP 1.2, fall through, since the range of
                 // valid result codes is much greater
-            } else if ((contentType != null) && !contentType.equals("text/html")
-                    && ((returnCode > 499) && (returnCode < 600))) {
-                
+            } else if ((contentType != null) && !contentType.equals("text/html") && ((returnCode > 499) && (returnCode < 600))) {
                 // SOAP Fault should be in here - so fall through
+                
             } else {
                 String statusMessage = response.getStatusLine().getReasonPhrase();
-                AxisFault fault = new AxisFault("HTTP",
-                        "(" + returnCode + ")"
-                                + statusMessage, null,
-                                null);
+                AxisFault fault = new AxisFault("HTTP", "(" + returnCode + ")" + statusMessage, null, null);
+                
                 try {
                     String body = getResponseBodyAsString(response);
-                    fault.setFaultDetailString(Messages.getMessage("return01",
-                            "" + returnCode,
-                            body));
-                    fault.addFaultDetail(Constants.QNAME_FAULTDETAIL_HTTPERRORCODE,
-                            Integer.toString(returnCode));
+                    fault.setFaultDetailString(Messages.getMessage("return01", "" + returnCode, body));
+                    fault.addFaultDetail(Constants.QNAME_FAULTDETAIL_HTTPERRORCODE, Integer.toString(returnCode));
                     throw fault;
                 } finally {
                     HttpClientUtils.closeQuietly(response);
@@ -295,14 +297,14 @@ public class CommonsHTTPSender extends BasicHandler {
      * @param msgContext the message context
      * @param tmpURL the url to post to.
      *
-     * @throws Exception
+     * @throws Exception if any error occurred
      */
-    private void addContextInfo(HttpPost method,
-            HttpClient httpClient,
-            MessageContext msgContext,
-            URL tmpURL)
-                    throws Exception {
-        
+    private void addContextInfo(final HttpPost method,
+                                final HttpClient httpClient,
+                                final MessageContext msgContext,
+                                final URL tmpURL)
+        throws Exception 
+    {    
         HttpParams params = method.getParams();
         
         if (msgContext.getTimeout() != 0) {
@@ -375,7 +377,7 @@ public class CommonsHTTPSender extends BasicHandler {
         // Transfer MIME headers of SOAPMessage to HTTP headers.
         MimeHeaders mimeHeaders = msg.getMimeHeaders();
         if (mimeHeaders != null) {
-            for (Iterator i = mimeHeaders.getAllHeaders(); i.hasNext(); ) {
+            for (Iterator<?> i = mimeHeaders.getAllHeaders(); i.hasNext(); ) {
                 MimeHeader mimeHeader = (MimeHeader) i.next();
                 //HEADER_CONTENT_TYPE and HEADER_SOAP_ACTION are already set.
                 //Let's not duplicate them.
@@ -390,13 +392,12 @@ public class CommonsHTTPSender extends BasicHandler {
         }
         
         // process user defined headers for information.
-        Hashtable userHeaderTable =
-                (Hashtable) msgContext.getProperty(HTTPConstants.REQUEST_HEADERS);
+        Hashtable<?,?> userHeaderTable = (Hashtable<?,?>) msgContext.getProperty(HTTPConstants.REQUEST_HEADERS);
         
         if (userHeaderTable != null) {
-            for (Iterator e = userHeaderTable.entrySet().iterator();
+            for (Iterator<?> e = userHeaderTable.entrySet().iterator();
                     e.hasNext();) {
-                Map.Entry me = (Map.Entry) e.next();
+                Map.Entry<?,?> me = (Map.Entry<?,?>) e.next();
                 Object keyObj = me.getKey();
                 
                 if (null == keyObj) {
@@ -459,7 +460,6 @@ public class CommonsHTTPSender extends BasicHandler {
         };
                     }
     
-    @SuppressWarnings("deprecation")
     private static class MessageRequestEntity implements HttpEntity {
         
         private HttpPost method;

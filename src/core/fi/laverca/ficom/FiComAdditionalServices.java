@@ -38,8 +38,8 @@ import fi.ficom.mss.TS102204.v1_0_0.NoSpamCode;
 import fi.ficom.mss.TS102204.v1_0_0.PostalAddress;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
 import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
-import fi.laverca.Saml2Util;
 import fi.laverca.etsi.EtsiAdditionalServices;
+import fi.laverca.util.Saml2Util;
 
 /**
  * FiCom specific AdditionalServices
@@ -114,7 +114,7 @@ public class FiComAdditionalServices {
 
     /**
      * Creates an AdditionalService for FiCom user language service
-     * @param userLang
+     * @param userLang User language value as per MSS FiCom Implentation guideline v2.1
      * @return FiCom UserLang AdditionalService
      */
     public static Service createUserLangService(final String userLang) {
@@ -167,6 +167,7 @@ public class FiComAdditionalServices {
 
     /** 
      * Create an AdditionalService for SAML2 AttributeQuery
+     * @param uri AdditionalService URI
      * @param attributeQuery SAML2 attribute query, as per FiCom 2.0.
      * @return Created AdditionalService
      */
@@ -199,7 +200,7 @@ public class FiComAdditionalServices {
         
         /**
          * Get the attribute name
-         * @return
+         * @return Name of the attribute
          */
         public String getName() {
             return this.samlAttribute.getName();
@@ -207,7 +208,7 @@ public class FiComAdditionalServices {
         
         /**
          * Get the attribute value as String
-         * @return
+         * @return Value of the attribute
          */
         public String getStringValue() {
             try {

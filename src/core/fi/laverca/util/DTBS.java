@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca;
+package fi.laverca.util;
 
 import java.io.UnsupportedEncodingException;
 
@@ -31,29 +31,29 @@ import org.etsi.uri.TS102204.v1_1_2.DataToBeSigned;
  */
 public class DTBS {
 
-    String encoding = null;
-    String text = null;
-    byte[] data = null;
-    String mimeType = null;
+    private String encoding = null;
+    private String text = null;
+    private byte[] data = null;
+    private String mimeType = null;
     
     final static public String ENCODING_UTF8 = "UTF-8";
     final static public String ENCODING_BASE64 = "base64";
     
-    final static public String MIME_STREAM = "application/octet-stream";
-    final static public String MIME_SHA1 = "application/x-sha1";
-    final static public String MIME_SHA256 = "application/x-sha256";
-    final static public String MIME_UCS2 = "text/plain;ucs2";
-    final static public String MIME_GSM = "text/plain;gsm";
-    final static public String MIME_UTF8 = "text/plain;UTF-8";
+    final static public String MIME_STREAM    = "application/octet-stream";
+    final static public String MIME_SHA1      = "application/x-sha1";
+    final static public String MIME_SHA256    = "application/x-sha256";
+    final static public String MIME_UCS2      = "text/plain;ucs2";
+    final static public String MIME_GSM       = "text/plain;gsm";
+    final static public String MIME_UTF8      = "text/plain;UTF-8";
     final static public String MIME_TEXTPLAIN = "text/plain";
 
     
     /**
      * Initialize a DTBS with text.
      * 
-     * @param text
-     * @param encoding
-     * @param mimeType
+     * @param text Text data
+     * @param encoding Text encoding
+     * @param mimeType Mime-type
      */
     public DTBS(final String text, final String encoding, final String mimeType) {
         this.text     = text;
@@ -64,9 +64,9 @@ public class DTBS {
     /**
      * Initialize a DTBS with data.
      * 
-     * @param data
-     * @param encoding
-     * @param mimeType
+     * @param data Binary data
+     * @param encoding Text encoding
+     * @param mimeType Mime-type
      */
     public DTBS(final byte[] data, final String encoding, final String mimeType) {
         this.data = data;
@@ -77,8 +77,8 @@ public class DTBS {
     /**
      * Initialize a DTBS without a mime type for <code>toBytes()</code>
      * 
-     * @param text
-     * @param encoding
+     * @param text Text data
+     * @param encoding Text encoding
      */
     public DTBS(final String text, final String encoding) {
     	this(text, encoding, null);
@@ -86,8 +86,8 @@ public class DTBS {
 
     /**
      * Initialize a DTBS without a mime type for <code>toBytes()</code>
-     * 
-     * @param text
+     * This defaults encoding to UTF-8.
+     * @param text Text data
      */
     public DTBS(final String text) {
     	this(text, ENCODING_UTF8);
@@ -101,8 +101,8 @@ public class DTBS {
      * Converter of incoming DTBS to byte-array, if the incoming
      * form happened to be a String, otherwise returning it as is.
      * 
-     * @return byte-array
-     * @throws RunTimeException when no text or data is found
+     * @return byte[]
+     * @throws RuntimeException when no text or data is found
      */
     public byte[] toBytes() {
         if (this.data != null) {
@@ -143,7 +143,7 @@ public class DTBS {
 
     /**
      * Convert to a DataToBeSigned object.
-     * 
+     * @return this object as org.etsi.uri.TS102204.v1_1_2.DataToBeSigned
      */
     public DataToBeSigned toDataToBeSigned() {
         DataToBeSigned rv = new DataToBeSigned();
@@ -163,7 +163,7 @@ public class DTBS {
      * Length of DTBS data, either the string, or the byte-array
      * 
      * @return int - length of data
-     * @throws RunTimeException when no text or data is found
+     * @throws RuntimeException when no text or data is found
      */
     public int length() {
         if (this.text != null) {
