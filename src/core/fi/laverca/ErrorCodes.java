@@ -19,6 +19,8 @@
 
 package fi.laverca;
 
+import java.util.List;
+
 import javax.xml.namespace.QName;
 
 import org.apache.axis.AxisFault;
@@ -139,10 +141,10 @@ public class ErrorCodes {
         public boolean is(AxisFault af) {
             if(af == null)
                 return false;
-            QName[] subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.length == 0)
+            List<QName> subcodes = af.getFaultSubCodes();
+            if(subcodes == null || subcodes.size() == 0)
                 return false;
-            return subcodeMatch(this.primaryCode, subcodes[0]);
+            return subcodeMatch(this.primaryCode, subcodes.get(0));
         }
         
         static boolean subcodeMatch(int i, QName subcode) {
@@ -175,13 +177,12 @@ public class ErrorCodes {
         
         @Override
         public boolean is(AxisFault af) {
-            QName[] subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.length < 2)
+            List<QName> subcodes = af.getFaultSubCodes();
+            if(subcodes == null || subcodes.size() < 2)
                 return false;
             return 
-            subcodeMatch(this.primaryCode,   subcodes[0]) &&
-            subcodeMatch(this.secondaryCode, subcodes[1]);
+            subcodeMatch(this.primaryCode,   subcodes.get(0)) &&
+            subcodeMatch(this.secondaryCode, subcodes.get(1));
         }
     }
-
 }

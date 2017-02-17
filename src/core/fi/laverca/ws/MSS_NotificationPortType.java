@@ -19,6 +19,9 @@
 
 package fi.laverca.ws;
 
+import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
+
 public interface MSS_NotificationPortType extends java.rmi.Remote {
-    public org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReqType MSS_Notification(org.etsi.uri.TS102204.v1_1_2.MSS_StatusRespType MSS_StatusResp) throws java.rmi.RemoteException;
+    public MSS_ReceiptReq MSS_Notification(MSS_StatusResp req) throws java.rmi.RemoteException;
 }

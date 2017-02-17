@@ -19,6 +19,9 @@
 
 package fi.laverca.ws;
 
+import org.etsi.uri.TS102204.v1_1_2.MSS_ProfileReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_ProfileResp;
+
 public interface MSS_ProfileQueryType extends java.rmi.Remote {
-    public org.etsi.uri.TS102204.v1_1_2.MSS_ProfileRespType MSS_ProfileQuery(org.etsi.uri.TS102204.v1_1_2.MSS_ProfileReqType MSS_ProfileReq) throws java.rmi.RemoteException;
+    public MSS_ProfileResp MSS_ProfileQuery(MSS_ProfileReq req) throws java.rmi.RemoteException;
 }

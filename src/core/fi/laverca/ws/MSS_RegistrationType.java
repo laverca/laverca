@@ -19,6 +19,11 @@
 
 package fi.laverca.ws;
 
+import org.etsi.uri.TS102204.v1_1_2.MSS_RegistrationReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_RegistrationResp;
+import datatype.oasis._200401.wsssec.secext.Security;
+
 public interface MSS_RegistrationType extends java.rmi.Remote {
-    public org.etsi.uri.TS102204.v1_1_2.MSS_RegistrationRespType MSS_Registration(org.etsi.uri.TS102204.v1_1_2.MSS_RegistrationReqType MSS_RegistrationReq) throws java.rmi.RemoteException;
+    public MSS_RegistrationResp MSS_Registration(MSS_RegistrationReq req) throws java.rmi.RemoteException;
+    public MSS_RegistrationResp MSS_Registration(Security securityHeader,MSS_RegistrationReq req) throws java.rmi.RemoteException;
 }

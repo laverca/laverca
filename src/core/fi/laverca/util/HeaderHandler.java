@@ -41,21 +41,15 @@ public class HeaderHandler extends BasicHandler {
 
     static Log log = LogFactory.getLog(HeaderHandler.class);
 
-
     /**
      */
+    @Override
     public void invoke(MessageContext msgContext) throws AxisFault {
 
-        SOAPEnvelope envelope = msgContext.getResponseMessage().getSOAPEnvelope();
+        final SOAPEnvelope envelope = msgContext.getResponseMessage().getSOAPEnvelope();
 
-        @SuppressWarnings("unchecked")
-        Vector<SOAPHeaderElement> headers = (Vector<SOAPHeaderElement>)envelope.getHeaders(); 
-
-        for(SOAPHeaderElement she : headers) {
+        for (SOAPHeaderElement she : envelope.getHeaders()) {
             she.setProcessed(true);
         }
-
     }
-
-
 }

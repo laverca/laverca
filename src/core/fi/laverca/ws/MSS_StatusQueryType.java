@@ -19,6 +19,9 @@
 
 package fi.laverca.ws;
 
+import org.etsi.uri.TS102204.v1_1_2.MSS_StatusReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
+
 public interface MSS_StatusQueryType extends java.rmi.Remote {
-    public org.etsi.uri.TS102204.v1_1_2.MSS_StatusRespType MSS_StatusQuery(org.etsi.uri.TS102204.v1_1_2.MSS_StatusReqType MSS_StatusReq) throws java.rmi.RemoteException;
+    public MSS_StatusResp MSS_StatusQuery(MSS_StatusReq req) throws java.rmi.RemoteException;
 }

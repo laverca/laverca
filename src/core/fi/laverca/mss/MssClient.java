@@ -471,17 +471,17 @@ public class MssClient {
 
             if (req instanceof MSS_SignatureReq) {
                 timeout = ((MSS_SignatureReq)req).getTimeOut();
-                port = (MSS_SignatureBindingStub)mssService.getMSS_SignaturePort(MSSP_SI_URL);
+                port = (MSS_SignatureBindingStub)this.mssService.getMSS_SignaturePort(this.MSSP_SI_URL);
             } else if (req instanceof MSS_ReceiptReq) {
-                port = (MSS_ReceiptBindingStub)mssService.getMSS_ReceiptPort(MSSP_RC_URL);
+                port = (MSS_ReceiptBindingStub)this.mssService.getMSS_ReceiptPort(this.MSSP_RC_URL);
             } else if (req instanceof MSS_HandshakeReq) {
-                port = (MSS_HandshakeBindingStub)mssService.getMSS_HandshakePort(MSSP_HS_URL);
+                port = (MSS_HandshakeBindingStub)this.mssService.getMSS_HandshakePort(this.MSSP_HS_URL);
             } else if (req instanceof MSS_StatusReq) {
-                port = (MSS_StatusQueryBindingStub)mssService.getMSS_StatusQueryPort(MSSP_ST_URL);
+                port = (MSS_StatusQueryBindingStub)this.mssService.getMSS_StatusQueryPort(this.MSSP_ST_URL);
             } else if (req instanceof MSS_ProfileReq) {
-                port = (MSS_ProfileQueryBindingStub)mssService.getMSS_ProfileQueryPort(MSSP_PR_URL);
+                port = (MSS_ProfileQueryBindingStub)this.mssService.getMSS_ProfileQueryPort(this.MSSP_PR_URL);
             } else if (req instanceof MSS_RegistrationReq) {
-                port = (MSS_RegistrationBindingStub)mssService.getMSS_RegistrationPort(MSSP_RG_URL);
+                port = (MSS_RegistrationBindingStub)this.mssService.getMSS_RegistrationPort(this.MSSP_RG_URL);
             }
 
             if (port == null) {

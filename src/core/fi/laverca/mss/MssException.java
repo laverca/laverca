@@ -24,11 +24,11 @@ public class MssException extends Exception {
     }
 
     public String getStatusMessage() {
-        return statusMessage;
+        return this.statusMessage;
     }
 
     public String getStatusCode() {
-        return statusCode;
+        return this.statusCode;
     }
     
 }

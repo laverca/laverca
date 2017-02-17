@@ -19,6 +19,9 @@
 
 package fi.laverca.ws;
 
+import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
+import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptResp;
+
 public interface MSS_ReceiptType extends java.rmi.Remote {
-    public org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptRespType MSS_Receipt(org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReqType MSS_ReceiptReq) throws java.rmi.RemoteException;
+    public MSS_ReceiptResp MSS_Receipt(MSS_ReceiptReq req) throws java.rmi.RemoteException;
 }
