@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+       xmlns:sco="http://www.swisscom.ch/TS102204/ext/v1.0.0"
+       targetNamespace="http://www.swisscom.ch/TS102204/ext/v1.0.0"
+       elementFormDefault="qualified">
+
+  <!-- This schema defines the MSS Receipt extension elements that are   
+       applied to the default TS 102 204 MSS XML schema StatusDetail element as 
+       defined by http://www.swisscom.ch/TS102204/ext/v1.0.0 . 
+  -->
+
+  <xs:element name="ReceiptRequestExtension"  
+              type="sco:ReceiptExtensionType"/>
+
+  <xs:element name="ReceiptResponseExtension" 
+              type="sco:ReceiptExtensionType"/>
+
+  <xs:complexType name="ReceiptExtensionType">
+    <xs:sequence>
+      <xs:element name="ReceiptProfile"
+                  type="sco:ReceiptProfileType"
+                  minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="ReceiptMessagingMode" 
+                  type="sco:ReceiptMessagingModeType"   use="required"/>
+    <xs:attribute name="TimeOut"
+                  type="xs:positiveInteger"             use="optional"/>
+    <xs:attribute name="RetryTimeOut"
+                  type="xs:positiveInteger"             use="optional"/>
+    <xs:attribute name="NextRetry"
+                  type="xs:positiveInteger"             use="optional"/>
+    <xs:attribute name="NetworkAck"   type="xs:boolean" use="optional"/>
+    <xs:attribute name="ClientAck"    type="xs:boolean" use="optional"/>
+    <xs:attribute name="UserAck"      type="xs:boolean" use="optional"/>
+    <xs:attribute name="UserResponse" type="xs:string"  use="optional"/>
+    <xs:attribute name="FaultMessage" type="xs:string"  use="optional"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+  
+  <xs:complexType name="ReceiptProfileType">
+    <xs:sequence>
+      <xs:element name="ReceiptProfileURI" type="xs:anyURI"/>
+      <xs:any namespace="##other" processContents="lax" minOccurs="0"                        
+              maxOccurs="unbounded"/>
+    </xs:sequence>
+    <!-- Overriding/extending parameters: -->
+    <xs:attribute name="Language" type="xs:string" use="optional"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:simpleType name="ReceiptMessagingModeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="asynch"/>
+      <xs:enumeration value="synch"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

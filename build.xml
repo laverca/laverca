@@ -2,6 +2,11 @@
   <description>
     Laverca project build file
   </description>
+
+  <!-- Make sure the Java runtime system classpath does not mess compilation -->
+  <!-- <property name="build.sysclasspath"           value="ignore" /> -->
+  <property name="build.sysclasspath"           value="last" />
+
   
   <property name="project-version" value="1.2" />
   <property name="project-name"    value="laverca" />
@@ -13,7 +18,11 @@
   <property name="core-src"      location="src/core" />
   <property name="datatypes-src" location="src/datatypes" />
   <property name="examples-src"  location="src/examples"/>
-	
+
+  <property name="xmlschemas"      location="etc/xmlschemas"/>
+  <property name="buildproperties" location="etc/buildproperties"/>
+
+
   <property name="libs"      location="libs"/>
   <property name="docs"      location="docs"/>	
 	
@@ -21,7 +30,10 @@
   <property name="conf"      value="${examples}/conf"/>
   <property name="etc"       value="${examples}/etc"/>
   <property name="script"    value="${examples}/script" />
-	
+
+  <property name="gen-src"   location="gen-src" />
+  
+
   <property name="core-lib"      location="${build}/laverca-core.jar" />
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
   <property name="examples-lib"  location="${build}/laverca-examples.jar" />
@@ -30,11 +42,85 @@
     <fileset dir="${libs}"><include name="*.jar" /></fileset>
   </path>
 
+
+  <path id="anttasks.classpath">
+    <pathelement location="${build-lib}/ant.jar" />
+
+    <pathelement location="${autotester-lib}" />
+    <pathelement location="${logkit-lib}" />
+
+    <pathelement location="${commons-discovery-lib}" />
+    <pathelement location="${commons-logging-lib}" />
+    <pathelement location="${commons-lang-lib}" />
+    <pathelement location="${jdepend-lib}" />
+    <pathelement location="${ant-optional-lib}" />
+  </path>
+
+
+  <!-- Run JAXB XJC tool on WSDL source file -->
+  <macrodef name="jaxb-wsdl2src-gen">
+    <attribute name="todir" />
+    <attribute name="file" />
+    <sequential>
+      <echo>XJC @{file}</echo>
+      <java classname="com.sun.tools.internal.xjc.XJCFacade"
+            failonerror="true"
+            classpathref="anttasks.classpath">
+        <arg line="-verbose -npa -no-header " />
+        <arg line="-d @{todir}"/>
+        <arg line="-extension -b ${buildproperties}/xjc-bindings.xml" />
+        <arg line="-wsdl @{file}" />
+      </java>
+    </sequential>
+  </macrodef>
+
+  <!-- Run JAXB XJC tool on XSD source file -->
+  <macrodef name="jaxb-xsd2src-gen">
+    <attribute name="todir" />
+    <attribute name="file" />
+    <sequential>
+      <java classname="com.sun.tools.internal.xjc.XJCFacade"
+            failonerror="true"
+            classpathref="anttasks.classpath">
+        <arg line="-npa -no-header -nv" />
+        <arg line="-d @{todir}"/>
+        <arg line="-extension"/>
+        <arg line="-verbose"/>
+        <arg line="-encoding UTF-8"/>
+        <arg line="-XexplicitAnnotation"/>
+        <!-- <arg line="-XautoNameResolution"/> -->
+        <arg line="-Xlocator"/>
+        <!-- customized namespace-to-package mappings -->
+        <arg line="-b ${buildproperties}/xjc-bindings.xml" />
+        <arg line="-xmlschema @{file}" />
+      </java>
+    </sequential>
+  </macrodef>
+
+
+
+
   <target name="clean">
     <delete dir="${build}" />
     <delete dir="${dist}" />
     <delete dir="${apidocs}" />
   </target>
+
+  <target name="generate-datatypes" >
+
+    <mkdir dir="${gen-src}" />
+    <mkdir dir="${gen-src}/kiuru-datatypes" />
+    <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
+                      todir="${gen-src}/kiuru-datatypes" />
+    <!--
+    <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-secext-1.0.xsd"
+                      todir="${gen-src}/kiuru-datatypes" />
+    <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                      todir="${gen-src}/kiuru-datatypes" />
+    -->
+    
+  </target>
+  
 
   <!-- BUILD -->
   

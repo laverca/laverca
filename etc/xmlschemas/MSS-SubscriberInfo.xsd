@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://mid.swisscom.ch/TS102204/as/v1.0"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        targetNamespace="http://mid.swisscom.ch/TS102204/as/v1.0">
+
+    <annotation>
+        <documentation>
+            Additional Services defined here:
+            - Subscriber Info URI: http://mid.swisscom.ch/as#subscriberInfo
+
+            Revision history:
+            - September 2014: Initial schema for Swisscom MID additional services
+        </documentation>
+    </annotation>
+
+    <element name="SubscriberInfo">
+        <complexType>
+            <sequence>
+                <element name="Detail" type="tns:SubscriberInfoDetail" 
+                         minOccurs="0" maxOccurs="unbounded"/>
+            </sequence>
+        </complexType>
+    </element>
+
+    <complexType name="SubscriberInfoDetail">
+        <attribute name="id" type="string"/>
+        <attribute name="value" type="string"/>
+    </complexType>
+
+</schema>
