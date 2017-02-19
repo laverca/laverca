@@ -1,0 +1,83 @@
+<xs:schema targetNamespace="http://mss.ficom.fi/TS102204/v1.0.0#"  
+           xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"  
+           xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+           xmlns:mth="http://www.methics.fi/KiuruMSSP/v5.0.0#"  
+           xmlns:asc="http://mid.swisscom.ch/TS102204/as/v1.0"
+           elementFormDefault="qualified">   
+
+  <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#" 
+             schemaLocation="MSS-plus.xsd"/> 
+  <xs:import namespace="urn:oasis:names:tc:SAML:2.0:protocol"
+             schemaLocation="saml-schema-protocol-2.0.xsd"/>
+  <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
+             schemaLocation="MSS-SubscriberInfo.xsd" />
+  <xs:import namespace="http://www.methics.fi/KiuruMSSP/v5.0.0#"
+             schemaLocation="MSS-SigningCertificate.xsd" />
+
+  <xs:element name="NoSpamCode">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="verify" type="xs:string" default="yes"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="EventID" type="xs:string"/>
+  <xs:element name="SessionID" type="xs:string"/>
+
+<!--
+  <xs:element name="UserLang" type="xs:string" default="fi"/>
+-->
+<!--
+   Note: this is used inside <xs:choice>, and Castor blows the stack
+   when parsing input with any _other_ of choice elements, than
+   the UserLang.
+-->
+  <xs:element name="UserLang" type="xs:string"/>
+
+  <!-- as per JHS 106 -->
+  <xs:element name="PostalAddress">       
+    <xs:complexType> 
+      <xs:sequence> 
+        <xs:element name="Name" type="xs:string"/>
+        <xs:element name="StreetAddress" type="xs:string"/>
+        <xs:element name="PostalCode" type="xs:string"/>
+        <xs:element name="Town" type="xs:string"/>
+        <xs:element name="Country" type="xs:string"/>
+      </xs:sequence> 
+    </xs:complexType> 
+  </xs:element> 
+
+  <xs:element name="ServiceResponses">       
+    <xs:complexType> 
+      <xs:sequence> 
+        <xs:element name="ServiceResponse" minOccurs="0" maxOccurs="unbounded"> 
+          <xs:complexType>
+            <xs:sequence> 
+              <xs:element name="Description" type="mss:mssURIType"/>    
+              <xs:element name="Entity" type="mss:MeshMemberType" minOccurs="0"/> 
+              <xs:element name="Status" type="mss:StatusType" minOccurs="0"/> 
+              <xs:element ref="samlp:Response" minOccurs="0"/> 
+              <xs:element ref="mth:signingCertificate" minOccurs="0"/>
+              <xs:element ref="asc:SubscriberInfo" minOccurs="0"/>
+              <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> 
+            </xs:sequence>
+          </xs:complexType> 
+        </xs:element> 
+      </xs:sequence> 
+    </xs:complexType> 
+  </xs:element> 
+
+  <xs:element name="PKCS1">
+    <xs:complexType> 
+      <xs:sequence> 
+        <xs:element name="SignatureValue"  type="xs:base64Binary"/> 
+        <xs:element name="X509Certificate" type="xs:base64Binary"/> 
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

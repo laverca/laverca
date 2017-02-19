@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"  
+        xmlns:tns="http://www.methics.fi/KiuruMSSP/v5.0.0#"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        targetNamespace="http://www.methics.fi/KiuruMSSP/v5.0.0#">
+
+    <annotation>
+        <documentation>
+            Additional Services defined here:
+            - Signing Certificate URI: http://www.methics.fi/KiuruMSSP/v5.0.0#SigningCertificate
+
+            Revision history:
+            - September 2015: Initial schema for Signing Certificate additional services
+        </documentation>
+    </annotation>
+
+    <element name="signingCertificate">
+        <complexType>
+            <sequence>
+                <element name="X509Certificate" type="base64Binary" minOccurs="1" 
+                         maxOccurs="unbounded"/> 
+            </sequence>
+        </complexType>
+    </element>
+
+</schema>

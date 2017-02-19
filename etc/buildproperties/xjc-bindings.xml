@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bindings version="2.1" xmlns="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" >
+  <!--
+      Important bits are:
+      * <bindings ... if-exists="true" ..>
+      * <schemaBindings map="true">
+      * Using this binding file WITHOUT XJC option -p !
+      * Using this binding file with XJC options:
+          * -extension -b  ${etc}/buildproperties/xjc-bindings.xml"
+  -->
+
+  <globalBindings>
+    <xjc:simple xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" />
+    <!--
+        Default type conversions in JAXB XJC are somewhat cumbersome.
+        - xs:dateTime, xs:date  to  XMLCalendarType
+        - xs:integer  to BigInteger
+        Here we override those to easier to use types.
+    -->
+    <javaType name="java.util.Calendar" xmlType="xs:dateTime"
+              parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
+              printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+    <javaType name="java.util.Calendar" xmlType="xs:date"
+              parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
+              printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+    <javaType name="long" xmlType="xs:integer"
+              parseMethod="javax.xml.bind.DatatypeConverter.parseLong"
+              printMethod="javax.xml.bind.DatatypeConverter.printLong" />
+  </globalBindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2001/04/xmlenc#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.xmlenc"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2000/09/xmldsig#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.xmldsigcore"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SAML:2.0:protocol">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.saml2p"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SAML:2.0:assertion">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.saml2a"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://uri.etsi.org/TS102204/v1.1.2#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.mss"/>
+    </schemaBindings>
+  </bindings>
+<!--
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://uri.etsi.org/TS102207/v1.1.2#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.msrs"/>
+    </schemaBindings>
+  </bindings>
+-->
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://mss.ficom.fi/TS102204/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.mssfi"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.wsssecext"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.wsssecutil"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2005/08/addressing">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.w3addr"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/MSSPRegistration/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.mreg"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/MSSPMetadata/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.mssmeta"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/KiuruMSSP/v5.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.kiurumssp5"/>
+    </schemaBindings>
+  </bindings>
+
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/Kiuru-SPML2/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.kiuruspml2"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/Kiuru-wssecurity/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.kiuruwsse1"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.swisscom.ch/TS102204/ext/v1.0.0">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.sco204ext1"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://mid.swisscom.ch/TS102204/as/v1.0">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.mid204as1"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2001/XMLSchema">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.xmlschema"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://schemas.xmlsoap.org/soap/encoding/">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.soap11enc"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2003/05/soap-envelope">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.soap12env"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.soap11env"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2002/03/xkms#">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.xkms"/>
+    </schemaBindings>
+  </bindings>
+<!--
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SPML:2:0">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.spml2core"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SPML:2:0:search">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.spml2search"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SPML:2:0:reference">
+    <schemaBindings map="true">
+      <package name="fi.laverca.jaxb.spml2ref"/>
+    </schemaBindings>
+  </bindings>
+
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/MSSPCertificateTemplate/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.methics.www.msspcertificatetemplate.v1_0_0"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:dss:1.0:core:schema">
+    <schemaBindings map="true">
+      <package name="oasis.names.tc.dss.v1_0.core.schema"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SAML:1.0:assertion">
+    <schemaBindings map="true">
+      <package name="oasis.names.tc.SAML.v1_0.assertion"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:DSML:2:0:core">
+    <schemaBindings map="true">
+      <package name="oasis.names.tc.DSML.v2_0.core"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+    <schemaBindings map="true">
+      <package name="datatype.oasis._200401.wsssec.secext"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+    <schemaBindings map="true">
+      <package name="datatype.oasis._200401.wsssec.utility"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/mspec/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.methics.www.mspec.v1_0_0"/>
+    </schemaBindings>
+  </bindings>
+  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/usecase/v1.0.0#">
+    <schemaBindings map="true">
+      <package name="fi.methics.www.usecase.v1_0_0"/>
+    </schemaBindings>
+  </bindings>
+-->
+</bindings>

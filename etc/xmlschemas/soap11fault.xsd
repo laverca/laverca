@@ -1,0 +1,25 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+           targetNamespace="http://schemas.xmlsoap.org/soap/envelope/">
+
+  <xs:element name="Fault" type="tns:FaultType"/>
+  <xs:complexType name="FaultType" final="extension">
+    <xs:annotation>
+      <xs:documentation>Fault reporting structure</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="faultcode"   type="xs:QName"/>
+      <xs:element name="faultstring" type="xs:string"/>
+      <xs:element name="faultactor"  type="xs:anyURI" minOccurs="0"/>
+      <xs:element name="detail"      type="xs:anyType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <!--
+  <xs:complexType name="detail">
+    <xs:sequence>
+      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##any" processContents="lax"/>
+  </xs:complexType>
+  -->
+</xs:schema>

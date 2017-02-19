@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  xmlns:tns="http://www.w3.org/2003/05/soap-envelope" 
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                  xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" 
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:soapenv12="http://www.w3.org/2003/05/soap-envelope"
+                  targetNamespace="http://www.w3.org/2003/05/soap-envelope">
+  <wsdl:types>
+    <xsd:schema targetNameSpace="http://www.w3.org/2003/05/soap-envelope">
+      <!-- SOAP 1.2 fault -->
+      <xsd:element name="Fault" type="xsd:anyType" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="Soap12Fault">
+    <wsdl:part name="Fault" element="soapenv12:Fault"/>
+  </wsdl:message>
+  <wsdl:portType name="Soap12Fault">
+    <wsdl:operation name="Fault">
+      <wsdl:documentation>Receive SOAP 1.2 Fault with WS-Addr headers.</wsdl:documentation>
+      <wsdl:input message="tns:Soap12Fault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Soap12FaultBinding" type="tns:Soap12Fault">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsaw:UsingAddressing wsdl:required="true"/>
+    <wsdl:operation name="Fault">
+      <wsdl:documentation>Receive SOAP 1.2 Fault with WS-Addr headers.</wsdl:documentation>
+      <wsdl:input>
+	<soap12:body use="literal"/>
+      </wsdl:input>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Soap12FaultService">
+    <wsdl:documentation>Receive SOAP 1.2 Fault with WS-Addr headers.</wsdl:documentation>
+    <wsdl:port name="Soap12FaultPort" binding="tns:Soap12FaultBinding">
+      <wsdl:documentation>Receive SOAP 1.2 Fault with WS-Addr headers.</wsdl:documentation>
+      <soap12:address location="http://example.com/soap/soapfault"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
