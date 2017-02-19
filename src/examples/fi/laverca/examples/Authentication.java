@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.ProgressUpdate;
 import fi.laverca.examples.gui.AuthnGUI;
@@ -36,6 +35,7 @@ import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.ficom.FiComResponseHandler;
+import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
 
@@ -108,9 +108,9 @@ public class Authentication extends AuthnGUI {
      * </ul>
      * @return list of AdditionalServices
      */
-    private List<Service> createAdditionalServices(){
+    private List<AdditionalServiceType> createAdditionalServices(){
 
-        List<Service> additionalServices = new ArrayList<Service>();
+        List<AdditionalServiceType> additionalServices = new ArrayList<AdditionalServiceType>();
         List<String> attributeNames      = new ArrayList<String>(); 
  
         attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
@@ -122,8 +122,8 @@ public class Authentication extends AuthnGUI {
         attributeNames.add(FiComAdditionalServices.PERSON_ID_HETU);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_SATU);
         
-        Service personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
-        Service validateService = FiComAdditionalServices.createValidateService();
+        AdditionalServiceType personIdService = FiComAdditionalServices.createPersonIdService(attributeNames);
+        AdditionalServiceType validateService = FiComAdditionalServices.createValidateService();
         additionalServices.add(personIdService);
         additionalServices.add(validateService);
 
@@ -147,9 +147,9 @@ public class Authentication extends AuthnGUI {
         byte[] authnChallenge = new DTBS(apTransId, DTBS.ENCODING_UTF8).toBytes();
 
         // Add additional services
-        Service eventIdService = FiComAdditionalServices.createEventIdService(eventId);
-        Service noSpamService  = FiComAdditionalServices.createNoSpamService("A12", false);
-        List<Service> additionalServices = this.createAdditionalServices();
+        AdditionalServiceType eventIdService = FiComAdditionalServices.createEventIdService(eventId);
+        AdditionalServiceType noSpamService  = FiComAdditionalServices.createNoSpamService("A12", false);
+        List<AdditionalServiceType> additionalServices = this.createAdditionalServices();
 
         // Create response handler
         FiComResponseHandler handler = new FiComResponseHandler() {

@@ -25,13 +25,13 @@ import java.util.Properties;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 
 import fi.laverca.MSS_Formats;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.examples.util.ExampleConf;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
@@ -89,7 +89,7 @@ public class EtsiSign {
         // Create DataToBeSigned
         DTBS dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
                         
-        MSS_SignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, // AP Transaction ID
+        MSSSignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, // AP Transaction ID
                                                                     msisdn,    // MSISDN
                                                                     dtbs,      // Data to be signed
                                                                     null,      // Data to be displayed
@@ -98,7 +98,7 @@ public class EtsiSign {
                                                                     MessagingModeType.SYNCH);          // Messaging Mode
                                                                     
         
-        MSS_SignatureResp sigResp = null;
+        MSSSignatureResp sigResp = null;
         
         try {
             sigResp = etsiClient.send(sigReq);

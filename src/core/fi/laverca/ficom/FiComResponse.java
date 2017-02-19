@@ -22,21 +22,20 @@ package fi.laverca.ficom;
 import java.util.ArrayList;
 import java.util.List;
 
-import oasis.names.tc.SAML.v2_0.assertion.Assertion;
-import oasis.names.tc.SAML.v2_0.assertion.Attribute;
-import oasis.names.tc.SAML.v2_0.assertion.AttributeStatement;
-import oasis.names.tc.SAML.v2_0.protocol.Response;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
-import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
-import fi.ficom.mss.TS102204.v1_0_0.Status;
 import fi.laverca.StatusCodes;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.StatusDetailType;
+import fi.laverca.jaxb.mss.StatusType;
+import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
+import fi.laverca.jaxb.saml2a.Assertion;
+import fi.laverca.jaxb.saml2a.Attribute;
+import fi.laverca.jaxb.saml2a.AttributeStatement;
+import fi.laverca.jaxb.saml2p.Response;
 import fi.laverca.mss.MssResponse;
 import fi.laverca.util.Saml2Util;
 
@@ -47,9 +46,9 @@ public class FiComResponse extends MssResponse {
     
     private static final Log log = LogFactory.getLog(FiComResponse.class);
 
-    public FiComResponse( final MSS_SignatureReq  originalSigReq,
-                          final MSS_SignatureResp originalSigResp,
-                          final MSS_StatusResp    finalStatusResp) { 
+    public FiComResponse( final MSSSignatureReq  originalSigReq,
+                          final MSSSignatureResp originalSigResp,
+                          final MSSStatusResp    finalStatusResp) { 
         super(originalSigReq, originalSigResp, finalStatusResp);
     }
     
@@ -61,20 +60,23 @@ public class FiComResponse extends MssResponse {
      */
     public List<FiComAdditionalServices.PersonIdAttribute> getPersonIdAttributes() {
         try {
-            ServiceResponse sResp   = FiComAdditionalServices.readServiceResponse(this.finalStatusResp.getStatus().getStatusDetail(), FiComAdditionalServices.PERSON_ID_URI);
+            final StatusDetailType sd = this.finalStatusResp.getStatus().getStatusDetail();
+            final ServiceResponse sResp =
+                FiComAdditionalServices.readServiceResponse(sd, FiComAdditionalServices.PERSON_ID_URI);
 
-            Response      samlpResp = sResp.getResponse();
-            Assertion     assertion = Saml2Util.parseFromResponse(samlpResp);
-            AttributeStatement stmt = Saml2Util.parseFromAssertion(assertion);
-            List<Attribute>   attrs = Saml2Util.parseFromAttributeStatement(stmt);
+            final Response      samlpResp = sResp.getResponse();
+            final Assertion     assertion = Saml2Util.parseFromResponse(samlpResp);
+            final AttributeStatement stmt = Saml2Util.parseFromAssertion(assertion);
+            final List<Attribute>   attrs = Saml2Util.parseFromAttributeStatement(stmt);
 
-            List<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = new ArrayList<FiComAdditionalServices.PersonIdAttribute>(); 
+            final List<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = new ArrayList<FiComAdditionalServices.PersonIdAttribute>(); 
             
-            for(Attribute samlAttribute : attrs) {
+            for (final Attribute samlAttribute : attrs) {
                 fiComAttrs.add(new FiComAdditionalServices.PersonIdAttribute(samlAttribute));
             }
             
             return fiComAttrs;
+
         } catch (NullPointerException e){
             log.error("Failed to fetch PersonID attributes");
             return null;
@@ -88,13 +90,26 @@ public class FiComResponse extends MssResponse {
      * 
      * @return AE validation status, null if no AE validation was done or if an error occurred
      */
-    public Status getAeValidationStatus() {
-        try{
-            Status validationStatus = null;
-            for (StatusDetailTypeItem statusDetailTypeItem : this.finalStatusResp.getStatus().getStatusDetail().getStatusDetailTypeItem()) {
-                for(ServiceResponse serviceResponse : statusDetailTypeItem.getServiceResponses().getServiceResponse()) {
-                    if (serviceResponse.getDescription().getMssURI().equals(FiComAdditionalServices.VALIDATE_URI)) {
-                        validationStatus = serviceResponse.getStatus();
+    public StatusType getAeValidationStatus() {
+        try {
+            StatusType validationStatus = null;
+            for (final Object o1 : this.finalStatusResp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
+                if (!(o1 instanceof StatusType)) {
+                    // Not interesting
+                    continue;
+                }
+                final StatusType s1 = (StatusType)o1;
+                if (s1.getStatusDetail() == null) {
+                    // null -> not interesting
+                    continue;
+                }
+                for (final Object o2 : s1.getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
+                    if (!(o2 instanceof ServiceResponse)) {
+                        continue;
+                    }
+                    final ServiceResponse s2 = (ServiceResponse)o2;
+                    if (FiComAdditionalServices.VALIDATE_URI.equals(s2.getDescription().getMssURI())) {
+                        validationStatus = s2.getStatus();
                         break;
                     }
                 }

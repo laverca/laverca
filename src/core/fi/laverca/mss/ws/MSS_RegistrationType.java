@@ -17,11 +17,14 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
+import java.security.Security;
 
-public interface MSS_SignaturePortType extends java.rmi.Remote {
-    public MSS_SignatureResp MSS_Signature(MSS_SignatureReq req) throws java.rmi.RemoteException;
+import fi.laverca.jaxb.mss.MSSRegistrationReq;
+import fi.laverca.jaxb.mss.MSSRegistrationResp;
+
+public interface MSS_RegistrationType extends java.rmi.Remote {
+    public MSSRegistrationResp MSS_Registration(MSSRegistrationReq req) throws java.rmi.RemoteException;
+    public MSSRegistrationResp MSS_Registration(Security securityHeader,MSSRegistrationReq req) throws java.rmi.RemoteException;
 }

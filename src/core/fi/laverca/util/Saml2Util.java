@@ -20,27 +20,28 @@
 package fi.laverca.util;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
-import oasis.names.tc.SAML.v2_0.assertion.Assertion;
-import oasis.names.tc.SAML.v2_0.assertion.AssertionTypeChoiceItem;
-import oasis.names.tc.SAML.v2_0.assertion.Attribute;
-import oasis.names.tc.SAML.v2_0.assertion.AttributeStatement;
-import oasis.names.tc.SAML.v2_0.assertion.AttributeStatementTypeItem;
-import oasis.names.tc.SAML.v2_0.assertion.NameID;
-import oasis.names.tc.SAML.v2_0.assertion.Subject;
-import oasis.names.tc.SAML.v2_0.assertion.SubjectTypeSequence;
-import oasis.names.tc.SAML.v2_0.assertion.SubjectTypeSequenceChoice;
-import oasis.names.tc.SAML.v2_0.protocol.AttributeQuery;
-import oasis.names.tc.SAML.v2_0.protocol.RequestAbstractType;
-import oasis.names.tc.SAML.v2_0.protocol.Response;
-import oasis.names.tc.SAML.v2_0.protocol.ResponseTypeChoiceItem;
+import fi.laverca.jaxb.saml2a.Assertion;
+import fi.laverca.jaxb.saml2a.AttributeStatement;
+import fi.laverca.jaxb.saml2a.Attribute;
+import fi.laverca.jaxb.saml2a.NameIDType;
+import fi.laverca.jaxb.saml2a.ObjectFactory;
+import fi.laverca.jaxb.saml2a.StatementAbstractType;
+import fi.laverca.jaxb.saml2a.Subject;
+import fi.laverca.jaxb.saml2p.AttributeQuery;
+import fi.laverca.jaxb.saml2p.RequestAbstractType;
+import fi.laverca.jaxb.saml2p.Response;
 
 /**
  * A collection of helper methods for commonplace SAML2 tasks.
  */
 public class Saml2Util {
+    
+    private static ObjectFactory objFactA = new ObjectFactory();
+    private static fi.laverca.jaxb.saml2p.ObjectFactory objFactB = new fi.laverca.jaxb.saml2p.ObjectFactory(); 
     
     /**
      * Fill required SAML2 request fields: 
@@ -54,7 +55,7 @@ public class Saml2Util {
      * @param req Request to fill
      */
     public static void fillRequiredFields(final RequestAbstractType req) {
-        Date d = new Date();
+        Calendar d = new GregorianCalendar();
         String id = "id-"+d;
         req.setID(id); 
         req.setVersion("2.0");
@@ -70,17 +71,13 @@ public class Saml2Util {
      */
     public static Subject createSubject(final String nameIdContent, 
                                         final String sPProvidedID) {
-        Subject subject = new Subject();
-        SubjectTypeSequence sts = new SubjectTypeSequence();
-        SubjectTypeSequenceChoice stsc = new SubjectTypeSequenceChoice();
-        sts.setSubjectTypeSequenceChoice(stsc);
-        subject.setSubjectTypeSequence(sts);
         
-        NameID nameId = new NameID();
-        nameId.setContent(nameIdContent);
+        final NameIDType nameId = objFactA.createNameIDType();
+        nameId.setValue(nameIdContent);
         nameId.setSPProvidedID(sPProvidedID);
-        stsc.setNameID(nameId);
-
+        
+        final Subject subject = objFactA.createSubject();
+        subject.setNameID(nameId);
         return subject;
     }
 
@@ -96,17 +93,19 @@ public class Saml2Util {
                                                       final String sPProvidedID, 
                                                       final List<String> attributeNames) {
         
-        AttributeQuery attributeQuery = new AttributeQuery();
+        final AttributeQuery attributeQuery = objFactB.createAttributeQuery();
         fillRequiredFields(attributeQuery);
         
-        Subject subject = createSubject(nameIdContent, sPProvidedID);
+        final Subject subject = createSubject(nameIdContent, sPProvidedID);
         attributeQuery.setSubject(subject);
         
+        final List<Attribute> al = attributeQuery.getAttributes();
+        
         if (attributeNames != null) {
-            for (String attributeName : attributeNames) {
-                Attribute a = new Attribute();
+            for (final String attributeName : attributeNames) {
+                final Attribute a = objFactA.createAttribute();
                 a.setName(attributeName);
-                attributeQuery.addAttribute(a);
+                al.add(a);
             }
         }
         
@@ -121,14 +120,12 @@ public class Saml2Util {
      */
     public static Assertion parseFromResponse(final Response response) {
         if (response == null) return null;
-        if (response.getResponseTypeChoice() == null) return null;
-        if (response.getResponseTypeChoice().getResponseTypeChoiceItem() == null) return null;
+        final List<Object> aList = response.getAssertionsAndEncryptedAssertions();
+        if (aList == null) return null;
 
-        for(ResponseTypeChoiceItem item : response.getResponseTypeChoice().getResponseTypeChoiceItem()) {
-            if(item != null && 
-               item.getAssertion() != null) 
-            {
-                return item.getAssertion();
+        for (final Object a : aList) {
+            if (a instanceof Assertion) {
+                return (Assertion)a;
             }
         }
 
@@ -143,14 +140,10 @@ public class Saml2Util {
      */
     public static AttributeStatement parseFromAssertion(final Assertion assertion) {
         if (assertion == null) return null;
-        if (assertion.getAssertionTypeChoice() == null) return null;
-        if (assertion.getAssertionTypeChoice().getAssertionTypeChoiceItem() == null) return null;
-        
-        for(AssertionTypeChoiceItem item : assertion.getAssertionTypeChoice().getAssertionTypeChoiceItem()) {
-            if(item != null && 
-               item.getAttributeStatement() != null) 
-            {
-                return item.getAttributeStatement();
+        final List<StatementAbstractType> sList = assertion.getStatementsAndAuthnStatementsAndAuthzDecisionStatements();
+        for (final StatementAbstractType s : sList) {
+            if (s instanceof AttributeStatement) {
+                return (AttributeStatement)s;
             }
         }
 
@@ -167,15 +160,12 @@ public class Saml2Util {
         List<Attribute> attributes = new ArrayList<Attribute>();
 
         if (as == null) return attributes;
-        if (as.getAttributeStatementTypeItem() == null) return attributes;
-        
-        for (AttributeStatementTypeItem item : as.getAttributeStatementTypeItem()) {
-            if (item != null) {
-                Attribute attribute = item.getAttribute();
-                attributes.add(attribute);
+        final List<Object> aList = as.getAttributesAndEncryptedAttributes();
+        for (final Object a : aList) {
+            if (a instanceof Attribute) {
+                attributes.add((Attribute)a);
             }
         }
         return attributes;
     }
-
 }

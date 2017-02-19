@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
 import javax.xml.namespace.QName;
 
@@ -28,10 +28,10 @@ import org.apache.axis.constants.Use;
 import org.apache.axis.description.OperationDesc;
 import org.apache.axis.description.ParameterDesc;
 import org.apache.axis.soap.SOAPConstants;
-import org.etsi.uri.TS102204.v1_1_2.MSS_MessageSignature;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptResp;
 
+import fi.laverca.jaxb.mss.MSSMessageSignature;
+import fi.laverca.jaxb.mss.MSSReceiptReq;
+import fi.laverca.jaxb.mss.MSSReceiptResp;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.JMarshallerFactory;
 
@@ -51,14 +51,14 @@ public class MSS_ReceiptBindingStub extends AbstractSoapBindingStub
         final ParameterDesc param = new ParameterDesc(reqQN,
                                                       ParameterDesc.IN,
                                                       reqQN,
-                                                      MSS_ReceiptReq.class,
+                                                      MSSReceiptReq.class,
                                                       false, false);
         final OperationDesc oper = new OperationDesc("MSS_Receipt",
                                                      new QName("", "MSS_Receipt"),
                                                      new ParameterDesc[] { param },
                                                      respQN,
                                                      respQN,
-                                                     MSS_ReceiptResp.class,
+                                                     MSSReceiptResp.class,
                                                      Style.RPC,
                                                      Use.LITERAL);
 
@@ -74,11 +74,11 @@ public class MSS_ReceiptBindingStub extends AbstractSoapBindingStub
         // 4. dserClass
         // 5. encodingStyleURI
 
-        oper.registerType(MSS_ReceiptReq.class,
+        oper.registerType(MSSReceiptReq.class,
                           reqQN, sf, df, null);
-        oper.registerType(MSS_ReceiptResp.class,
+        oper.registerType(MSSReceiptResp.class,
                           respQN, sf, df, null);
-        oper.registerType(MSS_MessageSignature.class,
+        oper.registerType(MSSMessageSignature.class,
                           MESSAGESIGNATURE_HEADER, sf, df, null);
 
         MSS_ReceiptBindingStub._operations[0] = oper;
@@ -102,7 +102,7 @@ public class MSS_ReceiptBindingStub extends AbstractSoapBindingStub
     }
 
     @Override
-    public MSS_ReceiptResp MSS_Receipt(MSS_ReceiptReq req) throws java.rmi.RemoteException {
+    public MSSReceiptResp MSS_Receipt(MSSReceiptReq req) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -120,7 +120,7 @@ public class MSS_ReceiptBindingStub extends AbstractSoapBindingStub
             throw (java.rmi.RemoteException)_resp;
         }
         else {
-            return (MSS_ReceiptResp) _resp;
+            return (MSSReceiptResp) _resp;
         }
     }
 }

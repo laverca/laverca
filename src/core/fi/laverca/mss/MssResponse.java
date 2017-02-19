@@ -21,25 +21,25 @@ package fi.laverca.mss;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 
 import fi.laverca.Pkcs1;
 import fi.laverca.Pkcs7;
 import fi.laverca.etsi.EtsiResponse;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
 
 public abstract class MssResponse {
 
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
 
-    public MSS_SignatureReq  originalSigReq;
-    public MSS_SignatureResp originalSigResp;
-    public MSS_StatusResp    finalStatusResp;
+    public MSSSignatureReq  originalSigReq;
+    public MSSSignatureResp originalSigResp;
+    public MSSStatusResp    finalStatusResp;
 
-    public MssResponse(final MSS_SignatureReq  originalSigReq,
-                       final MSS_SignatureResp originalSigResp,
-                       final MSS_StatusResp    finalStatusResp) { 
+    public MssResponse(final MSSSignatureReq  originalSigReq,
+                       final MSSSignatureResp originalSigResp,
+                       final MSSStatusResp    finalStatusResp) { 
         this.originalSigReq  = originalSigReq;
         this.originalSigResp = originalSigResp;
         this.finalStatusResp = finalStatusResp;
@@ -51,13 +51,13 @@ public abstract class MssResponse {
      */
     public Pkcs7 getPkcs7Signature() {
         try {
-            if(this.finalStatusResp == null)
+            if (this.finalStatusResp == null)
                 throw new RuntimeException("Illegal state. Null statusResp.");
 
-            if(this.finalStatusResp.getMSS_Signature() == null)
+            if (this.finalStatusResp.getMSSSignature() == null)
                 throw new RuntimeException("Illegal state. Null statusResp.MSS_Signature");
             
-            Pkcs7 p7 = new Pkcs7(this.finalStatusResp.getMSS_Signature().getBase64Signature());
+            final Pkcs7 p7 = new Pkcs7(this.finalStatusResp.getMSSSignature().getBase64Signature());
             return p7;
         } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs7?", iae);
@@ -72,13 +72,13 @@ public abstract class MssResponse {
      */    
     public Pkcs1 getPkcs1Signature() {
         try {
-            if(this.finalStatusResp == null)
+            if (this.finalStatusResp == null)
                 throw new RuntimeException("illegal state. Null statusResp.");
 
-            if(this.finalStatusResp.getMSS_Signature() == null)
+            if (this.finalStatusResp.getMSSSignature() == null)
                 throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
             
-            Pkcs1 p1 = new Pkcs1(this.finalStatusResp.getMSS_Signature().getPKCS1());
+            final Pkcs1 p1 = new Pkcs1(this.finalStatusResp.getMSSSignature().getPKCS1());
             return p1;
         } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs1?", iae);
@@ -90,7 +90,7 @@ public abstract class MssResponse {
      * Get the last MSS_StatusResp message
      * @return MSS_StatusResp
      */
-    public MSS_StatusResp getMSS_StatusResp() {
+    public MSSStatusResp getMSS_StatusResp() {
         return this.finalStatusResp;
     }
 
@@ -102,10 +102,10 @@ public abstract class MssResponse {
         
         try {
             if (this.finalStatusResp != null) {
-                return this.finalStatusResp.getStatus().getStatusCode().getValue();
+                return this.finalStatusResp.getStatus().getStatusCode().getValue().longValue();
             }
             if (this.originalSigResp != null) {
-                return this.originalSigResp.getStatus().getStatusCode().getValue();
+                return this.originalSigResp.getStatus().getStatusCode().getValue().longValue();
             }
         } catch (NullPointerException npe) {
             // Got a faulty response... ignore

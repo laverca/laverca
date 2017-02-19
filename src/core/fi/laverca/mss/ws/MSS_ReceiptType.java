@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
+import fi.laverca.jaxb.mss.MSSReceiptReq;
+import fi.laverca.jaxb.mss.MSSReceiptResp;
 
-public interface MSS_NotificationPortType extends java.rmi.Remote {
-    public MSS_ReceiptReq MSS_Notification(MSS_StatusResp req) throws java.rmi.RemoteException;
+public interface MSS_ReceiptType extends java.rmi.Remote {
+    public MSSReceiptResp MSS_Receipt(MSSReceiptReq req) throws java.rmi.RemoteException;
 }

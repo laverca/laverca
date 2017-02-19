@@ -19,8 +19,9 @@
 
 package fi.laverca.etsi;
 
-import org.etsi.uri.TS102204.v1_1_2.Description;
-import org.etsi.uri.TS102204.v1_1_2.Service;
+import fi.laverca.jaxb.mss.AdditionalServiceType;
+import fi.laverca.jaxb.mss.MssURIType;
+import fi.laverca.mss.MssClient;
 
 /**
  * ETSI specific AdditionalServices
@@ -33,13 +34,11 @@ public class EtsiAdditionalServices {
      * @param uri AdditionalService URI
      * @return Created Service
      */
-    public static Service createService(final String uri) {
-        Service     s = new Service();
-        Description d = new Description();
+    public static AdditionalServiceType createService(final String uri) {
+        final AdditionalServiceType s = MssClient.mssObjFact.createAdditionalServiceType();
+        final MssURIType d = MssClient.mssObjFact.createMssURIType();
         d.setMssURI(uri);
         s.setDescription(d);
-        
         return s;
     }
-    
 }

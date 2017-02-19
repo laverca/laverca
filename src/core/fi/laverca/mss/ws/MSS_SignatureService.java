@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
 public interface MSS_SignatureService extends javax.xml.rpc.Service {
     public java.lang.String getMSS_SignaturePortAddress();

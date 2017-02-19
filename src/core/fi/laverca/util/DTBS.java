@@ -22,7 +22,8 @@ package fi.laverca.util;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.axis.encoding.Base64;
-import org.etsi.uri.TS102204.v1_1_2.DataToBeSigned;
+
+import fi.laverca.jaxb.mss.DataType;
 
 /**
  * Dual-mode mapper class for "DataToBeSigned"
@@ -145,15 +146,15 @@ public class DTBS {
      * Convert to a DataToBeSigned object.
      * @return this object as org.etsi.uri.TS102204.v1_1_2.DataToBeSigned
      */
-    public DataToBeSigned toDataToBeSigned() {
-        DataToBeSigned rv = new DataToBeSigned();
+    public DataType toDataToBeSigned() {
+        DataType rv = new DataType();
         rv.setEncoding(this.encoding);
         rv.setMimeType(this.mimeType);
         
         if(this.text == null) {
-            rv.setContent(Base64.encode(this.data));
+            rv.setValue(Base64.encode(this.data));
         } else {
-        	rv.setContent(this.text);
+        	rv.setValue(this.text);
         }
         
         return rv;

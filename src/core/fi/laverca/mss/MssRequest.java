@@ -22,13 +22,13 @@ package fi.laverca.mss;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
 
 public abstract class MssRequest<Resp> {
 
-    public MSS_SignatureReq          sigReq;
-    public MSS_SignatureResp         sigResp;
+    public MSSSignatureReq          sigReq;
+    public MSSSignatureResp         sigResp;
     public FutureTask<Resp>  ft;
 
     public MssRequest() {

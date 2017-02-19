@@ -22,23 +22,21 @@ package fi.laverca.ficom;
 import java.util.ArrayList;
 import java.util.List;
 
-import oasis.names.tc.SAML.v2_0.assertion.Attribute;
-import oasis.names.tc.SAML.v2_0.protocol.AttributeQuery;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.AdditionalServiceTypeChoice;
-import org.etsi.uri.TS102204.v1_1_2.AdditionalServiceTypeChoiceItem;
-import org.etsi.uri.TS102204.v1_1_2.Service;
-import org.etsi.uri.TS102204.v1_1_2.StatusDetail;
-import org.etsi.uri.TS102204.v1_1_2.StatusDetailTypeItem;
 
-import fi.ficom.mss.TS102204.v1_0_0.Description;
-import fi.ficom.mss.TS102204.v1_0_0.NoSpamCode;
-import fi.ficom.mss.TS102204.v1_0_0.PostalAddress;
-import fi.ficom.mss.TS102204.v1_0_0.ServiceResponse;
-import fi.ficom.mss.TS102204.v1_0_0.ServiceResponses;
 import fi.laverca.etsi.EtsiAdditionalServices;
+import fi.laverca.jaxb.mss.AdditionalServiceType;
+import fi.laverca.jaxb.mss.MssURIType;
+import fi.laverca.jaxb.mss.StatusDetailType;
+import fi.laverca.jaxb.mssfi.NoSpamCode;
+import fi.laverca.jaxb.mssfi.ServiceResponses;
+import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
+import fi.laverca.jaxb.saml2a.Attribute;
+import fi.laverca.jaxb.saml2p.AttributeQuery;
 import fi.laverca.util.Saml2Util;
 
 /**
@@ -49,6 +47,8 @@ public class FiComAdditionalServices {
     
     private static final Log log = LogFactory.getLog(FiComAdditionalServices.class);
 
+    public static final String FICOMNS        = "http://mss.ficom.fi/TS102204/v1.0.0#";
+    
     public static final String NO_SPAM_URI    = "http://mss.ficom.fi/TS102204/v1.0.0#noSpam";
     public static final String EVENT_ID_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#eventId";
     public static final String USER_LANG_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#userLang";
@@ -76,23 +76,20 @@ public class FiComAdditionalServices {
      * @param verifyValue Set NoSpamCode verify flag on / off
      * @return FiCom NoSpam AdditionalService
      */
-    public static Service createNoSpamService(final String  noSpamCodeValue, 
-                                              final boolean verifyValue) {
-        Service s = EtsiAdditionalServices.createService(NO_SPAM_URI);
+    public static AdditionalServiceType createNoSpamService(final String  noSpamCodeValue, 
+                                                            final boolean verifyValue) {
+        
+        final AdditionalServiceType s = EtsiAdditionalServices.createService(NO_SPAM_URI);
 
-        NoSpamCode noSpamObject = new NoSpamCode();
-        noSpamObject.setContent(noSpamCodeValue);
-
-        AdditionalServiceTypeChoice astc = new AdditionalServiceTypeChoice();
-        AdditionalServiceTypeChoiceItem astci = new AdditionalServiceTypeChoiceItem();
-        astc.addAdditionalServiceTypeChoiceItem(astci);
-        astci.setNoSpamCode(noSpamObject);
-        s.setAdditionalServiceTypeChoice(astc);
+        final NoSpamCode noSpamObject = new NoSpamCode();
+        noSpamObject.setValue(noSpamCodeValue);
 
         if (verifyValue == false) {
             noSpamObject.setVerify("no");
         }
 
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(noSpamObject);
+        
         return s;
     }
 
@@ -101,14 +98,10 @@ public class FiComAdditionalServices {
      * @param eventId Event ID as a String
      * @return FiCom EventID AdditionalService
      */
-    public static Service createEventIdService(final String eventId) {
-        Service s = EtsiAdditionalServices.createService(EVENT_ID_URI);
-
-        AdditionalServiceTypeChoice astc = new AdditionalServiceTypeChoice();
-        AdditionalServiceTypeChoiceItem astci = new AdditionalServiceTypeChoiceItem();
-        astc.addAdditionalServiceTypeChoiceItem(astci);
-        astci.setEventID(eventId);
-        s.setAdditionalServiceTypeChoice(astc);
+    public static AdditionalServiceType createEventIdService(final String eventId) {
+        final AdditionalServiceType s = EtsiAdditionalServices.createService(EVENT_ID_URI);
+        final JAXBElement<String> e = FiComClient.ficomFact.createEventID(eventId);
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(e);
         return s;
     }
 
@@ -117,14 +110,10 @@ public class FiComAdditionalServices {
      * @param userLang User language value as per MSS FiCom Implentation guideline v2.1
      * @return FiCom UserLang AdditionalService
      */
-    public static Service createUserLangService(final String userLang) {
-        Service s = EtsiAdditionalServices.createService(USER_LANG_URI);
-
-        AdditionalServiceTypeChoice      astc = new AdditionalServiceTypeChoice();
-        AdditionalServiceTypeChoiceItem astci = new AdditionalServiceTypeChoiceItem();
-        astc.addAdditionalServiceTypeChoiceItem(astci);
-        astci.setUserLang(userLang);
-        s.setAdditionalServiceTypeChoice(astc);
+    public static AdditionalServiceType createUserLangService(final String userLang) {
+        final AdditionalServiceType s = EtsiAdditionalServices.createService(USER_LANG_URI);
+        final JAXBElement<String> u = FiComClient.ficomFact.createUserLang(userLang);
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(u);
         return s;
     }
     
@@ -132,9 +121,8 @@ public class FiComAdditionalServices {
      * Creates an AdditionalService for FiCom validation service
      * @return FiCom Validation AdditionalService
      */
-    public static Service createValidateService() {
-    	Service s = EtsiAdditionalServices.createService(VALIDATE_URI);
-        return s;
+    public static AdditionalServiceType createValidateService() {
+        return EtsiAdditionalServices.createService(VALIDATE_URI);
     }
 
     /**
@@ -142,8 +130,8 @@ public class FiComAdditionalServices {
      * @param attributeNames List of attribute names to put in the PersonId Service
      * @return FiCom PersonID AdditionalService
      */
-    public static Service createPersonIdService(final List<String> attributeNames) {
-        AttributeQuery aq = Saml2Util.createAttributeQuery(null, null, attributeNames);
+    public static AdditionalServiceType createPersonIdService(final List<String> attributeNames) {
+        final AttributeQuery aq = Saml2Util.createAttributeQuery(null, null, attributeNames);
         return createAttributeQueryService(PERSON_ID_URI, aq);
     }
     
@@ -153,10 +141,10 @@ public class FiComAdditionalServices {
      * @param attributeName List of attribute names to put in the PersonId Service
      * @return FiCom PersonID AdditionalService
      */    
-    public static Service createPersonIdService(final String ... attributeName) {
-        List<String> attrNames = new ArrayList<String>();
+    public static AdditionalServiceType createPersonIdService(final String ... attributeName) {
+        final List<String> attrNames = new ArrayList<String>();
         if (attributeName != null) {
-            for (String s : attributeName) {
+            for (final String s : attributeName) {
                 if (s != null) {
                     attrNames.add(s);
                 }
@@ -171,15 +159,10 @@ public class FiComAdditionalServices {
      * @param attributeQuery SAML2 attribute query, as per FiCom 2.0.
      * @return Created AdditionalService
      */
-    public static Service createAttributeQueryService(final String         uri, 
-                                                      final AttributeQuery attributeQuery) {
-        Service s = EtsiAdditionalServices.createService(uri);
-
-        AdditionalServiceTypeChoice      astc = new AdditionalServiceTypeChoice();
-        AdditionalServiceTypeChoiceItem astci = new AdditionalServiceTypeChoiceItem();
-        astc.addAdditionalServiceTypeChoiceItem(astci);
-        astci.setAttributeQuery(attributeQuery);
-        s.setAdditionalServiceTypeChoice(astc);
+    public static AdditionalServiceType createAttributeQueryService(final String         uri, 
+                                                                    final AttributeQuery attributeQuery) {
+        final AdditionalServiceType s = EtsiAdditionalServices.createService(uri);
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(attributeQuery);
         return s;
     }
 
@@ -191,8 +174,8 @@ public class FiComAdditionalServices {
         
         private Attribute samlAttribute;
         
-        public PersonIdAttribute(Attribute samlAttribute) {
-            if(samlAttribute == null) {
+        public PersonIdAttribute(final Attribute samlAttribute) {
+            if (samlAttribute == null) {
                 throw new IllegalArgumentException("null attribute not allowed.");
             }
             this.samlAttribute = samlAttribute;
@@ -212,20 +195,26 @@ public class FiComAdditionalServices {
          */
         public String getStringValue() {
             try {
+                final List<Object> avl = this.samlAttribute.getAttributeValues();
+                final Object o = avl.get(0);
                 if (PERSON_ID_ADDRESS.equals(this.samlAttribute.getName())){
-                    Object o = this.samlAttribute.getAttributeValue(0);
-                    fi.ficom.mss.TS102204.v1_0_0.PostalAddress pa;
+                    fi.laverca.jaxb.mssfi.PostalAddress pa;
                     try {
-                        pa = (fi.ficom.mss.TS102204.v1_0_0.PostalAddress)o;
+                        pa = (fi.laverca.jaxb.mssfi.PostalAddress)o;
                     } catch (Throwable t){
                         return null;
                     }
                     return postalAddressToString(pa);       
-                } else {
-                    Object o = this.samlAttribute.getAttributeValue(0);
+                }
+                /*
+                else {
+                    
                     org.exolab.castor.types.AnyNode an = (org.exolab.castor.types.AnyNode)o;
                     return an.getStringValue();
                 }
+                */
+                log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
+                return null;
             } catch (IndexOutOfBoundsException ioe) {
                 log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
                 return null;
@@ -243,7 +232,7 @@ public class FiComAdditionalServices {
          * @param pa PostalAddress to be printed
          * @return Postal address CSV or null if the given PostalAddress was null.
          */
-        private String postalAddressToString(final PostalAddress pa){
+        private String postalAddressToString(final fi.laverca.jaxb.mssfi.PostalAddress pa){
             if (pa == null) {
                 return null;
             }
@@ -259,22 +248,29 @@ public class FiComAdditionalServices {
      * Read ServiceResponses from a StatusDetail element
      * @param sd StatusDetail
      * @return ServiceResponses or null
+     * @throws JAXBException 
      */
-    public static ServiceResponses readServiceResponses(final StatusDetail sd) {
-        if(sd == null) {
+    public static ServiceResponses readServiceResponses(final StatusDetailType sd)
+        throws JAXBException
+    {
+        if (sd == null) {
             return null;
         }
-        ServiceResponses sr = null;
-        for(StatusDetailTypeItem item : sd.getStatusDetailTypeItem()) {
-            if(item.getServiceResponses() != null) {
-                if(sr != null) {
-                    log.warn("mss:StatusDetail contains multiple ServiceResponses instances. Returning the first.");
-                    break;
-                }
-                sr = item.getServiceResponses();
+        
+        final List<Object> le = sd.getAniesAndServiceResponsesAndReceiptRequestExtensions();
+        ServiceResponses ret = null;
+        for (final Object o : le) {
+            if (!(o instanceof ServiceResponses)) {
+                continue;
             }
+            // Check that there is only one...
+            if (ret != null) {
+                log.warn("mss:StatusDetail contains multiple ServiceResponses instances. Returning the first.");
+                break;
+            }
+            ret = (ServiceResponses) o;
         }
-        return sr;
+        return ret;
     }
 
     /**
@@ -283,19 +279,22 @@ public class FiComAdditionalServices {
      * @param sd StatusDetail
      * @param serviceUri URI of the ServiceResponse
      * @return single ServiceResponse or null
+     * @throws JAXBException 
      */
-    public static ServiceResponse readServiceResponse(final StatusDetail sd, 
-                                                      final String       serviceUri) {
-        if(sd == null) {
+    public static ServiceResponse readServiceResponse(final StatusDetailType sd, 
+                                                      final String       serviceUri)
+        throws JAXBException
+    {
+        if (sd == null) {
             return null;
         }
-        ServiceResponses sr = readServiceResponses(sd);
+        final ServiceResponses sr = readServiceResponses(sd);
         // Note that this assumes only one service response for a given URI
         // It is an ok assumption in FiCom 2.0.
-        for(ServiceResponse sResp : sr.getServiceResponse()) {
-            Description d = sResp.getDescription();
-            String   dUri = d.getMssURI();
-            if(serviceUri.equals(dUri)) {
+        for (final ServiceResponse sResp : sr.getServiceResponses()) {
+            final MssURIType d = sResp.getDescription();
+            final String   dUri = d.getMssURI();
+            if (serviceUri.equals(dUri)) {
                 return sResp;
             }
         }

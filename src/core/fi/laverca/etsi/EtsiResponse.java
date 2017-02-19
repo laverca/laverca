@@ -19,10 +19,9 @@
 
 package fi.laverca.etsi;
 
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
 import fi.laverca.mss.MssResponse;
 
 /**
@@ -30,10 +29,9 @@ import fi.laverca.mss.MssResponse;
  */
 public class EtsiResponse extends MssResponse {
 
-    public EtsiResponse(final MSS_SignatureReq originalSigReq,
-                        final MSS_SignatureResp originalSigResp, 
-                        final MSS_StatusResp finalStatusResp) {
+    public EtsiResponse(final MSSSignatureReq originalSigReq,
+                        final MSSSignatureResp originalSigResp, 
+                        final MSSStatusResp finalStatusResp) {
         super(originalSigReq, originalSigResp, finalStatusResp);
     }
-
 }

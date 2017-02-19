@@ -20,12 +20,12 @@
 package fi.laverca.examples;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.Service;
 
 import fi.laverca.ProgressUpdate;
 import fi.laverca.examples.gui.AuthnGUI;
@@ -35,6 +35,7 @@ import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.ficom.FiComResponseHandler;
+import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
 
@@ -114,11 +115,11 @@ public class AnonAuthentication extends AuthnGUI {
         byte[] authnChallenge = new DTBS(apTransId, DTBS.ENCODING_UTF8).toBytes();
 
         // Add additional services
-        LinkedList<Service> additionalServices = new LinkedList<Service>();        
+        List<AdditionalServiceType> additionalServices = new ArrayList<AdditionalServiceType>();        
         
-        Service eventIdService  = FiComAdditionalServices.createEventIdService(eventId);
-        Service noSpamService   = FiComAdditionalServices.createNoSpamService(FIXED_NOSPAMCODE, false);
-        Service personIdService = FiComAdditionalServices.createPersonIdService(FiComAdditionalServices.PERSON_ID_GENDER);
+        AdditionalServiceType eventIdService  = FiComAdditionalServices.createEventIdService(eventId);
+        AdditionalServiceType noSpamService   = FiComAdditionalServices.createNoSpamService(FIXED_NOSPAMCODE, false);
+        AdditionalServiceType personIdService = FiComAdditionalServices.createPersonIdService(FiComAdditionalServices.PERSON_ID_GENDER);
 
         additionalServices.add(personIdService);
         
