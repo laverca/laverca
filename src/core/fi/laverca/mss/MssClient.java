@@ -22,7 +22,7 @@ package fi.laverca.mss;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
+import java.util.GregorianCalendar;
 
 import javax.xml.rpc.ServiceException;
 
@@ -31,39 +31,34 @@ import org.apache.axis.EngineConfiguration;
 import org.apache.axis.client.Stub;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.AP_Info;
-import org.etsi.uri.TS102204.v1_1_2.AdditionalServices;
-import org.etsi.uri.TS102204.v1_1_2.DataToBeDisplayed;
-import org.etsi.uri.TS102204.v1_1_2.DataToBeSigned;
-import org.etsi.uri.TS102204.v1_1_2.MSSP_ID;
-import org.etsi.uri.TS102204.v1_1_2.MSSP_Info;
-import org.etsi.uri.TS102204.v1_1_2.MSS_Format;
-import org.etsi.uri.TS102204.v1_1_2.MSS_HandshakeReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_HandshakeResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ProfileReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ProfileResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_RegistrationReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_RegistrationResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-import org.etsi.uri.TS102204.v1_1_2.Message;
-import org.etsi.uri.TS102204.v1_1_2.MessageAbstractType;
-import org.etsi.uri.TS102204.v1_1_2.MobileUser;
-import org.etsi.uri.TS102204.v1_1_2.SignatureProfile;
-import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 
+import fi.laverca.jaxb.mss.DataType;
+import fi.laverca.jaxb.mss.MSSHandshakeReq;
+import fi.laverca.jaxb.mss.MSSHandshakeResp;
+import fi.laverca.jaxb.mss.MSSProfileReq;
+import fi.laverca.jaxb.mss.MSSProfileResp;
+import fi.laverca.jaxb.mss.MSSReceiptReq;
+import fi.laverca.jaxb.mss.MSSReceiptResp;
+import fi.laverca.jaxb.mss.MSSRegistrationReq;
+import fi.laverca.jaxb.mss.MSSRegistrationResp;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusReq;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.MeshMemberType;
+import fi.laverca.jaxb.mss.MessageAbstractType;
+import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.jaxb.mss.MobileUserType;
+import fi.laverca.jaxb.mss.MssURIType;
+import fi.laverca.jaxb.mss.ObjectFactory;
+import fi.laverca.mss.ws.MSS_HandshakeBindingStub;
+import fi.laverca.mss.ws.MSS_ProfileQueryBindingStub;
+import fi.laverca.mss.ws.MSS_ReceiptBindingStub;
+import fi.laverca.mss.ws.MSS_RegistrationBindingStub;
+import fi.laverca.mss.ws.MSS_SignatureBindingStub;
+import fi.laverca.mss.ws.MSS_SignatureServiceLocator;
+import fi.laverca.mss.ws.MSS_StatusQueryBindingStub;
 import fi.laverca.util.DTBS;
-import fi.laverca.ws.MSS_HandshakeBindingStub;
-import fi.laverca.ws.MSS_ProfileQueryBindingStub;
-import fi.laverca.ws.MSS_ReceiptBindingStub;
-import fi.laverca.ws.MSS_RegistrationBindingStub;
-import fi.laverca.ws.MSS_SignatureBindingStub;
-import fi.laverca.ws.MSS_SignatureServiceLocator;
-import fi.laverca.ws.MSS_StatusQueryBindingStub;
 
 /**
  * A raw ETSI TS 102 204 client object.
@@ -71,6 +66,8 @@ import fi.laverca.ws.MSS_StatusQueryBindingStub;
 public class MssClient {
     private static Log log = LogFactory.getLog(MssClient.class);
 
+    public static ObjectFactory mssObjFact = new ObjectFactory();
+    
     // AP settings
     String apId = null;
     String apPwd = null;
@@ -83,7 +80,7 @@ public class MssClient {
     URL MSSP_ST_URL = null;
     URL MSSP_PR_URL = null;
     URL MSSP_RG_URL = null;
-    org.etsi.uri.TS102204.v1_1_2.MSSP_ID aeMsspId = null;
+    MeshMemberType aeMsspId = null;
 
     /** 
      * <b>NOTE:</b> 
@@ -206,26 +203,27 @@ public class MssClient {
      * @param apTransId AP Transaction ID
      */
     private void initializeRequestMessage(final MessageAbstractType mat, final String apTransId) {
-        if(mat == null)
+        if (mat == null)
             throw new IllegalArgumentException("can't fill a null mat");
+        if (apTransId == null) 
+            throw new IllegalArgumentException("null apTransId not allowed.");
     
         // Set the interface versions. 1 for both, as per ETSI TS 102 204.
-        mat.setMajorVersion(1);
-        mat.setMinorVersion(1);
+        mat.setMajorVersion(Long.valueOf(1));
+        mat.setMinorVersion(Long.valueOf(1));
 
         // Create the AP_Info.
-        AP_Info aiObject = new AP_Info();
-        aiObject.setAP_ID(this.apId);
-        aiObject.setAP_PWD(this.apPwd);
-        if(apTransId == null) 
-            throw new IllegalArgumentException("null apTransId not allowed.");
-        aiObject.setAP_TransID(apTransId);
-        aiObject.setInstant(new Date());
-        mat.setAP_Info(aiObject);
+        final MessageAbstractType.APInfo aiObject = mssObjFact.createMessageAbstractTypeAPInfo();
+        aiObject.setAPID(this.apId);
+        aiObject.setAPPWD(this.apPwd);
+        aiObject.setAPTransID(apTransId);
+        aiObject.setInstant(new GregorianCalendar());
+        mat.setAPInfo(aiObject);
         
-        MSSP_Info miObject = new MSSP_Info();
-        miObject.setMSSP_ID(new MSSP_ID()); 
-        mat.setMSSP_Info(miObject);
+        final MessageAbstractType.MSSPInfo miObject = mssObjFact.createMessageAbstractTypeMSSPInfo();
+        miObject.setMSSPID(mssObjFact.createMeshMemberType()); 
+
+        mat.setMSSPInfo(miObject);
     }
     
     
@@ -241,52 +239,51 @@ public class MssClient {
      * @param messagingMode Messaging mode to use - not null.
      * @return Created signature request
      */
-    public MSS_SignatureReq createSignatureRequest(final String apTransId,
+    public MSSSignatureReq createSignatureRequest(final String apTransId,
                                                    final String msisdn,
                                                    final DTBS dtbs,
                                                    final String dataToBeDisplayed,
                                                    final String signatureProfile,
                                                    final String mss_format,
                                                    final MessagingModeType messagingMode) {
-        MSS_SignatureReq req = new MSS_SignatureReq();
+        final MSSSignatureReq req = mssObjFact.createMSSSignatureReq();
         
         this.initializeRequestMessage(req, apTransId);
         
-        if(msisdn == null)
+        if (msisdn == null)
             throw new IllegalArgumentException("null msisdn is not allowed.");
-        MobileUser muObject = new MobileUser();
+        MobileUserType muObject = mssObjFact.createMobileUserType();
         muObject.setMSISDN(msisdn);
         req.setMobileUser(muObject);
 
-        if(dtbs == null)
+        if (dtbs == null)
             throw new IllegalArgumentException("null dataToBeSigned is not allowed.");
-        DataToBeSigned dsObject = dtbs.toDataToBeSigned();
+        final DataType dsObject = dtbs.toDataToBeSigned();
         req.setDataToBeSigned(dsObject);
         
-        if(dataToBeDisplayed != null) {
-            DataToBeDisplayed ddObject = new DataToBeDisplayed();
-            ddObject.setContent(dataToBeDisplayed);
+        if (dataToBeDisplayed != null) {
+            final DataType ddObject = mssObjFact.createDataType();
+            ddObject.setValue(dataToBeDisplayed);
             req.setDataToBeDisplayed(ddObject);
         }
         
-        if(signatureProfile == null)
+        if (signatureProfile == null)
             throw new IllegalArgumentException("null signatureProfile is not allowed.");
-        SignatureProfile spObject = new SignatureProfile();
+        final MssURIType spObject = mssObjFact.createMssURIType();
         spObject.setMssURI(signatureProfile);
         req.setSignatureProfile(spObject);
 
         if(mss_format != null) {
-            MSS_Format mfObject = new MSS_Format();
+            MssURIType mfObject = mssObjFact.createMssURIType();
             mfObject.setMssURI(mss_format);
-            req.setMSS_Format(mfObject);
+            req.setMSSFormat(mfObject);
         }
         
-        if(messagingMode == null)
+        if (messagingMode == null)
             throw new IllegalArgumentException("null messagingMode is not allowed.");
         req.setMessagingMode(messagingMode);
-        
-        AdditionalServices additionalServices = new AdditionalServices();
-        req.setAdditionalServices(additionalServices);
+
+        req.setAdditionalServices(MssClient.mssObjFact.createMSSSignatureReqAdditionalServices());
         
         return req;
     }
@@ -299,33 +296,33 @@ public class MssClient {
      * @param message Message to display
      * @return Created MSS_ReceiptReq
      */
-    public MSS_ReceiptReq createReceiptRequest(final MSS_SignatureResp sigResp, 
-                                               final String apTransId,
-                                               final String message) 
+    public MSSReceiptReq createReceiptRequest(final MSSSignatureResp sigResp, 
+                                              final String apTransId,
+                                              final String message) 
     {
-        MSS_ReceiptReq req = new MSS_ReceiptReq();
+        final MSSReceiptReq req = mssObjFact.createMSSReceiptReq();
         
         this.initializeRequestMessage(req, apTransId);
         
-        if(sigResp == null) {
+        if (sigResp == null) {
             throw new IllegalArgumentException("null sigResp not allowed.");
         }
         
-        if(sigResp.getMSSP_Info() == null) {
+        if (sigResp.getMSSPInfo() == null) {
             throw new IllegalArgumentException("null sigResp.MSSP_Info not allowed.");
         }
-        MSSP_ID msspId = sigResp.getMSSP_Info().getMSSP_ID();
-        if(msspId == null) {
+        final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
+        if (msspId == null) {
             throw new IllegalArgumentException("null sigResp.MSSP_Info.MSSP_ID not allowed.");
         }
-        req.getMSSP_Info().setMSSP_ID(msspId); // fillMatStuff creates an empty MSSP_Info
+        req.getMSSPInfo().setMSSPID(msspId); // fillMatStuff creates an empty MSSP_Info
 
-        String msspTransId = sigResp.getMSSP_TransID();
-        req.setMSSP_TransID(msspTransId);
+        final String msspTransId = sigResp.getMSSPTransID();
+        req.setMSSPTransID(msspTransId);
         
-        if(message != null) {
-            Message meObject = new Message();
-            meObject.setContent(message);
+        if (message != null) {
+            final DataType meObject = mssObjFact.createDataType();
+            meObject.setValue(message);
             req.setMessage(meObject);
         }
         
@@ -339,29 +336,29 @@ public class MssClient {
      * @return Created MSS_StatusReq
      * @throws IllegalArgumentException if the given signature response does not contain all the necessary data to create an MSS_StatusReq
      */
-    public MSS_StatusReq createStatusRequest(final MSS_SignatureResp sigResp,
+    public MSSStatusReq createStatusRequest(final MSSSignatureResp sigResp,
                                              final String apTransId) 
         throws IllegalArgumentException
     {
-        MSS_StatusReq req = new MSS_StatusReq();
+        MSSStatusReq req = new MSSStatusReq();
         
         this.initializeRequestMessage(req, apTransId);
         
-        if(sigResp == null) {
+        if (sigResp == null) {
             throw new IllegalArgumentException("null sigResp not allowed.");
         }
         
-        if(sigResp.getMSSP_Info() == null) {
+        if (sigResp.getMSSPInfo() == null) {
             throw new IllegalArgumentException("null sigResp.MSSP_Info not allowed.");
         }
-        MSSP_ID msspId = sigResp.getMSSP_Info().getMSSP_ID();
-        if(msspId == null) {
+        final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
+        if (msspId == null) {
             throw new IllegalArgumentException("null sigResp.MSSP_Info.MSSP_ID not allowed.");
         }
-        req.getMSSP_Info().setMSSP_ID(msspId); // fillMatStuff creates an empty MSSP_Info
+        req.getMSSPInfo().setMSSPID(msspId); // fillMatStuff creates an empty MSSP_Info
 
-        String msspTransId = sigResp.getMSSP_TransID();
-        req.setMSSP_TransID(msspTransId);
+        final String msspTransId = sigResp.getMSSPTransID();
+        req.setMSSPTransID(msspTransId);
         
         return req;
     }
@@ -375,15 +372,15 @@ public class MssClient {
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_SignatureResp send(final MSS_SignatureReq req) throws IOException {
+    public MSSSignatureResp send(final MSSSignatureReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null SignatureReq");
         
         if (req.getAdditionalServices() != null) {
-            if(req.getAdditionalServices().getServiceCount() == 0) {
+            if (req.getAdditionalServices().getServices().size() == 0) {
                 req.setAdditionalServices(null);
             }
         }
-        return (MSS_SignatureResp)send((MessageAbstractType)req);
+        return (MSSSignatureResp)sendMat(req);
     }
 
     /**
@@ -395,9 +392,9 @@ public class MssClient {
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_ReceiptResp send(final MSS_ReceiptReq req) throws IOException {
+    public MSSReceiptResp send(final MSSReceiptReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
-        return (MSS_ReceiptResp)send((MessageAbstractType)req);
+        return (MSSReceiptResp)sendMat(req);
     }
 
     /**
@@ -409,9 +406,9 @@ public class MssClient {
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_HandshakeResp send(final MSS_HandshakeReq req) throws IOException {
+    public MSSHandshakeResp send(final MSSHandshakeReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
-        return (MSS_HandshakeResp)send((MessageAbstractType)req);
+        return (MSSHandshakeResp)sendMat(req);
     }
 
     /**
@@ -423,9 +420,9 @@ public class MssClient {
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_StatusResp send(final MSS_StatusReq req) throws IOException {
+    public MSSStatusResp send(final MSSStatusReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null StatusReq");
-        return (MSS_StatusResp)send((MessageAbstractType)req);
+        return (MSSStatusResp)sendMat(req);
     }
 
     /**
@@ -437,9 +434,9 @@ public class MssClient {
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_ProfileResp send(final MSS_ProfileReq req) throws IOException {
+    public MSSProfileResp send(final MSSProfileReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
-        return (MSS_ProfileResp)send((MessageAbstractType)req);
+        return (MSSProfileResp)sendMat(req);
     }
 
     /**
@@ -451,9 +448,9 @@ public class MssClient {
      * occurred i.e. a SOAP fault was generated by the <i>local</i>
      * SOAP client stub.
      */
-    public MSS_RegistrationResp send(final MSS_RegistrationReq req) throws IOException {
+    public MSSRegistrationResp send(final MSSRegistrationReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null RegistrationReq");
-        return (MSS_RegistrationResp)send((MessageAbstractType)req);
+        return (MSSRegistrationResp)sendMat(req);
     }
 
     /**
@@ -462,25 +459,25 @@ public class MssClient {
      * @param req Abstract request type
      * @throws IOException if a HTTP communication error occurred i.e. a SOAP fault was generated by the <i>local</i> SOAP client stub.
      */
-    private MessageAbstractType send(final MessageAbstractType req)
+    private MessageAbstractType sendMat(final MessageAbstractType req)
         throws AxisFault, IOException
     {
         Stub port = null;
         try {
             long timeout = 0;
 
-            if (req instanceof MSS_SignatureReq) {
-                timeout = ((MSS_SignatureReq)req).getTimeOut();
+            if (req instanceof MSSSignatureReq) {
+                timeout = ((MSSSignatureReq)req).getTimeOut().longValue();
                 port = (MSS_SignatureBindingStub)this.mssService.getMSS_SignaturePort(this.MSSP_SI_URL);
-            } else if (req instanceof MSS_ReceiptReq) {
+            } else if (req instanceof MSSReceiptReq) {
                 port = (MSS_ReceiptBindingStub)this.mssService.getMSS_ReceiptPort(this.MSSP_RC_URL);
-            } else if (req instanceof MSS_HandshakeReq) {
+            } else if (req instanceof MSSHandshakeReq) {
                 port = (MSS_HandshakeBindingStub)this.mssService.getMSS_HandshakePort(this.MSSP_HS_URL);
-            } else if (req instanceof MSS_StatusReq) {
+            } else if (req instanceof MSSStatusReq) {
                 port = (MSS_StatusQueryBindingStub)this.mssService.getMSS_StatusQueryPort(this.MSSP_ST_URL);
-            } else if (req instanceof MSS_ProfileReq) {
+            } else if (req instanceof MSSProfileReq) {
                 port = (MSS_ProfileQueryBindingStub)this.mssService.getMSS_ProfileQueryPort(this.MSSP_PR_URL);
-            } else if (req instanceof MSS_RegistrationReq) {
+            } else if (req instanceof MSSRegistrationReq) {
                 port = (MSS_RegistrationBindingStub)this.mssService.getMSS_RegistrationPort(this.MSSP_RG_URL);
             }
 
@@ -504,17 +501,17 @@ public class MssClient {
         }
 
         if (port instanceof MSS_SignatureBindingStub) {
-            return ((MSS_SignatureBindingStub)port).MSS_Signature((MSS_SignatureReq)req);
+            return ((MSS_SignatureBindingStub)port).MSS_Signature((MSSSignatureReq)req);
         } else if (port instanceof MSS_StatusQueryBindingStub) {
-            return ((MSS_StatusQueryBindingStub)port).MSS_StatusQuery((MSS_StatusReq)req);
+            return ((MSS_StatusQueryBindingStub)port).MSS_StatusQuery((MSSStatusReq)req);
         } else if (port instanceof MSS_ReceiptBindingStub) {
-            return ((MSS_ReceiptBindingStub)port).MSS_Receipt((MSS_ReceiptReq)req);
+            return ((MSS_ReceiptBindingStub)port).MSS_Receipt((MSSReceiptReq)req);
         } else if (port instanceof MSS_HandshakeBindingStub) {
-            return ((MSS_HandshakeBindingStub)port).MSS_Handshake((MSS_HandshakeReq)req);
+            return ((MSS_HandshakeBindingStub)port).MSS_Handshake((MSSHandshakeReq)req);
         } else if (port instanceof MSS_ProfileQueryBindingStub) {
-            return ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSS_ProfileReq)req);
+            return ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSSProfileReq)req);
         } else if (port instanceof MSS_RegistrationBindingStub) {
-            return ((MSS_RegistrationBindingStub)port).MSS_Registration((MSS_RegistrationReq)req);
+            return ((MSS_RegistrationBindingStub)port).MSS_Registration((MSSRegistrationReq)req);
         }
 
         throw new IOException("Invalid call parameters");
@@ -534,5 +531,4 @@ public class MssClient {
             return org.apache.axis.types.NCName.isValid(s);
         }
     }
-
 }

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
 import javax.xml.namespace.QName;
 
@@ -28,15 +28,15 @@ import org.apache.axis.constants.Use;
 import org.apache.axis.description.OperationDesc;
 import org.apache.axis.description.ParameterDesc;
 import org.apache.axis.soap.SOAPConstants;
-import org.etsi.uri.TS102204.v1_1_2.MSS_MessageSignature;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
 
+import fi.laverca.jaxb.mss.MSSMessageSignature;
+import fi.laverca.jaxb.mss.MSSProfileReq;
+import fi.laverca.jaxb.mss.MSSProfileResp;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.JMarshallerFactory;
 
-public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
-    implements MSS_StatusQueryType
+public class MSS_ProfileQueryBindingStub extends AbstractSoapBindingStub
+    implements MSS_ProfileQueryType
 {
     static OperationDesc [] _operations;
 
@@ -46,27 +46,21 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
         // Register prefix at Axis.
         JMarshallerFactory.registerPrefix("mss", NS204);
 
-
-        final QName reqQN      = new QName(NS204, "MSS_StatusReq");
-        final QName respQN     = new QName(NS204, "MSS_StatusResp");
-
-        OperationDesc oper;
-        ParameterDesc [] params;
-        params = new ParameterDesc [] {
-            new ParameterDesc(reqQN,
-                              ParameterDesc.IN,
-                              reqQN,
-                              MSS_StatusReq.class,
-                              false, false),
-        };
-        oper = new OperationDesc("MSS_StatusQuery",
-                                 new QName("", "MSS_StatusQuery"),
-                                 params,
-                                 respQN,
-                                 respQN,
-                                 MSS_StatusResp.class,
-                                 Style.RPC,
-                                 Use.LITERAL);
+        final QName reqQN  = new QName(NS204, "MSS_ProfileReq");
+        final QName respQN = new QName(NS204, "MSS_ProfileResp");
+        final ParameterDesc param = new ParameterDesc(reqQN,
+                                                      ParameterDesc.IN,
+                                                      reqQN,
+                                                      MSSProfileReq.class,
+                                                      false, false);
+        final OperationDesc oper = new OperationDesc("MSS_ProfileQuery",
+                                                     new QName("", "MSS_ProfileQuery"),
+                                                     new ParameterDesc[] { param },
+                                                     respQN,
+                                                     respQN,
+                                                     MSSProfileResp.class,
+                                                     Style.RPC,
+                                                     Use.LITERAL);
 
         //
         // NOTE: Because of Castor serialization and deserialization
@@ -80,23 +74,23 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
         // 4. dserClass
         // 5. encodingStyleURI
 
-        oper.registerType(MSS_StatusReq.class,  reqQN, sf, df, null);
-        oper.registerType(MSS_StatusResp.class, respQN, sf, df, null);
-        oper.registerType(MSS_MessageSignature.class, MESSAGESIGNATURE_HEADER, sf, df, null);
+        oper.registerType(MSSProfileReq.class,   reqQN,  sf, df, null);
+        oper.registerType(MSSProfileResp.class,  respQN, sf, df, null);
+        oper.registerType(MSSMessageSignature.class, MESSAGESIGNATURE_HEADER, sf, df, null);
 
-        MSS_StatusQueryBindingStub._operations[0] = oper;
+        MSS_ProfileQueryBindingStub._operations[0] = oper;
     }
 
-    public MSS_StatusQueryBindingStub() {
+    public MSS_ProfileQueryBindingStub() {
         this(null);
     }
 
-    public MSS_StatusQueryBindingStub(java.net.URL endpointURL, javax.xml.rpc.Service service) {
+    public MSS_ProfileQueryBindingStub(java.net.URL endpointURL, javax.xml.rpc.Service service) {
         this(service);
         super.cachedEndpoint = endpointURL;
     }
 
-    public MSS_StatusQueryBindingStub(javax.xml.rpc.Service service)  {
+    public MSS_ProfileQueryBindingStub(javax.xml.rpc.Service service) {
         if (service == null) {
             super.service = new org.apache.axis.client.Service();
         } else {
@@ -105,7 +99,7 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
     }
 
     @Override
-    public MSS_StatusResp MSS_StatusQuery(MSS_StatusReq req) throws java.rmi.RemoteException {
+    public MSSProfileResp MSS_ProfileQuery(MSSProfileReq req) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -114,7 +108,7 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
                                       _operations[0]);
         _call1.setProperty(Call.SEND_TYPE_ATTR, Boolean.FALSE);
         _call1.setProperty(AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
-        _call1.setSOAPActionURI("#MSS_StatusQuery");
+        _call1.setSOAPActionURI("#MSS_ProfileQuery");
 
         this.setRequestHeaders(_call1);
         Object _resp = _call1.invoke(new Object[] {req});
@@ -123,7 +117,7 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
             throw (java.rmi.RemoteException)_resp;
         }
         else {
-            return (MSS_StatusResp) _resp;
+            return (MSSProfileResp) _resp;
         }
     }
 }

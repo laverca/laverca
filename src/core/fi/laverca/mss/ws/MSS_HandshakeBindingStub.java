@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
 import javax.xml.namespace.QName;
 
@@ -28,19 +28,17 @@ import org.apache.axis.constants.Use;
 import org.apache.axis.description.OperationDesc;
 import org.apache.axis.description.ParameterDesc;
 import org.apache.axis.soap.SOAPConstants;
-import org.etsi.uri.TS102204.v1_1_2.MSS_MessageSignature;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReqType;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusRespType;
 
+import fi.laverca.jaxb.mss.MSSHandshakeReq;
+import fi.laverca.jaxb.mss.MSSHandshakeResp;
+import fi.laverca.jaxb.mss.MSSMessageSignature;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.JMarshallerFactory;
 
-public class MSS_NotificationBindingStub extends AbstractSoapBindingStub
-    implements MSS_NotificationPortType
+public class MSS_HandshakeBindingStub extends AbstractSoapBindingStub
+    implements MSS_HandshakePortType
 {
-    static OperationDesc [] _operations;
+    public static OperationDesc [] _operations;
 
     static {
         _operations = new OperationDesc[1];
@@ -48,20 +46,20 @@ public class MSS_NotificationBindingStub extends AbstractSoapBindingStub
         // Register prefix at Axis.
         JMarshallerFactory.registerPrefix("mss", NS204);
 
-        final QName reqQN  = new QName(NS204, "MSS_StatusResp");
-        final QName respQN = new QName(NS204, "MSS_ReceiptReq");
+        final QName reqQN  = new QName(NS204, "MSS_HandshakeReq");
+        final QName respQN = new QName(NS204, "MSS_HandshakeResp");
 
         final ParameterDesc param = new ParameterDesc(reqQN,
                                                       ParameterDesc.IN,
                                                       reqQN,
-                                                      MSS_StatusResp.class,
+                                                      MSSHandshakeReq.class,
                                                       false, false);
-        final OperationDesc oper = new OperationDesc("MSS_Notification",
-                                                     new QName("", "MSS_Notification"),
+        final OperationDesc oper = new OperationDesc("MSS_Handshake",
+                                                     new QName("", "MSS_Handshake"),
                                                      new ParameterDesc[] { param },
                                                      respQN,
                                                      respQN,
-                                                     MSS_ReceiptReq.class,
+                                                     MSSHandshakeResp.class,
                                                      Style.RPC,
                                                      Use.LITERAL);
 
@@ -77,26 +75,24 @@ public class MSS_NotificationBindingStub extends AbstractSoapBindingStub
         // 4. dserClass
         // 5. encodingStyleURI
 
-        oper.registerType( MSS_ReceiptReq.class,
-                           respQN, sf, df, null );
-        oper.registerType( MSS_StatusResp.class,
-                           reqQN, sf, df, null );
-        oper.registerType(MSS_MessageSignature.class,
+        oper.registerType( MSSHandshakeReq.class,  reqQN,  sf, df, null );
+        oper.registerType( MSSHandshakeResp.class, respQN, sf, df, null );
+        oper.registerType( MSSMessageSignature.class,
                           MESSAGESIGNATURE_HEADER, sf, df, null);
 
-        MSS_NotificationBindingStub._operations[0] = oper;
+        MSS_HandshakeBindingStub._operations[0] = oper;
     }
 
-    public MSS_NotificationBindingStub() {
+    public MSS_HandshakeBindingStub() {
         this(null);
     }
 
-    public MSS_NotificationBindingStub(java.net.URL endpointURL, javax.xml.rpc.Service service) {
+    public MSS_HandshakeBindingStub(java.net.URL endpointURL, javax.xml.rpc.Service service) {
         this(service);
         super.cachedEndpoint = endpointURL;
     }
 
-    public MSS_NotificationBindingStub(javax.xml.rpc.Service service) {
+    public MSS_HandshakeBindingStub(javax.xml.rpc.Service service) {
         if (service == null) {
             super.service = new org.apache.axis.client.Service();
         } else {
@@ -105,26 +101,25 @@ public class MSS_NotificationBindingStub extends AbstractSoapBindingStub
     }
 
     @Override
-    public MSS_ReceiptReq MSS_Notification(MSS_StatusResp req) throws java.rmi.RemoteException {
+    public MSSHandshakeResp MSS_Handshake(MSSHandshakeReq MSS_HandshakeReq) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
         Call _call1 = this.createCall(SOAPConstants.SOAP12_CONSTANTS,
                                       null,
                                       _operations[0]);
-        _call1.setProperty(Call.SEND_TYPE_ATTR,  Boolean.FALSE);
+        _call1.setProperty(Call.SEND_TYPE_ATTR, Boolean.FALSE);
         _call1.setProperty(AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
-        _call1.setSOAPActionURI("#MSS_Notification");
+        _call1.setSOAPActionURI("#MSS_Handshake");
 
         this.setRequestHeaders(_call1);
-        final Object[] reqs = new Object[] {req};
-        Object _resp = _call1.invoke(reqs);
+        Object _resp = _call1.invoke(new Object[] {MSS_HandshakeReq});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         else {
-            return (MSS_ReceiptReq) _resp;
+            return (MSSHandshakeResp) _resp;
         }
     }
 }

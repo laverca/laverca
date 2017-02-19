@@ -1,11 +1,30 @@
+/* ==========================================
+ * Laverca Project
+ * https://sourceforge.net/projects/laverca/
+ * ==========================================
+ * Copyright 2015 Laverca Project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fi.laverca.examples;
+
 import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
 
 import fi.laverca.MSS_Formats;
 import fi.laverca.ProgressUpdate;
@@ -15,6 +34,7 @@ import fi.laverca.etsi.EtsiRequest;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.etsi.EtsiResponseHandler;
 import fi.laverca.examples.util.ExampleConf;
+import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
 
@@ -79,7 +99,7 @@ public class EtsiAsynchSign {
                                                    null,                              // Additional services
                                                    SignatureProfiles.FICOM_SIGNATURE, // Signature profile
                                                    MSS_Formats.PKCS7,                 // MSS Format
-                                                   MessagingModeType.ASYNCHCLIENTSERVER);
+                                                   MessagingModeType.ASYNCH_CLIENT_SERVER);
                                                                             
         // Create response handler
         EtsiResponseHandler handler = new EtsiResponseHandler() {

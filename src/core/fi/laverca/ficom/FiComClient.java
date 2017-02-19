@@ -23,22 +23,24 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-import org.etsi.uri.TS102204.v1_1_2.Service;
-import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
-
 import fi.laverca.ClientHelper;
 import fi.laverca.MSS_Formats;
 import fi.laverca.ResponseHandler;
 import fi.laverca.SignatureProfiles;
+import fi.laverca.jaxb.mss.AdditionalServiceType;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.jaxb.mssfi.ObjectFactory;
 import fi.laverca.util.DTBS;
 
 /**  
  * An asynchronous client for FiCom -style signature requests.
  */
 public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
+    
+    public static final ObjectFactory ficomFact = new ObjectFactory();
 
     public FiComClient( String apId,             // AP settings
                         String apPwd, 
@@ -75,9 +77,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     public FiComRequest createRequest(final String apTransId, 
                                       final DTBS dtbs,
                                       final String phoneNumber,
-                                      final Service noSpamService,
-                                      final Service eventIDService,
-                                      final List<Service> additionalServices, 
+                                      final AdditionalServiceType noSpamService,
+                                      final AdditionalServiceType eventIDService,
+                                      final List<AdditionalServiceType> additionalServices, 
                                       final String signatureProfile,
                                       final String mssFormat) {
         
@@ -85,24 +87,27 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
 
         String msisdn = phoneNumber; //consider using some kind of normalizer
         String dataToBeDisplayed = null;
-        MessagingModeType messagingMode = MessagingModeType.ASYNCHCLIENTSERVER;
+        MessagingModeType messagingMode = MessagingModeType.ASYNCH_CLIENT_SERVER;
 
-        final MSS_SignatureReq sigReq = this.mssClient.createSignatureRequest(apTransId, 
-                                                                              msisdn, 
-                                                                              dtbs, 
-                                                                              dataToBeDisplayed, 
-                                                                              signatureProfile, 
-                                                                              mssFormat, 
-                                                                              messagingMode);
+        final MSSSignatureReq sigReq = this.mssClient.createSignatureRequest(apTransId, 
+                                                                             msisdn, 
+                                                                             dtbs, 
+                                                                             dataToBeDisplayed, 
+                                                                             signatureProfile, 
+                                                                             mssFormat, 
+                                                                             messagingMode);
         req.sigReq = sigReq;
 
-        sigReq.getAdditionalServices().addService(noSpamService);
-        sigReq.getAdditionalServices().addService(eventIDService);
+        final List<AdditionalServiceType> as = sigReq.getAdditionalServices().getServices();
+        if (noSpamService != null)
+            as.add(noSpamService);
+        if (eventIDService != null)
+            as.add(eventIDService);
         
-        if(additionalServices != null) {
-            for(Service s : additionalServices) {
-                if(s != null) {
-                    sigReq.getAdditionalServices().addService(s);
+        if (additionalServices != null) {
+            for (final AdditionalServiceType s : additionalServices) {
+                if (s != null) {
+                    as.add(s);
                 }
             }
         }
@@ -127,9 +132,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     public FiComRequest authenticate(final String apTransId,
                                      final byte[] authnChallenge,
                                      final String phoneNumber,
-                                     final Service noSpamService,
-                                     final Service eventIdService,
-                                     final List<Service> additionalServices,
+                                     final AdditionalServiceType noSpamService,
+                                     final AdditionalServiceType eventIdService,
+                                     final List<AdditionalServiceType> additionalServices,
                                      final FiComResponseHandler handler) 
     throws IOException
     {
@@ -162,9 +167,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     public FiComRequest authenticateAnon(final String apTransId,
                                          final byte[] authnChallenge,
                                          final String phoneNumber,
-                                         final Service noSpamService,
-                                         final Service eventIDService,
-                                         final List<Service> additionalServices,
+                                         final AdditionalServiceType noSpamService,
+                                         final AdditionalServiceType eventIDService,
+                                         final List<AdditionalServiceType> additionalServices,
                                          final FiComResponseHandler handler) 
     throws IOException
     {
@@ -198,9 +203,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     public FiComRequest signText(final String apTransId,
                                  final String textToBeSigned,
                                  final String phoneNumber,
-                                 final Service noSpamService,
-                                 final Service eventIDService,
-                                 final List<Service> additionalServices,
+                                 final AdditionalServiceType noSpamService,
+                                 final AdditionalServiceType eventIDService,
+                                 final List<AdditionalServiceType> additionalServices,
                                  final FiComResponseHandler handler) 
     throws IOException
     {
@@ -235,9 +240,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     public FiComRequest signData(final String apTransId,
                                  final byte [] digestToBeSigned,
                                  final String phoneNumber,
-                                 final Service noSpamService,
-                                 final Service eventIDService,
-                                 final List<Service> additionalServices,
+                                 final AdditionalServiceType noSpamService,
+                                 final AdditionalServiceType eventIDService,
+                                 final List<AdditionalServiceType> additionalServices,
                                  final FiComResponseHandler handler) 
     throws IOException
     {
@@ -271,9 +276,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     public FiComRequest consent(final String apTransId,
                                  final String textToBeConsentedTo,
                                  final String phoneNumber,
-                                 final Service noSpamService,
-                                 final Service eventIDService,
-                                 final List<Service> additionalServices,
+                                 final AdditionalServiceType noSpamService,
+                                 final AdditionalServiceType eventIDService,
+                                 final List<AdditionalServiceType> additionalServices,
                                  final FiComResponseHandler handler) 
     throws IOException
     {
@@ -292,9 +297,9 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     }
 
     @Override
-    protected FiComResponse createResp(final MSS_SignatureReq sigReq,
-                                       final MSS_SignatureResp sigResp, 
-                                       final MSS_StatusResp statResp) {
+    protected FiComResponse createResp(final MSSSignatureReq sigReq,
+                                       final MSSSignatureResp sigResp, 
+                                       final MSSStatusResp statResp) {
         return new FiComResponse(sigReq, sigResp, statResp);
     }
 

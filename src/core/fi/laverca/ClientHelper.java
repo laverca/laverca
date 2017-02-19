@@ -9,17 +9,17 @@ import java.util.concurrent.FutureTask;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_ReceiptResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_Signature;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-import org.etsi.uri.TS102204.v1_1_2.Status;
-import org.etsi.uri.TS102204.v1_1_2.StatusCode;
 
 import fi.laverca.ficom.FiComException;
+import fi.laverca.jaxb.mss.MSSReceiptReq;
+import fi.laverca.jaxb.mss.MSSReceiptResp;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusReq;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.SignatureType;
+import fi.laverca.jaxb.mss.StatusCodeType;
+import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssRequest;
 import fi.laverca.mss.MssResponse;
@@ -81,11 +81,11 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
         throws IOException
     {
         
-        if(handler == null) {
+        if (handler == null) {
             throw new IllegalArgumentException("Null response handler not allowed.");
         }
 
-        MSS_SignatureResp _sigResp = null;
+        MSSSignatureResp _sigResp = null;
         try {
             log.debug("Sending sigReq");
             _sigResp = this.mssClient.send(req.sigReq);
@@ -99,7 +99,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
             throw ioe;
         }
         
-        final MSS_SignatureResp fSigResp = _sigResp;
+        final MSSSignatureResp fSigResp = _sigResp;
         FutureTask<Resp> ft = 
             new FutureTask<Resp>(new Callable<Resp>() {
                 @SuppressWarnings("finally")
@@ -114,7 +114,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                     Resp resp = null;
                     ProgressUpdate prgUpdate = new ProgressUpdate(timeout, currentTimeMillis);
 
-                    MSS_StatusResp statResp = null;
+                    MSSStatusResp statResp = null;
                     int waitPeriod = initialWait;
                     long now = System.currentTimeMillis();
                     LOOP: while(true) {     
@@ -130,9 +130,9 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                                 break LOOP;
                             }
                         }
-                        MSS_StatusReq  statReq = null;
+                        MSSStatusReq  statReq = null;
                         try {
-                            statReq = mssClient.createStatusRequest(fSigResp, req.sigReq.getAP_Info().getAP_TransID());
+                            statReq = mssClient.createStatusRequest(fSigResp, req.sigReq.getAPInfo().getAPTransID());
                         } catch (Throwable t){
                             log.trace("Failed creating status request", t);
                             try {
@@ -150,7 +150,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                             boolean done = isDone(statResp);
                             long statusCode = parseStatus(statResp.getStatus());
 
-                            if(StatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
+                            if (StatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
                                 log.trace("Got an outstanding Status Response. Continuing to wait for a final answer.");
                                 handler.onOutstandingProgress(req, prgUpdate);
                                 continue LOOP;
@@ -210,29 +210,30 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
      * @throws IOException if the receipt sending fails
      * @throws IllegalArgumentException if the given Response is null
      */
-    public MSS_ReceiptResp sendReceiptReq(final Resp fiResp, 
-                                          final String message) 
+    public MSSReceiptResp sendReceiptReq(final Resp fiResp, 
+                                             final String message) 
         throws IOException
     {    
-        if(fiResp == null) {
+        if (fiResp == null) {
             throw new IllegalArgumentException("Can't send receipt wihtout a proper response");
         }
         
         log.debug("Sending receipt");
-        MSS_ReceiptReq receiptReq = this.mssClient.createReceiptRequest(fiResp.originalSigResp, 
-                                                                        fiResp.originalSigReq.getAP_Info().getAP_TransID(), 
-                                                                        message);
+        final MSSReceiptReq receiptReq = 
+            this.mssClient.createReceiptRequest(fiResp.originalSigResp, 
+                                                fiResp.originalSigReq.getAPInfo().getAPTransID(), 
+                                                message);
         receiptReq.setMobileUser(fiResp.originalSigReq.getMobileUser());
         return this.mssClient.send(receiptReq);
     }
 
     private static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
     
-    protected long parseStatus(final Status status) {
-        if(status == null) return NO_STATUS;
+    protected long parseStatus(final StatusType status) {
+        if (status == null) return NO_STATUS;
         
-        StatusCode sc = status.getStatusCode();
-        if(sc == null) return NO_STATUS;
+        final StatusCodeType sc = status.getStatusCode();
+        if (sc == null) return NO_STATUS;
         
         return sc.getValue();
     }
@@ -242,11 +243,11 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
      * @param statResp StatusResponse to check
      * @return true if signature was found, false otherwise
      */
-    protected static boolean isDone(final MSS_StatusResp statResp) {
-        if(statResp == null) {
+    protected static boolean isDone(final MSSStatusResp statResp) {
+        if (statResp == null) {
             return false;
         }
-        MSS_Signature sig = statResp.getMSS_Signature();
+        final SignatureType sig = statResp.getMSSSignature();
         return sig != null;
     }
 
@@ -268,9 +269,9 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
      * @param statResp MSS_StatusResp
      * @return created Resp instance
      */
-    protected abstract Resp createResp(final MSS_SignatureReq  sigReq,
-                                       final MSS_SignatureResp sigResp,
-                                       final MSS_StatusResp    statResp);
+    protected abstract Resp createResp(final MSSSignatureReq  sigReq,
+                                       final MSSSignatureResp sigResp,
+                                       final MSSStatusResp    statResp);
 
     
 }

@@ -21,13 +21,12 @@ package fi.laverca.etsi;
 
 import java.util.List;
 
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
-import org.etsi.uri.TS102204.v1_1_2.MSS_StatusResp;
-import org.etsi.uri.TS102204.v1_1_2.Service;
-import org.etsi.uri.TS102204.v1_1_2.types.MessagingModeType;
-
 import fi.laverca.ClientHelper;
+import fi.laverca.jaxb.mss.AdditionalServiceType;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.util.DTBS;
 
 /**  
@@ -61,26 +60,28 @@ public class EtsiClient extends ClientHelper<EtsiRequest, EtsiResponse> {
                                      final String msisdn,
                                      final DTBS   dtbs,
                                      final String dtbd,
-                                     final List<Service> additionalServices, 
+                                     final List<AdditionalServiceType> additionalServices, 
                                      final String signatureProfile,
                                      final String mssFormat,
                                      final MessagingModeType messagingMode) {
         
         final EtsiRequest req = new EtsiRequest();
 
-        final MSS_SignatureReq sigReq = this.mssClient.createSignatureRequest(apTransId, 
-                                                                              msisdn, 
-                                                                              dtbs,
-                                                                              dtbd, 
-                                                                              signatureProfile, 
-                                                                              mssFormat, 
-                                                                              messagingMode);
+        final MSSSignatureReq sigReq = this.mssClient.createSignatureRequest(apTransId, 
+                                                                             msisdn, 
+                                                                             dtbs,
+                                                                             dtbd, 
+                                                                             signatureProfile, 
+                                                                             mssFormat, 
+                                                                             messagingMode);
         req.sigReq = sigReq;
+        
+        final List<AdditionalServiceType> as = sigReq.getAdditionalServices().getServices();
 
-        if(additionalServices != null) {
-            for(Service s : additionalServices) {
-                if(s != null) {
-                    sigReq.getAdditionalServices().addService(s);
+        if (additionalServices != null) {
+            for (AdditionalServiceType s : additionalServices) {
+                if (s != null) {
+                    as.add(s);
                 }
             }
         }
@@ -89,9 +90,9 @@ public class EtsiClient extends ClientHelper<EtsiRequest, EtsiResponse> {
     }
 
     @Override
-    protected EtsiResponse createResp(final MSS_SignatureReq sigReq,
-                                      final MSS_SignatureResp sigResp, 
-                                      final MSS_StatusResp statResp) {
+    protected EtsiResponse createResp(final MSSSignatureReq sigReq,
+                                      final MSSSignatureResp sigResp, 
+                                      final MSSStatusResp statResp) {
         return new EtsiResponse(sigReq, sigResp, statResp);
     }
 

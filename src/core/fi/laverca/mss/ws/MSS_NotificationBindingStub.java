@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package fi.laverca.ws;
+package fi.laverca.mss.ws;
 
 import javax.xml.namespace.QName;
 
@@ -28,15 +28,15 @@ import org.apache.axis.constants.Use;
 import org.apache.axis.description.OperationDesc;
 import org.apache.axis.description.ParameterDesc;
 import org.apache.axis.soap.SOAPConstants;
-import org.etsi.uri.TS102204.v1_1_2.MSS_MessageSignature;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureReq;
-import org.etsi.uri.TS102204.v1_1_2.MSS_SignatureResp;
 
+import fi.laverca.jaxb.mss.MSSMessageSignature;
+import fi.laverca.jaxb.mss.MSSReceiptReq;
+import fi.laverca.jaxb.mss.MSSStatusResp;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.JMarshallerFactory;
 
-public class MSS_SignatureBindingStub extends AbstractSoapBindingStub
-    implements MSS_SignaturePortType
+public class MSS_NotificationBindingStub extends AbstractSoapBindingStub
+    implements MSS_NotificationPortType
 {
     static OperationDesc [] _operations;
 
@@ -46,26 +46,22 @@ public class MSS_SignatureBindingStub extends AbstractSoapBindingStub
         // Register prefix at Axis.
         JMarshallerFactory.registerPrefix("mss", NS204);
 
-        final QName reqQN      = new QName(NS204, "MSS_SignatureReq");
-        final QName respQN     = new QName(NS204, "MSS_SignatureResp");
-        // MSSP-2230 - original Axis 1.4 defined element QName and Type QName for each parameter.
-        final QName reqtypeQN  = new QName(NS204, "MSS_SignatureReqType");
+        final QName reqQN  = new QName(NS204, "MSS_StatusResp");
+        final QName respQN = new QName(NS204, "MSS_ReceiptReq");
 
-        ParameterDesc [] _params = new ParameterDesc [] {
-            new ParameterDesc(reqQN,
-                              ParameterDesc.IN,
-                              reqtypeQN, // MSSP-2230
-                              MSS_SignatureReq.class,
-                              false, false),
-        };
-        OperationDesc oper = new OperationDesc("MSS_Signature",
-                                               new QName("", "MSS_Signature"),
-                                               _params,
-                                               respQN,
-                                               respQN,
-                                               MSS_SignatureResp.class,
-                                               Style.RPC,
-                                               Use.LITERAL);
+        final ParameterDesc param = new ParameterDesc(reqQN,
+                                                      ParameterDesc.IN,
+                                                      reqQN,
+                                                      MSSStatusResp.class,
+                                                      false, false);
+        final OperationDesc oper = new OperationDesc("MSS_Notification",
+                                                     new QName("", "MSS_Notification"),
+                                                     new ParameterDesc[] { param },
+                                                     respQN,
+                                                     respQN,
+                                                     MSSReceiptReq.class,
+                                                     Style.RPC,
+                                                     Use.LITERAL);
 
         //
         // NOTE: Because of Castor serialization and deserialization
@@ -79,27 +75,24 @@ public class MSS_SignatureBindingStub extends AbstractSoapBindingStub
         // 4. dserClass
         // 5. encodingStyleURI
 
-        oper.registerType(MSS_SignatureReq.class,
-                          reqQN, sf, df, null);
-        oper.registerType(MSS_SignatureResp.class,
-                          respQN, sf, df, null);
-        oper.registerType(MSS_MessageSignature.class,
+        oper.registerType( MSSReceiptReq.class, respQN, sf, df, null );
+        oper.registerType( MSSStatusResp.class, reqQN, sf, df, null );
+        oper.registerType(MSSMessageSignature.class,
                           MESSAGESIGNATURE_HEADER, sf, df, null);
 
-        MSS_SignatureBindingStub._operations[0] = oper;
-
+        MSS_NotificationBindingStub._operations[0] = oper;
     }
 
-    public MSS_SignatureBindingStub() {
+    public MSS_NotificationBindingStub() {
         this(null);
     }
 
-    public MSS_SignatureBindingStub(java.net.URL endpointURL, javax.xml.rpc.Service service) {
+    public MSS_NotificationBindingStub(java.net.URL endpointURL, javax.xml.rpc.Service service) {
         this(service);
         super.cachedEndpoint = endpointURL;
     }
 
-    public MSS_SignatureBindingStub(javax.xml.rpc.Service service) {
+    public MSS_NotificationBindingStub(javax.xml.rpc.Service service) {
         if (service == null) {
             super.service = new org.apache.axis.client.Service();
         } else {
@@ -108,26 +101,26 @@ public class MSS_SignatureBindingStub extends AbstractSoapBindingStub
     }
 
     @Override
-    public MSS_SignatureResp MSS_Signature(MSS_SignatureReq req) throws java.rmi.RemoteException {
-
+    public MSSReceiptReq MSS_Notification(MSSStatusResp req) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
         Call _call1 = this.createCall(SOAPConstants.SOAP12_CONSTANTS,
                                       null,
                                       _operations[0]);
-        _call1.setProperty(Call.SEND_TYPE_ATTR, Boolean.FALSE);
+        _call1.setProperty(Call.SEND_TYPE_ATTR,  Boolean.FALSE);
         _call1.setProperty(AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
-        _call1.setSOAPActionURI("#MSS_Signature");
+        _call1.setSOAPActionURI("#MSS_Notification");
 
         this.setRequestHeaders(_call1);
-        Object _resp = _call1.invoke(new Object[] {req});
+        final Object[] reqs = new Object[] {req};
+        Object _resp = _call1.invoke(reqs);
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         else {
-            return (MSS_SignatureResp) _resp;
+            return (MSSReceiptReq) _resp;
         }
     }
 }
