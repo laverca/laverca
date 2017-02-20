@@ -8,7 +8,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -171,6 +173,13 @@ public class JMarshallerFactory {
      * Concurrent access/modify storage of JAXBContext objects.
      */
     private static Map<Class<?>,JAXBContextDelayedLoad> jaxbCache = new ConcurrentHashMap<>();
+    
+    private static JAXBContext globalJAXBContext;
+    private static List<String> globalJAXBPaths = new ArrayList<>();
+
+    public static void addJAXBPath(String p) {
+        globalJAXBPaths.add(p);
+    }
 
     /**
      * 
@@ -187,6 +196,24 @@ public class JMarshallerFactory {
             throws JAXBException
         {
             // Fast part: Return the context value if it already exists
+            if (globalJAXBContext != null) return globalJAXBContext;
+            try {
+                StringBuilder sb = new StringBuilder();
+                String colon = "";
+                for (String s: globalJAXBPaths) {
+                    sb.append(colon);
+                    colon = ":";
+                    sb.append(s);
+                }
+                // Slow part under synchronization: create the JAXBContext.
+                globalJAXBContext = JAXBContext.newInstance(sb.toString());
+                return this.jaxbContext;
+            } catch (JAXBException e) {
+                log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
+                throw e;
+            }
+            
+            /*
             if (this.jaxbContext != null) return this.jaxbContext;
             try {
                 // Slow part under synchronization: create the JAXBContext.
@@ -196,6 +223,7 @@ public class JMarshallerFactory {
                 log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
                 throw e;
             }
+            */
         }
     }
 
