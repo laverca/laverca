@@ -45,7 +45,7 @@ import fi.laverca.util.Saml2Util;
  */
 public class FiComAdditionalServices {
     
-    private static final Log log = LogFactory.getLog(FiComAdditionalServices.class);
+    static final Log log = LogFactory.getLog(FiComAdditionalServices.class);
 
     public static final String FICOMNS        = "http://mss.ficom.fi/TS102204/v1.0.0#";
     
@@ -206,13 +206,7 @@ public class FiComAdditionalServices {
                     }
                     return postalAddressToString(pa);       
                 }
-                /*
-                else {
-                    
-                    org.exolab.castor.types.AnyNode an = (org.exolab.castor.types.AnyNode)o;
-                    return an.getStringValue();
-                }
-                */
+
                 log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
                 return null;
             } catch (IndexOutOfBoundsException ioe) {
