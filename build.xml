@@ -16,7 +16,7 @@
   <property name="apidocs"   location="apidocs" />
 	
   <property name="core-src"      location="src/core" />
-  <property name="datatypes-src" location="src/datatypes" />
+  <property name="datatypes-src" location="src/jaxb-datatypes" />
   <property name="examples-src"  location="src/examples"/>
 
   <property name="xmlschemas"      location="etc/xmlschemas"/>
@@ -30,9 +30,6 @@
   <property name="conf"      value="${examples}/conf"/>
   <property name="etc"       value="${examples}/etc"/>
   <property name="script"    value="${examples}/script" />
-
-  <property name="gen-src"   location="gen-src" />
-  
 
   <property name="core-lib"      location="${build}/laverca-core.jar" />
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
@@ -104,19 +101,19 @@
     <delete dir="${build}" />
     <delete dir="${dist}" />
     <delete dir="${apidocs}" />
+    <delete dir="${datatypes-src}" />
   </target>
 
   <target name="generate-datatypes" >
 
-    <mkdir dir="${gen-src}" />
-    <mkdir dir="${gen-src}/kiuru-datatypes" />
+    <mkdir dir="${datatypes-src}" />
     <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
-                      todir="${gen-src}/kiuru-datatypes" />
+                      todir="${datatypes-src}" />
     <!--
     <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-secext-1.0.xsd"
-                      todir="${gen-src}/kiuru-datatypes" />
+                      todir="${datatypes-src}" />
     <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-                      todir="${gen-src}/kiuru-datatypes" />
+                      todir="${datatypes-src}" />
     -->
     
   </target>
@@ -126,9 +123,15 @@
   
   <target name="build"  depends="build-datatypes, build-core, build-examples" />  
 
-  <target name="build-datatypes">
+  <target name="build-datatypes"
+          depends="generate-datatypes">
     <mkdir dir="${build}/datatypes" />
-    <javac debug="true" deprecation="true" destdir="${build}/datatypes" encoding="ISO-8859-15" includeantruntime="false">
+    <javac debug="true"
+           optimize="true"
+           deprecation="true"
+           destdir="${build}/datatypes"
+           encoding="UTF-8"
+           includeantruntime="false">
       <src path="${datatypes-src}"/>
       <classpath>
         <path refid="laverca-libs" />
@@ -144,7 +147,12 @@
   
   <target name="build-core">
     <mkdir dir="${build}/core" />
-    <javac debug="true" deprecation="true" destdir="${build}/core" encoding="ISO-8859-15" includeantruntime="false">
+    <javac debug="true"
+           optimize="true"
+           deprecation="true"
+           destdir="${build}/core"
+           encoding="UTF-8"
+           includeantruntime="false">
       <src path="${core-src}"/>
       <classpath>
         <path refid="laverca-libs" />
