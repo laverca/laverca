@@ -22,18 +22,21 @@ specified in Finland.
 
     Java 8
         Oracle Java 8 SE SDK
+        OpenJDK 8
 
     JDK SE
         http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
     Laverca requires the libraries found under libs directory in the release root.
+    All of them should be possible to update to newer versions of the same major
+    release number, except for the axis-1.4.patched.jar  which must be this version.
 
 
   Examples
   
     Building of examples also require the following.
   
-    Ant (Tested with v1.8.1)
+    Ant (Tested with v1.8.1, and v1.9.6)
 
     Download Ant
     http://ant.apache.org/bindownload.cgi
