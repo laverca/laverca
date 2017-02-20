@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deployment xmlns="http://xml.apache.org/axis/wsdd/" xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
   <handler name="log" type="java:org.apache.axis.handlers.LogHandler"/>
-  <handler name="headerHandler" type="java:fi.laverca.HeaderHandler"/>
+  <handler name="headerHandler" type="java:fi.laverca.util.HeaderHandler"/>
   <globalConfiguration>
     <requestFlow>
       <handler type="log"/>
