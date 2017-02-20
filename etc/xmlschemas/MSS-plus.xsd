@@ -36,12 +36,8 @@
   -->
   <xs:import namespace="http://www.swisscom.ch/TS102204/ext/v1.0.0"
              schemaLocation="MSS-ReceiptExt.xsd" />
-
-  <xs:import namespace="http://www.methics.fi/Kiuru-wssecurity/v1.0.0#"
-             schemaLocation="kiuru-wsse-1.0.xsd" />
-  <xs:import namespace="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-             schemaLocation="oasis-200401-wss-wssecurity-utility-1.0.xsd" />
-  
+  <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
+             schemaLocation="MSS-SubscriberInfo.xsd" />
 
 <!-- This is the ETSI TS 102 204 XML Schema, 
      but we've added direct references to

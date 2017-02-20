@@ -26,5 +26,4 @@ import fi.laverca.jaxb.mss.MSSRegistrationResp;
 
 public interface MSS_RegistrationType extends java.rmi.Remote {
     public MSSRegistrationResp MSS_Registration(MSSRegistrationReq req) throws java.rmi.RemoteException;
-    public MSSRegistrationResp MSS_Registration(Security securityHeader,MSSRegistrationReq req) throws java.rmi.RemoteException;
 }
