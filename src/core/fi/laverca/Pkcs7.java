@@ -32,10 +32,10 @@ import javax.naming.ldap.Rdn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.ContentInfo;
 import org.bouncycastle.asn1.pkcs.IssuerAndSerialNumber;
@@ -152,7 +152,7 @@ public class Pkcs7 {
 
         ContentInfo ci = ContentInfo.getInstance(asn1);
 
-        DERObjectIdentifier typeId = ci.getContentType();
+        ASN1ObjectIdentifier typeId = ci.getContentType();
         if( ! typeId.equals(PKCSObjectIdentifiers.signedData)) {
             throw new IllegalArgumentException("not a pkcs7 signature");
         }
@@ -290,8 +290,8 @@ public class Pkcs7 {
             return null;
         }
 
-        IssuerAndSerialNumber ias = si.getIssuerAndSerialNumber();
-        DERInteger      serialDER = ias.getCertificateSerialNumber();
+        final IssuerAndSerialNumber ias = si.getIssuerAndSerialNumber();
+        final ASN1Integer     serialDER = ias.getCertificateSerialNumber();
 
         return serialDER.getPositiveValue().toString();
     }
@@ -306,8 +306,8 @@ public class Pkcs7 {
             return null;
         }
 
-        IssuerAndSerialNumber ias = si.getIssuerAndSerialNumber();
-        X500Name       issuerName = ias.getName();
+        final IssuerAndSerialNumber ias = si.getIssuerAndSerialNumber();
+        final X500Name       issuerName = ias.getName();
 
         return issuerName.toString();
     }
