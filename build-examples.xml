@@ -16,7 +16,9 @@
   <property name="examples-lib"  location="${build}/laverca-examples.jar" />
 
   <path id="example-libs">
-    <fileset dir="${libs}"><include name="*.jar"/></fileset>
+    <fileset dir="${libs}">
+      <include name="*.jar"/>
+    </fileset>
     <pathelement location="${core-lib}" />
     <pathelement location="${datatypes-lib}" />
   </path>
