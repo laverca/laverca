@@ -143,6 +143,9 @@
       <fileset dir="${build}/core">
         <include name="**" />
       </fileset>
+      <fileset dir="${core-src}">
+        <include name="client-config.wsdd" />
+      </fileset>
     </jar>
   </target>
 
