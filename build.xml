@@ -10,11 +10,11 @@
   
   <property name="project-version" value="1.2" />
   <property name="project-name"    value="laverca" />
-	
+  
   <property name="build"     location="build" />
   <property name="dist"      location="dist" />
   <property name="apidocs"   location="apidocs" />
-	
+  
   <property name="core-src"      location="src/core" />
   <property name="datatypes-src" location="src/jaxb-datatypes" />
   <property name="examples-src"  location="src/examples"/>
@@ -25,7 +25,7 @@
 
   <property name="libs"      location="libs"/>
   <property name="docs"      location="docs"/>	
-	
+  
   <property name="examples"  location="examples"/>
   <property name="conf"      value="${examples}/conf"/>
   <property name="etc"       value="${examples}/etc"/>
@@ -110,12 +110,12 @@
     <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
                       todir="${datatypes-src}" />
     <!--
-    <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-secext-1.0.xsd"
-                      todir="${datatypes-src}" />
-    <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-                      todir="${datatypes-src}" />
-    -->
-    
+        <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-secext-1.0.xsd"
+                          todir="${datatypes-src}" />
+        <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                          todir="${datatypes-src}" />
+        -->
+        
   </target>
   
 
@@ -147,52 +147,51 @@
   </target>
 
   <target name="build-examples">
-  	<ant antfile="./build-examples.xml" target="build" />
+    <ant antfile="./build-examples.xml" target="build" />
   </target>
   
   <!-- DIST -->
   
   <target name="dist" depends="build, apidocs">
-  
-  	<copy tofile="${dist}/examples/build.xml" file="build-examples.xml" />
-  	<copy todir="${dist}/examples/conf">   <fileset dir="${conf}"/>         </copy>
-  	<copy todir="${dist}/examples/etc">    <fileset dir="${etc}"/>          </copy>
-  	<copy todir="${dist}/examples/src">    <fileset dir="${examples-src}"/> </copy>
-  	<copy todir="${dist}/examples/script"> <fileset dir="${script}"/>       </copy>
+    
+    <copy tofile="${dist}/examples/build.xml" file="build-examples.xml" />
+    <copy todir="${dist}/examples/conf">   <fileset dir="${conf}"/>         </copy>
+    <copy todir="${dist}/examples/etc">    <fileset dir="${etc}"/>          </copy>
+    <copy todir="${dist}/examples/src">    <fileset dir="${examples-src}"/> </copy>
+    <copy todir="${dist}/examples/script"> <fileset dir="${script}"/>       </copy>
     
     <chmod dir="${dist}/examples/script" perm="755"/>    
-  	
+    
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>
-  	<copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
-  	<copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
-    	
+    <copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
+    <copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
+    
     <copy todir="${dist}" file="${core-lib}" />
-    <copy todir="${dist}" file="${datatypes-lib}" />
     <copy todir="${dist}/examples" file="${examples-lib}" />
     
     <copy todir="${dist}" file="README.md" />
     <copy todir="${dist}" file="CHANGELOG" />
-  	<copy todir="${dist}" file="LICENSE"   />
-  	<copy todir="${dist}" file="NOTICE"    />
+    <copy todir="${dist}" file="LICENSE"   />
+    <copy todir="${dist}" file="NOTICE"    />
 
   </target>
   
   <!-- MISC -->
   
   <target name="zip" depends="dist">
-	<zip destfile="${project-name}-${project-version}.zip" basedir="${dist}"/>
+    <zip destfile="${project-name}-${project-version}.zip" basedir="${dist}"/>
   </target>
-	
+  
   <target name="gzip" depends="dist">
-	<tar compression="gzip" longfile="gnu" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
+    <tar compression="gzip" longfile="gnu" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
   </target>
 
   <target name="test" depends="build"/>
   
   <target name="apidocs"
           description="Generates Laverca documentation.">
-		  <mkdir dir="apidocs"/>
-  	
+    <mkdir dir="apidocs"/>
+    
     <javadoc packagenames="fi.laverca.*"
              defaultexcludes="yes"
              destdir="${apidocs}"
@@ -206,11 +205,11 @@
         <path refid="laverca-libs"/>
         <pathelement location="${datatypes-src}"/>
       </classpath>
-    	
+      
       <fileset dir="${core-src}" casesensitive="yes">
         <include name="**/*.java" />
       </fileset>
-			 	
+      
       <doctitle><![CDATA[<h1>Laverca ${project-version}</h1>]]></doctitle>
     </javadoc>
   </target>
