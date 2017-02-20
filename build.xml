@@ -82,7 +82,8 @@
         <arg line="-npa -no-header -nv" />
         <arg line="-d @{todir}"/>
         <arg line="-extension"/>
-        <arg line="-verbose"/>
+        <!-- <arg line="-verbose"/> -->
+        <arg line="-quiet"/>
         <arg line="-encoding UTF-8"/>
         <arg line="-XexplicitAnnotation"/>
         <!-- <arg line="-XautoNameResolution"/> -->
@@ -189,13 +190,14 @@
           description="Generates Laverca documentation.">
     <mkdir dir="apidocs"/>
     
-    <javadoc packagenames="fi.laverca.*"
+    <javadoc packagenames="fi.laverca,fi.laverca.*"
              defaultexcludes="yes"
              destdir="${apidocs}"
              author="false"
              version="false"
-             Private="false"
-             Encoding="UTF-8"
+             verbose="false"
+             private="false"
+             encoding="UTF-8"
              use="true"
              useexternalfile="true"
              windowtitle="Laverca">
