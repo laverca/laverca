@@ -60,9 +60,9 @@ public abstract class AbstractSoapFaultFactory implements FaultFactory {
 
     public String  faultNamespace;
 
-    private static final String INTERNAL_ERROR = "INTERNAL_ERROR";
-    private static final String COMEXCEPTION   = "COMEXCEPTION";
-    private static final String COMTIMEOUT     = "COMTIMEOUT";
+    public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
+    public static final String COMEXCEPTION   = "COMEXCEPTION";
+    public static final String COMTIMEOUT     = "COMTIMEOUT";
     
     protected AbstractSoapFaultFactory(final Log log) {
         this.log = log;

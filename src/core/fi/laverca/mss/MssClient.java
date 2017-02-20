@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.GregorianCalendar;
 
+import javax.net.ssl.SSLSocketFactory;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
@@ -58,7 +59,12 @@ import fi.laverca.mss.ws.MSS_RegistrationBindingStub;
 import fi.laverca.mss.ws.MSS_SignatureBindingStub;
 import fi.laverca.mss.ws.MSS_SignatureServiceLocator;
 import fi.laverca.mss.ws.MSS_StatusQueryBindingStub;
+import fi.laverca.util.AbstractSoapBindingStub;
+import fi.laverca.util.CommonsHTTPSender;
 import fi.laverca.util.DTBS;
+import fi.laverca.util.JMarshallerFactory;
+import fi.laverca.util.LavercaHttpClient;
+import fi.laverca.util.ProxySettings;
 
 /**
  * A raw ETSI TS 102 204 client object.
@@ -81,6 +87,21 @@ public class MssClient {
     URL MSSP_PR_URL = null;
     URL MSSP_RG_URL = null;
     MeshMemberType aeMsspId = null;
+
+    private int poolSize = 16;
+    /** New connection timeout: milliseconds, 0 &leq; not set */
+    private int newConnTimeout;
+    /** New SO read timeout: milliseconds, 0 &leq; not set */
+    private int newSoTimeout;
+
+    private String newUsername;
+    private String newPassword;
+
+    private ProxySettings proxySettings;
+
+    private SSLSocketFactory sslSocketFactory;
+    
+    private LavercaHttpClient httpClient;
 
     /** 
      * <b>NOTE:</b> 
@@ -107,7 +128,7 @@ public class MssClient {
                      final String msspRegistrationUrl,
                      final String msspProfileUrl,
                      final String msspHandshakeUrl)
-    throws IllegalArgumentException
+        throws IllegalArgumentException
     {
         if (apId != null) {
             this.apId = apId;
@@ -119,7 +140,7 @@ public class MssClient {
         } else {
             throw new IllegalArgumentException("null apPwd not allowed.");
         }
-        
+
         this.setAeAddress(msspSignatureUrl,
                           msspStatusUrl,
                           msspReceiptUrl,
@@ -127,6 +148,21 @@ public class MssClient {
                           msspProfileUrl,
                           msspHandshakeUrl);
 
+        // Record global package names of generated JAXB classes
+        for (final Class<?> c : new Class[] {
+                fi.laverca.jaxb.mss.ObjectFactory.class,
+                fi.laverca.jaxb.mssfi.ObjectFactory.class,
+                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
+                fi.laverca.jaxb.saml2a.ObjectFactory.class,
+                fi.laverca.jaxb.saml2p.ObjectFactory.class,
+                fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
+                fi.laverca.jaxb.soap12env.ObjectFactory.class,
+                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class }) {
+
+            final String p = c.getPackage().getName();
+            JMarshallerFactory.addJAXBPath(p);
+
+        }
     }
     
     /**
@@ -148,6 +184,14 @@ public class MssClient {
         this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
     }
 
+    /**
+     * Set this socket factory if you want to e.g. inclusion of your client certificate
+     * your client keys.
+     */
+    public void setSSLSocketFactory(SSLSocketFactory ssf) {
+        this.sslSocketFactory = ssf;
+    }
+    
     /**
      * Set a custom Axis EngineConfiguration
      * @param conf Axis EngineConfiguration
@@ -197,6 +241,27 @@ public class MssClient {
         }
     }
 
+    private LavercaHttpClient getHttpClient() {
+        synchronized (this) {
+            if (this.httpClient == null) {
+                // If SSLSocketFactory is set, use it, otherwise use system default
+                SSLSocketFactory ssf = this.sslSocketFactory;
+                if (ssf == null) {
+                    ssf = (SSLSocketFactory)SSLSocketFactory.getDefault();
+                }
+                this.httpClient = new LavercaHttpClient("mssClientPool",
+                                                        this.poolSize,
+                                                        this.newConnTimeout,
+                                                        this.newSoTimeout,
+                                                        this.newUsername,
+                                                        this.newPassword,
+                                                        this.proxySettings,
+                                                        ssf);
+            }
+        }
+        return this.httpClient;
+    }
+    
     /**
      * Fills Minorversion, Majorversion, AP_Info and MSS_Info to the given message.
      * @param mat Message to fill
@@ -462,12 +527,12 @@ public class MssClient {
     private MessageAbstractType sendMat(final MessageAbstractType req)
         throws AxisFault, IOException
     {
-        Stub port = null;
+        AbstractSoapBindingStub port = null;
         try {
-            long timeout = 0;
+            Long timeout = null;
 
             if (req instanceof MSSSignatureReq) {
-                timeout = ((MSSSignatureReq)req).getTimeOut().longValue();
+                timeout = ((MSSSignatureReq)req).getTimeOut();
                 port = (MSS_SignatureBindingStub)this.mssService.getMSS_SignaturePort(this.MSSP_SI_URL);
             } else if (req instanceof MSSReceiptReq) {
                 port = (MSS_ReceiptBindingStub)this.mssService.getMSS_ReceiptPort(this.MSSP_RC_URL);
@@ -484,9 +549,9 @@ public class MssClient {
             if (port == null) {
                 throw new IOException("Invalid request type");
             }
-            if (timeout > 0) {
+            if (timeout != null) {
                 // ETSI TS 102 204 defines TimeOut in seconds instead of milliseconds
-                port.setTimeout((int)(timeout*1000));
+                port.setTimeout(timeout.intValue()*1000);
             }
         } catch (ServiceException se) {
             log.error("Failed to get port: " + se.getMessage());
@@ -499,6 +564,10 @@ public class MssClient {
         } catch (Exception e) {
             log.fatal("Could not do port._createCall()", e);
         }
+
+        // Set tools for each context.
+        port.setProperty(CommonsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
+        // port.setProperty(CommonsHTTPSender.FAULTFACTORY_INSTANCE, MssClientFaultFactory.getInstance());
 
         if (port instanceof MSS_SignatureBindingStub) {
             return ((MSS_SignatureBindingStub)port).MSS_Signature((MSSSignatureReq)req);
