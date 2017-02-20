@@ -121,31 +121,10 @@
 
   <!-- BUILD -->
   
-  <target name="build"  depends="build-datatypes, build-core, build-examples" />  
+  <target name="build"  depends="build-core, build-examples" />  
 
-  <target name="build-datatypes"
+  <target name="build-core"
           depends="generate-datatypes">
-    <mkdir dir="${build}/datatypes" />
-    <javac debug="true"
-           optimize="true"
-           deprecation="true"
-           destdir="${build}/datatypes"
-           encoding="UTF-8"
-           includeantruntime="false">
-      <src path="${datatypes-src}"/>
-      <classpath>
-        <path refid="laverca-libs" />
-      </classpath>
-      <include name="**/**.java" />
-    </javac>
-    <jar jarfile="${build}/laverca-datatypes.jar">
-      <fileset dir="${build}/datatypes">
-        <include name="**" />
-      </fileset>
-    </jar>
-  </target>
-  
-  <target name="build-core">
     <mkdir dir="${build}/core" />
     <javac debug="true"
            optimize="true"
@@ -154,9 +133,9 @@
            encoding="UTF-8"
            includeantruntime="false">
       <src path="${core-src}"/>
+      <src path="${datatypes-src}"/>
       <classpath>
         <path refid="laverca-libs" />
-        <fileset dir="build" includes="laverca-datatypes.jar" />
       </classpath>
       <include name="**/**.java"/>
     </javac>
