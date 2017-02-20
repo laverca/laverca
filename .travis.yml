@@ -1,10 +1,9 @@
 language: java
 jdk:
   - oraclejdk8
-  - oraclejdk7
 branches:
   only:
   - master
 notifications:
   email:
-  - mikuz.dev@gmail.com
+  - eemeli.miettinen@methics.fi, matti.aarnio@methics.fi

@@ -20,8 +20,8 @@ specified in Finland.
 
   Laverca API
 
-    Java 7
-        Java 6 can also be used by building the source code with JDK 6. 
+    Java 8
+        Oracle Java 8 SE SDK
 
     JDK SE
         http://www.oracle.com/technetwork/java/javase/downloads/index.html
