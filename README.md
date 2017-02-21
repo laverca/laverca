@@ -37,7 +37,7 @@ specified in Finland.
 
   Examples
   
-    Building of examples also require the following.
+    Building the examples requires the following tools:
   
     Ant (Tested with v1.8.1, and v1.9.6)
 
@@ -48,9 +48,9 @@ specified in Finland.
     http://ant.apache.org/manual/index.html
 
 
-## Example
+## Examples
 
-    Laverca ships with example implementations. The examples are included 
+    Laverca ships with a couple of example implementations. The examples are included 
     in the examples directory.
 
 
@@ -64,8 +64,7 @@ specified in Finland.
 
   Usage
     
-    Most samples require a GUI. Run the examples by using the scripts in 
-    examples/script directory. For example:
+    Run the examples by using the scripts in the examples/script directory:
     
     $ sh examples/script/SignText.sh
      OR
@@ -74,17 +73,16 @@ specified in Finland.
 
   Configuration
 
-    Examples configuration file is located in examples/conf/.
+    Example configuration file is located in examples/conf/.
 
-    By default the examples are configured to use a demo AE server which is 
+    By default the examples are configured to use a demo MSSP server which is 
     hosted by Methics Ltd. Find additional information about the demo service
     in: http://demo.methics.fi/demo-environment/application-providers/
 
         
 ## Features
 
-    1. Supports synchronous and asynchronous client-server communication.
-         (FiComClient for C/S asynch, EtsiClient for synchronous)
+    1. Synchronous and asynchronous client-server communication.
     2. Strong mutual identification and encryption between all message routing entities.
          (JvmSsl)
     3. Strong mutual identification and encryption between AP and AE including a password (AP_PWD).
