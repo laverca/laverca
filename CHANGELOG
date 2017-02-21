@@ -1,7 +1,22 @@
 Laverca Changelog
 =================
-    
-    2016-08-17 1.21     
+
+    2017-02-21 2.0
+      Debugging, bugfixing, documenting.
+
+    2017-02-20 2.0
+      Updated all used libraries to latest versions at respective sources.
+      Use latest Methics internal axis-1.4.patched.jar for client functions for time being.
+      (Further goal: Replace Axis with JAX-WS.)
+
+    2017-02-17 1.99
+      Created "preJAXB" fork for old code base access.
+      Created "ToJava8" fork, begun to migrate old Castor datatypes to Java8 JAXB types.
+      Removed Castor libraries, and Castor generated datatypes.
+      Using JAXB to generate datatypes, and operate on them.
+      Further goal: Replace Axis with JAX-WS.
+
+    2016-08-17 1.21
       Improved support for standard ETSI TS 102 204 requests
         - Better support for Asynch-Client-Server mode via EtsiClient class
       Support for Axis EngineConfiguration
@@ -17,7 +32,7 @@ Laverca Changelog
     2012-11-09 1.11
       Fixed FiComClient loop getting stuck due to missing catch
       Removed invalid configurations and certs
-      
+
     2012-10-11 1.1
       Updated readme (bug id 3575958)
       Added missing datatypes-src folder to the release package
@@ -25,9 +40,9 @@ Laverca Changelog
     2012-09-27 1.1 RC 1
       Cleaned up and updated libraries:
         - Upgraded Commons HTTPClient to HTTPComponents
-        - Removed Commons Configuration, 
+        - Removed Commons Configuration,
            uses java properties instead
-        - Updated Commons Codec, Castor, 
+        - Updated Commons Codec, Castor,
            Commons Logging and wsdl4j libraries
       Cleaned up ant build file
       Fixed getting address from FiCom response
@@ -39,13 +54,13 @@ Laverca Changelog
       Receipt support in FiComClient
 
     2011-06-22 0.95
-      Minor bugfixes. Altered the way DTBS works. 
+      Minor bugfixes. Altered the way DTBS works.
       Added support for AE validation.
 
-    2011-06-20 0.94 
+    2011-06-20 0.94
       First version in SourceForge. Apache 2.0 License
 
-    2011-05-01 .0.93 
+    2011-05-01 .0.93
       Minor bugfixes according to review and testing feedback.
 
     2011-04-07 0.90
