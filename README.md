@@ -18,7 +18,7 @@ specified in Finland.
 
 ## Requirements
 
-  Laverca API
+Laverca API
 
     Java 8
         Oracle Java 8 SE SDK
@@ -35,7 +35,7 @@ specified in Finland.
     It is our old version.
 
 
-  Examples
+Examples
   
     Building the examples requires the following tools:
   
@@ -54,7 +54,7 @@ specified in Finland.
     in the examples directory.
 
 
-  Building
+Building
 
     Compiled examples are shipped for your convenience. Build and distribute the 
     examples jar over the shipped one yourself by running the following command:
@@ -62,7 +62,7 @@ specified in Finland.
     $ ant dist
 
 
-  Usage
+Usage
     
     Run the examples by using the scripts in the examples/script directory:
     
@@ -71,7 +71,7 @@ specified in Finland.
     $ examples/script/SignText.bat
     
 
-  Configuration
+Configuration
 
     Example configuration file is located in examples/conf/.
 
@@ -106,7 +106,7 @@ specified in Finland.
 
 ## Dynamic setting of TLS keys and trusts
 
-  Setting client key+cert on connection, and server certificate trust list
+Setting client key+cert on connection, and server certificate trust list
 
     // Prepare SSLSocketFactory
     
@@ -125,9 +125,6 @@ Supply a custom SSLSocketFactory that has a client TLS key configured to it for 
     // just prior to service call.
     LavercaSSLTrustManager.getInstance().setExpectedServerCerts( certDerList );
     // ... actual service call ...
-
-
-
 
 The certificate trust list contains a collection of possible certificates that the MSS server may have.  If no call on the setter function is done, or a null is set there, the client code will accept all server certificates.
 The certificate trust list data is delivered via ThreadLocal storage.
