@@ -31,6 +31,9 @@ specified in Finland.
     All of them should be possible to update to newer versions of the same major
     release number, except for the axis-1.4.patched.jar  which must be this version.
 
+    Source branch "preJAXB" is possible to use on Java6.
+    It is our old version.
+
 
   Examples
   
