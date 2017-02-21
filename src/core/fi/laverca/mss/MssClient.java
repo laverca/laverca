@@ -198,6 +198,8 @@ public class MssClient {
      * Set this socket factory before calling MSS operations,
      * if you want to e.g. inclusion of your client certificate
      * on the outgoing calls.
+     *
+     * @param ssf Define a SSL SocketFactory with a client side key
      */
     public void setSSLSocketFactory(SSLSocketFactory ssf) {
         this.sslSocketFactory = ssf;

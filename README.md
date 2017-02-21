@@ -79,14 +79,14 @@ specified in Finland.
     hosted by Methics Ltd. Find additional information about the demo service
     in: http://demo.methics.fi/demo-environment/application-providers/
 
-        
+
 ## Features
 
     1. Synchronous and asynchronous client-server communication.
     2. Strong mutual identification and encryption between all message routing entities.
-         (JvmSsl)
+         (JvmSsl, MssClient.setSSLSocketFactory(..))
     3. Strong mutual identification and encryption between AP and AE including a password (AP_PWD).
-         (JvmSsl)
+         (JvmSsl, MssClient.setSSLSocketFactory(..))
     4. Supported message formats are: MSS_SignatureReq, MSS_SignatureResp, MSS_StatusReq, MSS_StatusResp, MSS_ReceiptReq and MSS_ReceiptResp.
          (FiComClient, EtsiClient)
     5. Supported character maps in service requests are UTF-8, GSM and UCS2.
@@ -104,9 +104,35 @@ specified in Finland.
     11. The format of the digital signature is base64-encoding and PKCS#7 or PKCS#1 with the users certificate.
          (FiComResponse)
 
+## Dynamic setting of TLS keys and trusts
+
+  Setting client key+cert on connection, and server certificate trust list
+
+    // Prepare SSLSocketFactory
+    
+    SSLSocketFactory ssf = ... 
+
+Supply a customer SSLSocketFactory that has a client TLS key configured to it for outbound calls.
+
+    // Prepare EtsiClient
+
+    EtsiClient ec = new EtsiClient(...);
+    ec.setSSLSocketFactory( ssf );
+
+    // Now call MSS services
+
+    // Application must set the expected server certs list every time
+    // just prior to service call.
+    LavercaSSLTrustManager.getInstance().setExpectedServerCerts( certDerList );
+    // ... actual service call ...
+
+
+
+
+The certificate trust list contains a collection of possible certificates that the MSS server may have.  If no call on the setter function is done, or a null is set there, the client code will accept all server certificates.
+The certificate trust list data is delivered via ThreadLocal storage.
 
 
 ## Copyright and License
 
 See the [LICENSE](https://github.com/laverca/laverca/blob/master/LICENSE) file
-

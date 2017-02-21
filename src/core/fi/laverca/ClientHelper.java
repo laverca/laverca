@@ -25,6 +25,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,7 +51,7 @@ import fi.laverca.mss.MssResponse;
  */
 public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends MssResponse> {
 
-    private static final Log log = LogFactory.getLog(ClientHelper.class);
+    static final Log log = LogFactory.getLog(ClientHelper.class);
 
     protected MssClient mssClient;
     protected ExecutorService threadExecutor; 
@@ -134,12 +136,12 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                     ProgressUpdate prgUpdate = new ProgressUpdate(timeout, currentTimeMillis);
 
                     MSSStatusResp statResp = null;
-                    int waitPeriod = initialWait;
+                    int waitPeriod = ClientHelper.this.initialWait;
                     long now = System.currentTimeMillis();
                     LOOP: while(true) {     
                         Thread.sleep(waitPeriod - (System.currentTimeMillis()-now));
                         now = System.currentTimeMillis();
-                        waitPeriod = subsequentWait; 
+                        waitPeriod = ClientHelper.this.subsequentWait; 
                         
                         if (now > deadline) {
                             log.trace("Timed out");
@@ -151,7 +153,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                         }
                         MSSStatusReq  statReq = null;
                         try {
-                            statReq = mssClient.createStatusRequest(fSigResp, req.sigReq.getAPInfo().getAPTransID());
+                            statReq = ClientHelper.this.mssClient.createStatusRequest(fSigResp, req.sigReq.getAPInfo().getAPTransID());
                         } catch (Throwable t){
                             log.trace("Failed creating status request", t);
                             try {
@@ -163,7 +165,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                         }
                         try {
                             log.trace("Sending statReq");
-                            statResp = mssClient.send(statReq);
+                            statResp = ClientHelper.this.mssClient.send(statReq);
                             log.trace("Got statResp");
 
                             boolean done = isDone(statResp);
@@ -292,5 +294,16 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
                                        final MSSSignatureResp sigResp,
                                        final MSSStatusResp    statResp);
 
-    
+
+    /**
+     * Set this socket factory before calling MSS operations,
+     * if you want to e.g. inclusion of your client certificate on the outgoing calls.
+     * 
+     * @see fi.laverca.mss.MssClient#setSSLSocketFactory(SSLSocketFactory)
+     *
+     * @param ssf Define a SSL SocketFactory with a client side key
+     */
+    public void setSSLSocketFactory(final SSLSocketFactory ssf) {
+        this.mssClient.setSSLSocketFactory(ssf);
+    }
 }

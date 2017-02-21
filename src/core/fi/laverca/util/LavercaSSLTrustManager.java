@@ -63,6 +63,9 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * Set a collection (or null) of server certificates expected at the remote system.
      * If the collection is not null and non-empty the server's certificate must
      * be present in the collection, otherwise the connection is rejected.
+     * <p>
+     * This sets data into ThreadLocal storage, and therefore must always be called
+     * just prior the service function calls to make sure the correct data is present.
      */
     public void setExpectedServerCerts(final List<byte[]> ss) {
         this.expectedServerCerts.set(ss);

@@ -19,6 +19,19 @@
 
 package fi.laverca.util;
 
+/**
+ * This has old style static setter of JVM global SSL settings.
+ * <p>
+ * Instead of this setting keystore data, you can also use
+ * MssClient/EtsiClient/FicomClient's setSSLSocketFactory()
+ * methods before calling the service the first time.
+ * <p>
+ * The connections are always trusted, and in case you want
+ * to specify what certificates are expected at the server side,
+ * you can use LavercaSSLTrustManager.setExpectedServerCerts()
+ * to set a list of possible certificates.
+ *  
+ */
 public class JvmSsl {
 
     /**
