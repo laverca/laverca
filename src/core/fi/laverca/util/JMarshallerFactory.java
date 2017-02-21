@@ -207,7 +207,7 @@ public class JMarshallerFactory {
                 }
                 // Slow part under synchronization: create the JAXBContext.
                 globalJAXBContext = JAXBContext.newInstance(sb.toString());
-                return this.jaxbContext;
+                return globalJAXBContext;
             } catch (JAXBException e) {
                 log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
                 throw e;
