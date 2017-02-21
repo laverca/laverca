@@ -17,6 +17,8 @@ import org.apache.axis.client.HTTPTransport;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.encoding.TypeMappingRegistry;
 
+import fi.laverca.util.ComponentsHTTPSender;
+
 /**
  * <p>
  * Axis Client Configuration
@@ -141,7 +143,7 @@ public class SSLClientAxisEngineConfig extends SimpleProvider {
 	 * @return the truststoreType
 	 */
 	public String getTruststoreType() {
-		return truststoreType;
+		return this.truststoreType;
 	}
 
 	/**
@@ -175,39 +177,39 @@ public class SSLClientAxisEngineConfig extends SimpleProvider {
 		AxisProperties.setProperty("axis.socketFactory","org.apache.axis.components.net.DefaultSocketFactory");
 	//	AxisProperties.setProperty("axis.socketFactoryFactory", "at.telekom.weberv.util.SocketFactoryFactory");
 		Hashtable opts = new Hashtable();
-        opts.put(AxisEngine.PROP_DISABLE_PRETTY_XML, disablePrettyXML);
-        opts.put(AxisEngine.PROP_ENABLE_NAMESPACE_PREFIX_OPTIMIZATION, enableNamespacePrefixOptimization);
+        opts.put(AxisEngine.PROP_DISABLE_PRETTY_XML, this.disablePrettyXML);
+        opts.put(AxisEngine.PROP_ENABLE_NAMESPACE_PREFIX_OPTIMIZATION, this.enableNamespacePrefixOptimization);
         setGlobalOptions(opts);
-        Handler pivot = (Handler) new HTTPSender();
-        if (keystore!=null){
+        Handler pivot = new ComponentsHTTPSender();
+        if (this.keystore!=null){
         	pivot.setOption("clientauth","true");
-           	pivot.setOption("keystore", keystore);
-            if (keystoretype!=null)
-            	pivot.setOption("keystoreType", keystoretype);
-            if (keystorepin!=null){
-            	pivot.setOption("keypass",keystorepin);
-            	pivot.setOption("keystorePass", keystorepin);        	
+           	pivot.setOption("keystore", this.keystore);
+            if (this.keystoretype!=null)
+            	pivot.setOption("keystoreType", this.keystoretype);
+            if (this.keystorepin!=null){
+            	pivot.setOption("keypass",this.keystorepin);
+            	pivot.setOption("keystorePass", this.keystorepin);        	
             }
         }
-        if (truststore!=null){
-        	pivot.setOption("truststore",truststore);
-	        if (truststoreType!=null)
-	        	pivot.setOption("truststoreType",truststoreType);
-	        if (truststorepin!=null)
-	        	pivot.setOption("truststorePass",truststorepin);
+        if (this.truststore!=null){
+        	pivot.setOption("truststore",this.truststore);
+	        if (this.truststoreType!=null)
+	        	pivot.setOption("truststoreType",this.truststoreType);
+	        if (this.truststorepin!=null)
+	        	pivot.setOption("truststorePass",this.truststorepin);
         }
-        if (logging && debugBaseDir != null)
-        	pivot.setOption("httplogdirectory", debugBaseDir.getAbsolutePath());
+        if (logging && this.debugBaseDir != null)
+        	pivot.setOption("httplogdirectory", this.debugBaseDir.getAbsolutePath());
         Handler transport = null;
         // Logging, if desired
         if (logging){
         	SimpleChain reqHandler=new SimpleChain(); 
             SimpleChain respHandler=new SimpleChain();
-            logHandler = new AxisDebugLogHandler();
-            if (debugBaseDir!=null)
-            	logHandler.setBaseDir(debugBaseDir);
-            reqHandler.addHandler(logHandler);
-            respHandler.addHandler(logHandler);
+            this.logHandler = new AxisDebugLogHandler();
+            if (this.debugBaseDir!=null)
+            	this.logHandler.setBaseDir(this.debugBaseDir);
+            reqHandler.addHandler(this.logHandler);
+            respHandler.addHandler(this.logHandler);
             transport = new SimpleTargetedChain(reqHandler,pivot,respHandler);
         }
         else
@@ -224,14 +226,14 @@ public class SSLClientAxisEngineConfig extends SimpleProvider {
 	 * @return the log handler, or null if no logging
 	 */
 	public AxisDebugLogHandler getLogHandler() {
-		return logHandler;
+		return this.logHandler;
 	}
 
 	/**
 	 * @return the debugBaseDir
 	 */
 	public File getDebugBaseDir() {
-		return debugBaseDir;
+		return this.debugBaseDir;
 	}
 
 	/**
@@ -245,7 +247,7 @@ public class SSLClientAxisEngineConfig extends SimpleProvider {
 	 * @return the disablePrettyXML
 	 */
 	public boolean isDisablePrettyXML() {
-		return disablePrettyXML;
+		return this.disablePrettyXML;
 	}
 
 	/**
@@ -259,7 +261,7 @@ public class SSLClientAxisEngineConfig extends SimpleProvider {
 	 * @return the enableNamespacePrefixOptimization
 	 */
 	public boolean isEnableNamespacePrefixOptimization() {
-		return enableNamespacePrefixOptimization;
+		return this.enableNamespacePrefixOptimization;
 	}
 
 	/**
@@ -284,7 +286,4 @@ public class SSLClientAxisEngineConfig extends SimpleProvider {
   stub._setProperty(Stub.PASSWORD_PROPERTY, "pwd");
   
 	 */
-	
-	
-	
 }

@@ -46,7 +46,7 @@ public class CertificateHelper {
 	 * @throws CertificateException if there is a problem
 	 */
 	public CertificateHelper() throws CertificateException {
-		factory = CertificateFactory.getInstance("X.509");
+		this.factory = CertificateFactory.getInstance("X.509");
 	}
 
 	
@@ -59,7 +59,7 @@ public class CertificateHelper {
 	 * @throws CertificateException if tehre is a problem
 	 */
 	public X509Certificate getCertificate(InputStream inStream) throws CertificateException{
-		return (X509Certificate) factory.generateCertificate(inStream);
+		return (X509Certificate) this.factory.generateCertificate(inStream);
 	}
 	
 	
