@@ -112,7 +112,7 @@ specified in Finland.
     
     SSLSocketFactory ssf = ... 
 
-Supply a customer SSLSocketFactory that has a client TLS key configured to it for outbound calls.
+Supply a custom SSLSocketFactory that has a client TLS key configured to it for outbound calls.
 
     // Prepare EtsiClient
 
