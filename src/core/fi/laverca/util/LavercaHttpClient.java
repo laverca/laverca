@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.components.logger.LogFactory;
@@ -134,7 +134,11 @@ public class LavercaHttpClient {
         rb.register("http", PlainConnectionSocketFactory.getSocketFactory());
         
         // Use the system properties for initializing the HTTPS
-        rb.register("https", new SSLConnectionSocketFactory(ssf, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER));
+
+        // Pre HC 4.4 HostnameVerifier:
+        //final HostnameVerifier hnv = org.apache.http.conn.ssl.AllowAllHostnameVerifier.INSTANCE;
+        final HostnameVerifier hnv = org.apache.http.conn.ssl.NoopHostnameVerifier.INSTANCE;
+        rb.register("https", new SSLConnectionSocketFactory(ssf, hnv));
 
         this.connectionManager =
                 new PoolingHttpClientConnectionManager(rb.build(), null, null, null, 30L, TimeUnit.SECONDS);
