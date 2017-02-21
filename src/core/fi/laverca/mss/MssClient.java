@@ -29,7 +29,6 @@ import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.EngineConfiguration;
-import org.apache.axis.client.Stub;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -103,6 +102,31 @@ public class MssClient {
     
     private LavercaHttpClient httpClient;
 
+    private static boolean marshallerInitDone;
+    
+    private static void marshallerInit() {
+        
+        if (marshallerInitDone) return;
+
+        // Record global package names of generated JAXB classes
+        for (final Class<?> c : new Class[] {
+                fi.laverca.jaxb.mss.ObjectFactory.class,
+                fi.laverca.jaxb.mssfi.ObjectFactory.class,
+                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
+                fi.laverca.jaxb.saml2a.ObjectFactory.class,
+                fi.laverca.jaxb.saml2p.ObjectFactory.class,
+                fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
+                fi.laverca.jaxb.soap12env.ObjectFactory.class,
+                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class }) {
+
+            final String p = c.getPackage().getName();
+            JMarshallerFactory.addJAXBPath(p);
+
+        }
+
+        marshallerInitDone = true;
+    }
+
     /** 
      * <b>NOTE:</b> 
      * <br>if any of the URLs require SSL, you must
@@ -148,21 +172,7 @@ public class MssClient {
                           msspProfileUrl,
                           msspHandshakeUrl);
 
-        // Record global package names of generated JAXB classes
-        for (final Class<?> c : new Class[] {
-                fi.laverca.jaxb.mss.ObjectFactory.class,
-                fi.laverca.jaxb.mssfi.ObjectFactory.class,
-                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
-                fi.laverca.jaxb.saml2a.ObjectFactory.class,
-                fi.laverca.jaxb.saml2p.ObjectFactory.class,
-                fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
-                fi.laverca.jaxb.soap12env.ObjectFactory.class,
-                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class }) {
-
-            final String p = c.getPackage().getName();
-            JMarshallerFactory.addJAXBPath(p);
-
-        }
+        marshallerInit();
     }
     
     /**
@@ -185,8 +195,9 @@ public class MssClient {
     }
 
     /**
-     * Set this socket factory if you want to e.g. inclusion of your client certificate
-     * your client keys.
+     * Set this socket factory before calling MSS operations,
+     * if you want to e.g. inclusion of your client certificate
+     * on the outgoing calls.
      */
     public void setSSLSocketFactory(SSLSocketFactory ssf) {
         this.sslSocketFactory = ssf;
