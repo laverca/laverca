@@ -13,6 +13,5 @@
     <parameter name="disablePrettyXML" value="false" /><!-- TODO -->
     <parameter name="enableNamespacePrefixOptimization" value="true"/>
   </globalConfiguration>
-  <transport name="http" pivot="java:fi.laverca.util.CommonsHTTPSender"/>
-  <transport name="local" pivot="java:org.apache.axis.transport.local.LocalSender"/>
+  <transport name="http" pivot="java:fi.laverca.util.ComponentsHTTPSender"/>
 </deployment>

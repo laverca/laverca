@@ -60,7 +60,7 @@ import fi.laverca.mss.ws.MSS_SignatureBindingStub;
 import fi.laverca.mss.ws.MSS_SignatureServiceLocator;
 import fi.laverca.mss.ws.MSS_StatusQueryBindingStub;
 import fi.laverca.util.AbstractSoapBindingStub;
-import fi.laverca.util.CommonsHTTPSender;
+import fi.laverca.util.ComponentsHTTPSender;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JMarshallerFactory;
 import fi.laverca.util.LavercaHttpClient;
@@ -566,7 +566,7 @@ public class MssClient {
         }
 
         // Set tools for each context.
-        port.setProperty(CommonsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
+        port.setProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
         // port.setProperty(CommonsHTTPSender.FAULTFACTORY_INSTANCE, MssClientFaultFactory.getInstance());
 
         if (port instanceof MSS_SignatureBindingStub) {

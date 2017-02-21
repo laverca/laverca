@@ -99,9 +99,9 @@ import org.apache.http.util.EntityUtils;
  * possible to share a connection manager among RoamingClient instances.
  */
 @SuppressWarnings({"serial", "deprecation"})
-public class CommonsHTTPSender extends BasicHandler {
+public class ComponentsHTTPSender extends BasicHandler {
     
-    private static Log log = LogFactory.getLog(CommonsHTTPSender.class);
+    private static Log log = LogFactory.getLog(ComponentsHTTPSender.class);
 
     private static int connectionTimeout = 30000; // At most 30 seconds to wait for a socket connection to form
 
@@ -116,7 +116,7 @@ public class CommonsHTTPSender extends BasicHandler {
 
     public static final String ERROR_IN_HTTPSENDER = "laverca.errorin.httpsender";
 
-    public CommonsHTTPSender() {
+    public ComponentsHTTPSender() {
         // Empty constructor
     }
 
@@ -148,7 +148,7 @@ public class CommonsHTTPSender extends BasicHandler {
         HttpPost     post     = null;
         HttpResponse response = null;
         
-        final LavercaHttpClient httpClient = (LavercaHttpClient) msgContext.getProperty(CommonsHTTPSender.HTTPCLIENT_INSTANCE);
+        final LavercaHttpClient httpClient = (LavercaHttpClient) msgContext.getProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE);
         final String remoteURL = msgContext.getStrProp(MessageContext.TRANS_URL);
 
         if (httpClient == null) {
@@ -171,7 +171,7 @@ public class CommonsHTTPSender extends BasicHandler {
 
             @SuppressWarnings("unchecked")
             final List<byte[]> serverCerts =
-                (List<byte[]>)msgContext.getProperty(CommonsHTTPSender.SERVERCERTS);
+                (List<byte[]>)msgContext.getProperty(ComponentsHTTPSender.SERVERCERTS);
             LavercaSSLTrustManager.getInstance().setExpectedServerCerts(serverCerts);
 
             final Message reqMessage = msgContext.getRequestMessage();
@@ -601,7 +601,7 @@ public class CommonsHTTPSender extends BasicHandler {
         // Always set the 30 second timeout on establishing the connection
         rcb
             .setConnectionRequestTimeout(10)
-            .setConnectTimeout(CommonsHTTPSender.connectionTimeout);
+            .setConnectTimeout(ComponentsHTTPSender.connectionTimeout);
 
         final Message msg = msgContext.getRequestMessage();
         if (msg != null){
