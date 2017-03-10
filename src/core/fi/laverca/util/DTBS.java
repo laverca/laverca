@@ -27,17 +27,15 @@ import fi.laverca.jaxb.mss.DataType;
 
 /**
  * Dual-mode mapper class for "DataToBeSigned"
- * This thing would benefit from a near-total rewrite.
- * 
  */
 public class DTBS {
 
     private String encoding = null;
-    private String text = null;
-    private byte[] data = null;
+    private String text     = null;
+    private byte[] data     = null;
     private String mimeType = null;
     
-    final static public String ENCODING_UTF8 = "UTF-8";
+    final static public String ENCODING_UTF8   = "UTF-8";
     final static public String ENCODING_BASE64 = "base64";
     
     final static public String MIME_STREAM    = "application/octet-stream";

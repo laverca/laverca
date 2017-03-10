@@ -19,8 +19,6 @@
 
 package fi.laverca.util;
 
-import java.util.Vector;
-
 import org.apache.axis.AxisFault;
 import org.apache.axis.MessageContext;
 import org.apache.axis.handlers.BasicHandler;
@@ -39,10 +37,8 @@ import org.apache.commons.logging.LogFactory;
 @SuppressWarnings("serial")
 public class HeaderHandler extends BasicHandler {
 
-    static Log log = LogFactory.getLog(HeaderHandler.class);
+    private static final Log log = LogFactory.getLog(HeaderHandler.class);
 
-    /**
-     */
     @Override
     public void invoke(MessageContext msgContext) throws AxisFault {
 

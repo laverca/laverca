@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  * A collection of helper methods for commonplace X509 tasks.
  */
 public class X509Util {
-    private static Log log = LogFactory.getLog(X509Util.class);
+    private static final Log log = LogFactory.getLog(X509Util.class);
 
     /**
      * Convert a DER certificate to X509Certificate

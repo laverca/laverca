@@ -55,8 +55,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
     }
 
     private LavercaSSLTrustManager() {
-        // nothing here. This thing always just passes requests on to the Validator.
-        //log.debug("constructed");
+        // Nothing here.
     }
 
     /**
@@ -202,27 +201,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
 
         final byte[] cert = x509cert.getEncoded(); // may throw CertificateEncodingException
 
-        /*
-        if (log.isDebugEnabled()) {
-            try {
-                log.debug("Remote server certificate received: " + Base64.encodeBase64String(cert));
-            } catch(Throwable e) {
-                //
-            }
-        }
-        */
-
         for (final byte[] esc : escs) {
-            /*
-            if (log.isDebugEnabled()) {
-                try {
-                    log.debug("Checking certificate against: "+Base64.encodeBase64String(esc));
-                } catch (Throwable t) {
-                    //
-                }
-            }
-            */
-
             if (Arrays.equals(esc, cert)) {
                 log.debug("Match on expected server certificate");
                 return;

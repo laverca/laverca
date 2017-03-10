@@ -68,12 +68,9 @@ public class JaxbSerializer implements Serializer {
         try {
             if (trace) {
                 log.trace("JaxbSerializer.serialize() called name="+name+" attributes="+attributes+" value="+value);
-                // log.trace(" instanceof:  MessageAbstractType = "+(value instanceof MessageAbstractType) + "  MSS_SignatureReq = " + (value instanceof MSS_SignatureReq));
-                // log.trace("Backtrace:",new Throwable());
             }
 
             // If DOM serialization was not done, fall back to original Jaxb serialize
-
             log.trace("No DOM serialize, using our JaxbSerializer.");
 
             // Normal Jaxb type serialization

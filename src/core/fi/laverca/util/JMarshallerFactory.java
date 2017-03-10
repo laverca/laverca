@@ -19,7 +19,6 @@
 
 package fi.laverca.util;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -197,12 +196,8 @@ public class JMarshallerFactory {
         globalJAXBPaths.add(p);
     }
 
-    /**
-     * 
-     */
     private static class JAXBContextDelayedLoad {
         private final Class<?> clazz;
-        private JAXBContext jaxbContext;
         
         public JAXBContextDelayedLoad(final Class<?> clazz) {
             this.clazz = clazz;
@@ -228,18 +223,6 @@ public class JMarshallerFactory {
                 log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
                 throw e;
             }
-            
-            /*
-            if (this.jaxbContext != null) return this.jaxbContext;
-            try {
-                // Slow part under synchronization: create the JAXBContext.
-                this.jaxbContext = JAXBContext.newInstance(this.clazz);
-                return this.jaxbContext;
-            } catch (JAXBException e) {
-                log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
-                throw e;
-            }
-            */
         }
     }
 
@@ -275,8 +258,6 @@ public class JMarshallerFactory {
             jaxbCache.put(clazz, new JAXBContextDelayedLoad(clazz));
         }
     }
-
-
 
     /**
      * Make unmarshaller with globally shared mapping database
@@ -323,21 +304,7 @@ public class JMarshallerFactory {
         // in an XML document containing already a DOCTYPE.
         m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 
-        //final MessageContext msgCtx = context.getMessageContext();
-        //final Object sendTypeAttr = msgCtx.getProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR);
-        //if (sendTypeAttr instanceof Boolean) {
-        //    m.setSuppressXSIType(!((Boolean)sendTypeAttr).booleanValue());
-        //}
-
-        //String localPart = name.getLocalPart();
-        //final int arrayDims = localPart.indexOf('[');
-        //if (arrayDims != -1) {
-        //    localPart = localPart.substring(0, arrayDims);
-        //}
-        //m.setRootElement(localPart);
-
         // Marshall the Jaxb object into the stream (sink)
-
         if (log.isDebugEnabled()) {
             log.debug("Running marshal(value,handler);  value="+value);
         }
@@ -347,7 +314,6 @@ public class JMarshallerFactory {
     /**
      * @param object A JAXB @XmlRootElement annotated object instance.
      * @param writer A Writer instance receiving marshalling output as characters
-     * @throws IOException
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
     public static void marshal(final Object object, final Writer writer)
@@ -362,7 +328,6 @@ public class JMarshallerFactory {
      *
      * @param object A JAXB @XmlRootElement annotated object instance.
      * @return Marshalled string representation of the input data
-     * @throws IOException
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
     public static String toString(final Object object)
@@ -412,7 +377,7 @@ public class JMarshallerFactory {
      * Convert source data to JAXB data type specified
      * by the Class reference instance.
      *
-     * @param javaType Conversion target type as a Class.
+     * @param clazz Conversion target type as a Class.
      * @param string A string for input source.
      * @return Converted type
      * @throws JAXBException base type for JAXB exceptions, many possible reasons

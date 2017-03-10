@@ -27,7 +27,6 @@ import java.util.HashMap;
  * characters included in the GSM03.38 charset.
  * See FiCom 2.0, appendix D.
  */ 
- 
 public class FiComCharsetLimiter {
 
     private static HashMap<Character,String> okChars;

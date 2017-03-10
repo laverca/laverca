@@ -56,7 +56,7 @@ public class AxisJContentHandler extends AxisContentHandler {
     {
         try {
             if (log.isTraceEnabled()) {
-                log.trace("startElement " + super.elt2string(uri, localName, prefixedName, attributes)); //, new Throwable());
+                log.trace("startElement " + super.elt2string(uri, localName, prefixedName, attributes));
             }
 
             int pfixlen = prefixedName.indexOf(':');

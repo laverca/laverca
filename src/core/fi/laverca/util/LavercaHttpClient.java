@@ -156,13 +156,7 @@ public class LavercaHttpClient {
         // target and thus the values are equal.
 
         this.requestConfigBuilder = RequestConfig.custom();
-        
         this.requestConfigBuilder.setExpectContinueEnabled(true);
-        
-        //HttpProtocolParams.setVersion(this.httpParams, HttpVersion.HTTP_1_1);
-        //HttpProtocolParams.setContentCharset(this.httpParams, "UTF-8");
-        //HttpConnectionParams.setTcpNoDelay(this.httpParams, true);
-        //HttpConnectionParams.setSocketBufferSize(this.httpParams, 8192);
 
         if (newConnTimeout > 0) {
             this.requestConfigBuilder.setConnectTimeout(newConnTimeout);
@@ -194,24 +188,6 @@ public class LavercaHttpClient {
                     this.proxyAuthScope = new AuthScope( proxySettings.proxyHostName, proxySettings.proxyPort );
                     this.proxyAuthCredentials = new UsernamePasswordCredentials( proxySettings.proxyUsername, proxySettings.proxyPassword );
 
-                    /*
-                      This is how to do NTLM authentication, perhaps.
-                      It's untested. Look for it with google.
-
-                      // if the username is in the form "user\domain" 
-                      // then use NTCredentials instead.
-                      int domainIndex = proxyUsername.indexOf("\\");
-                      if (domainIndex > 0) {
-                      String domain = proxyUsername.substring(0, domainIndex);
-                      if (proxyUsername.length() > domainIndex + 1) {
-                      String ntUsername = proxyUsername.substring(domainIndex + 1);
-                      proxyCred = new NTCredentials(ntUsername,
-                      proxyPassword,
-                      proxyHost,
-                      domain);
-                      }
-                      }
-                    */
                 } else {
                     this.proxyAuthScope = null;
                     this.proxyAuthCredentials = null;
@@ -258,7 +234,6 @@ public class LavercaHttpClient {
         // Credential setting is done at HttpClientContext of 4.4.1
 
         if (this.targetAuthCredentials != null) {
-            // TODO: Does this work, or does it need to be HttpHost specific?
             this.credentialsProvider.setCredentials(AuthScope.ANY, this.targetAuthCredentials);
         }
         if (this.proxyHost != null) {

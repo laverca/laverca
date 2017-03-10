@@ -200,16 +200,6 @@ public class AxisContentHandler extends DefaultHandler {
         if (log.isTraceEnabled()) {
             log.trace("  startPrefixMapping '"+prefix+"' = "+uri);
         }
-        // Register the prefix only if this is not already known.
-        /*
-        final String pfx = this.context.getStackedPrefix(uri);
-        if (pfx == null || !pfx.equals(prefix)) {
-            if (log.isTraceEnabled()) {
-                log.trace("  prefix unknown or mismatch, registering.");
-            }
-            //this.context.registerPrefixForURI(prefix, uri);
-        }
-        */
     }
 
     @Override

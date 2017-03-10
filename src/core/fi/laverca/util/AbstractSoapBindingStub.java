@@ -22,8 +22,6 @@ package fi.laverca.util;
 
 import java.rmi.RemoteException;
 import java.util.Enumeration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
@@ -37,20 +35,22 @@ import org.apache.axis.encoding.DeserializerFactory;
 import org.apache.axis.encoding.SerializerFactory;
 import org.apache.axis.soap.SOAPConstants;
 
+import fi.laverca.ErrorCodes;
+
 /**
  * This extends non-thread-safe Stub, therefore this is not thread-safe either!
  */
 public abstract class AbstractSoapBindingStub extends Stub {
 
     // MSS specific constants used in stubs.
-    public static final String NS204 = "http://uri.etsi.org/TS102204/v1.1.2#";
+    public static final String NS204 = ErrorCodes.ETSI_204_NS_URI;
     public static final QName MESSAGESIGNATURE_HEADER = new QName(NS204, "MSS_MessageSignature", "mss");
 
     public static final Class<? extends SerializerFactory>   sf = JaxbSerializerFactory.class;
     public static final Class<? extends DeserializerFactory> df = JaxbDeserializerFactory.class;
 
 
-    protected boolean sendSOAPAction; // default: false
+    protected boolean sendSOAPAction;
     protected String  soapActionURI;
 
     public Call getCall()
