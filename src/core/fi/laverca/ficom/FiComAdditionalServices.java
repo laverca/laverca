@@ -23,30 +23,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.etsi.EtsiAdditionalServices;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
-import fi.laverca.jaxb.mss.MssURIType;
-import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mssfi.NoSpamCode;
-import fi.laverca.jaxb.mssfi.ServiceResponses;
-import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
-import fi.laverca.jaxb.saml2a.Attribute;
 import fi.laverca.jaxb.saml2p.AttributeQuery;
+import fi.laverca.mss.AdditionalServices;
 import fi.laverca.util.Saml2Util;
 
 /**
  * FiCom specific AdditionalServices
  * <p>As per MSS FiCom Implementation Guideline v2.1
  */
-public class FiComAdditionalServices {
+public class FiComAdditionalServices extends AdditionalServices {
     
-    static final Log log = LogFactory.getLog(FiComAdditionalServices.class);
-
     public static final String FICOMNS        = "http://mss.ficom.fi/TS102204/v1.0.0#";
     
     public static final String NO_SPAM_URI    = "http://mss.ficom.fi/TS102204/v1.0.0#noSpam";
@@ -164,135 +154,6 @@ public class FiComAdditionalServices {
         final AdditionalServiceType s = EtsiAdditionalServices.createService(uri);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(attributeQuery);
         return s;
-    }
-
-    /**
-     * FiCom PersonID AdditionalService attribute
-     *
-     */
-    public static class PersonIdAttribute {
-        
-        private Attribute samlAttribute;
-        
-        public PersonIdAttribute(final Attribute samlAttribute) {
-            if (samlAttribute == null) {
-                throw new IllegalArgumentException("null attribute not allowed.");
-            }
-            this.samlAttribute = samlAttribute;
-        }
-        
-        /**
-         * Get the attribute name
-         * @return Name of the attribute
-         */
-        public String getName() {
-            return this.samlAttribute.getName();
-        }
-        
-        /**
-         * Get the attribute value as String
-         * @return Value of the attribute
-         */
-        public String getStringValue() {
-            try {
-                final List<Object> avl = this.samlAttribute.getAttributeValues();
-                final Object o = avl.get(0);
-                if (PERSON_ID_ADDRESS.equals(this.samlAttribute.getName())){
-                    fi.laverca.jaxb.mssfi.PostalAddress pa;
-                    try {
-                        pa = (fi.laverca.jaxb.mssfi.PostalAddress)o;
-                    } catch (Throwable t){
-                        return null;
-                    }
-                    return postalAddressToString(pa);       
-                }
-
-                log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
-                return null;
-            } catch (IndexOutOfBoundsException ioe) {
-                log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
-                return null;
-            } catch(Throwable t) {
-                log.warn("Failed getting String value from " + this.samlAttribute.getName() + "." , t);
-                return null;
-            }
-        }
-        
-        /**
-         * Pretty print postal address 
-         * <p>There is no standard way to print a postal address. 
-         * <br>Laverca uses comma separated values.
-         * 
-         * @param pa PostalAddress to be printed
-         * @return Postal address CSV or null if the given PostalAddress was null.
-         */
-        private String postalAddressToString(final fi.laverca.jaxb.mssfi.PostalAddress pa){
-            if (pa == null) {
-                return null;
-            }
-            return pa.getName()          + ", " +
-                   pa.getStreetAddress() + ", " +
-                   pa.getPostalCode()    + ", " +
-                   pa.getTown()          + ", " +
-                   pa.getCountry();
-        }
-    }
-
-    /**
-     * Read ServiceResponses from a StatusDetail element
-     * @param sd StatusDetail
-     * @return ServiceResponses or null
-     * @throws JAXBException 
-     */
-    public static ServiceResponses readServiceResponses(final StatusDetailType sd)
-        throws JAXBException
-    {
-        if (sd == null) {
-            return null;
-        }
-        
-        final List<Object> le = sd.getAniesAndServiceResponsesAndReceiptRequestExtensions();
-        ServiceResponses ret = null;
-        for (final Object o : le) {
-            if (!(o instanceof ServiceResponses)) {
-                continue;
-            }
-            // Check that there is only one...
-            if (ret != null) {
-                log.warn("mss:StatusDetail contains multiple ServiceResponses instances. Returning the first.");
-                break;
-            }
-            ret = (ServiceResponses) o;
-        }
-        return ret;
-    }
-
-    /**
-     * Read a specific ServiceResponse from a StatusDetail element
-     *
-     * @param sd StatusDetail
-     * @param serviceUri URI of the ServiceResponse
-     * @return single ServiceResponse or null
-     * @throws JAXBException 
-     */
-    public static ServiceResponse readServiceResponse(final StatusDetailType sd, 
-                                                      final String       serviceUri)
-        throws JAXBException
-    {
-        if (sd == null) {
-            return null;
-        }
-        final ServiceResponses sr = readServiceResponses(sd);
-        // Note that this assumes only one service response for a given URI
-        // It is an ok assumption in FiCom 2.0.
-        for (final ServiceResponse sResp : sr.getServiceResponses()) {
-            final MssURIType d = sResp.getDescription();
-            final String   dUri = d.getMssURI();
-            if (serviceUri.equals(dUri)) {
-                return sResp;
-            }
-        }
-        return null;
     }
     
 }

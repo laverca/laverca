@@ -17,29 +17,22 @@
  * limitations under the License.
  */
 
-package fi.laverca.etsi;
+package fi.laverca.swisscom;
 
-import fi.laverca.jaxb.mss.AdditionalServiceType;
-import fi.laverca.jaxb.mss.MssURIType;
-import fi.laverca.mss.AdditionalServices;
-import fi.laverca.mss.MssClient;
+import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.mss.MssResponse;
 
 /**
- * ETSI specific AdditionalServices
- *
+ * Asynchronous MSS_StatusResp callback response.
  */
-public class EtsiAdditionalServices extends AdditionalServices {
+public class SwisscomResponse extends MssResponse {
     
-    /**
-     * Create a basic ETSI Service element
-     * @param uri AdditionalService URI
-     * @return Created Service
-     */
-    public static AdditionalServiceType createService(final String uri) {
-        final AdditionalServiceType s = MssClient.mssObjFact.createAdditionalServiceType();
-        final MssURIType d = MssClient.mssObjFact.createMssURIType();
-        d.setMssURI(uri);
-        s.setDescription(d);
-        return s;
+    public SwisscomResponse(final MSSSignatureReq  originalSigReq,
+                            final MSSSignatureResp originalSigResp,
+                            final MSSStatusResp    finalStatusResp) { 
+        super(originalSigReq, originalSigResp, finalStatusResp);
     }
+    
 }

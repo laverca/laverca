@@ -20,15 +20,16 @@
 package fi.laverca;
 
 /**
- * FiCom MSS Profile URIs
- * <p>As per MSS FiCom Implementation Guideline v2.1
+ * Static set of Signature Profile URIs
  */
 public class SignatureProfiles {
 
-    public final static String FICOM_AUTHENTICATION    = "http://mss.ficom.fi/TS102206/v1.0.0/authentication-profile.xml";
-    public final static String FICOM_ANONYMOUS         = "http://mss.ficom.fi/TS102206/v1.0.0/anonymous-profile.xml";
-    public final static String FICOM_SIGNATURE         = "http://mss.ficom.fi/TS102206/v1.0.0/signature-profile.xml";
-    public final static String FICOM_DIGESTIVE         = "http://mss.ficom.fi/TS102206/v1.0.0/digestive-signature-profile.xml";
-    public final static String FICOM_CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
+    public static final String FICOM_AUTHENTICATION    = "http://mss.ficom.fi/TS102206/v1.0.0/authentication-profile.xml";
+    public static final String FICOM_ANONYMOUS         = "http://mss.ficom.fi/TS102206/v1.0.0/anonymous-profile.xml";
+    public static final String FICOM_SIGNATURE         = "http://mss.ficom.fi/TS102206/v1.0.0/signature-profile.xml";
+    public static final String FICOM_DIGESTIVE         = "http://mss.ficom.fi/TS102206/v1.0.0/digestive-signature-profile.xml";
+    public static final String FICOM_CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
+    
+    public static final String SWISSCOM_AUTHENTICATION = "http://mid.swisscom.ch/MID/v1/AuthProfile1";
     
 }

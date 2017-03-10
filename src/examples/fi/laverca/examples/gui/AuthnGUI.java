@@ -21,7 +21,7 @@ import javax.swing.WindowConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import fi.laverca.ficom.FiComAdditionalServices.PersonIdAttribute;
+import fi.laverca.ficom.PersonIdAttribute;
 import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
 import fi.laverca.ficom.FiComResponse;

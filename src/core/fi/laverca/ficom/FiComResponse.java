@@ -58,21 +58,20 @@ public class FiComResponse extends MssResponse {
      * @return A list of attributes as per the PersonIdentity additional service. 
      *         <br>null if the MSS_Status response does not include a PersonID response.
      */
-    public List<FiComAdditionalServices.PersonIdAttribute> getPersonIdAttributes() {
+    public List<PersonIdAttribute> getPersonIdAttributes() {
         try {
-            final StatusDetailType sd = this.finalStatusResp.getStatus().getStatusDetail();
-            final ServiceResponse sResp =
-                FiComAdditionalServices.readServiceResponse(sd, FiComAdditionalServices.PERSON_ID_URI);
+            final StatusDetailType   sd = this.finalStatusResp.getStatus().getStatusDetail();
+            final ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(sd, FiComAdditionalServices.PERSON_ID_URI);
 
             final Response      samlpResp = sResp.getResponse();
             final Assertion     assertion = Saml2Util.parseFromResponse(samlpResp);
             final AttributeStatement stmt = Saml2Util.parseFromAssertion(assertion);
             final List<Attribute>   attrs = Saml2Util.parseFromAttributeStatement(stmt);
 
-            final List<FiComAdditionalServices.PersonIdAttribute> fiComAttrs = new ArrayList<FiComAdditionalServices.PersonIdAttribute>(); 
+            final List<PersonIdAttribute> fiComAttrs = new ArrayList<PersonIdAttribute>(); 
             
             for (final Attribute samlAttribute : attrs) {
-                fiComAttrs.add(new FiComAdditionalServices.PersonIdAttribute(samlAttribute));
+                fiComAttrs.add(new PersonIdAttribute(samlAttribute));
             }
             
             return fiComAttrs;

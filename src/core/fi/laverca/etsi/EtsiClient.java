@@ -30,7 +30,7 @@ import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.util.DTBS;
 
 /**  
- * An asynchronous client for FiCom -style signature requests.
+ * An asynchronous client for standard ETSI TS 102 204 signature requests.
  */
 public class EtsiClient extends ClientHelper<EtsiRequest, EtsiResponse> {
 

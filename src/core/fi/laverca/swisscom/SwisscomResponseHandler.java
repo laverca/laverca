@@ -17,29 +17,14 @@
  * limitations under the License.
  */
 
-package fi.laverca.etsi;
+package fi.laverca.swisscom;
 
-import fi.laverca.jaxb.mss.AdditionalServiceType;
-import fi.laverca.jaxb.mss.MssURIType;
-import fi.laverca.mss.AdditionalServices;
-import fi.laverca.mss.MssClient;
+import fi.laverca.ResponseHandler;
 
-/**
- * ETSI specific AdditionalServices
- *
- */
-public class EtsiAdditionalServices extends AdditionalServices {
-    
-    /**
-     * Create a basic ETSI Service element
-     * @param uri AdditionalService URI
-     * @return Created Service
-     */
-    public static AdditionalServiceType createService(final String uri) {
-        final AdditionalServiceType s = MssClient.mssObjFact.createAdditionalServiceType();
-        final MssURIType d = MssClient.mssObjFact.createMssURIType();
-        d.setMssURI(uri);
-        s.setDescription(d);
-        return s;
-    }
+/** 
+ * Interface for Swisscom response handling
+ * 
+ */ 
+public interface SwisscomResponseHandler extends ResponseHandler<SwisscomRequest, SwisscomResponse> {
+
 }
