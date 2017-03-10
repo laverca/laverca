@@ -19,12 +19,22 @@
 
 package fi.laverca.mss;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.GregorianCalendar;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
@@ -203,6 +213,33 @@ public class MssClient {
      */
     public void setSSLSocketFactory(SSLSocketFactory ssf) {
         this.sslSocketFactory = ssf;
+    }
+    
+    /**
+     * Create an SSLSocketFactory
+     * @param ksFile Keystore filename
+     * @param ksPwd  Keystore password
+     * @param ksType Keystore type
+     * @return Created SSLSocketFactory
+     */
+    public static SSLSocketFactory createSSLFactory(final String ksFile, final String ksPwd, final String ksType) 
+        throws GeneralSecurityException, IOException 
+    {
+        KeyStore    ks = KeyStore.getInstance(ksType);
+        InputStream is = new FileInputStream(ksFile);
+        try {
+            SSLContext ctx = SSLContext.getInstance("TLSv1");
+    
+            ks.load(is, ksPwd.toCharArray());
+            
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(ks);
+            ctx.init(null, tmf.getTrustManagers(), null);
+            return ctx.getSocketFactory();
+            
+        } finally {
+            is.close();
+        }
     }
     
     /**

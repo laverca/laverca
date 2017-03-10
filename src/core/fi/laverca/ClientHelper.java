@@ -19,13 +19,18 @@
 
 package fi.laverca;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
@@ -232,7 +237,7 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
      * @throws IllegalArgumentException if the given Response is null
      */
     public MSSReceiptResp sendReceiptReq(final Resp fiResp, 
-                                             final String message) 
+                                         final String message) 
         throws IOException
     {    
         if (fiResp == null) {
@@ -306,4 +311,5 @@ public abstract class ClientHelper<Req extends MssRequest<Resp>, Resp extends Ms
     public void setSSLSocketFactory(final SSLSocketFactory ssf) {
         this.mssClient.setSSLSocketFactory(ssf);
     }
+
 }

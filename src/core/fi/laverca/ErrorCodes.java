@@ -37,7 +37,7 @@ import org.apache.axis.AxisFault;
  * <pre>
  * {@code
  * AxisFault af = new AxisFault();
- * WRONG_PARAM.is(af); // false
+ * ErrorCodes.WRONG_PARAM.is(af); // false
  * }
  * </pre>
  */

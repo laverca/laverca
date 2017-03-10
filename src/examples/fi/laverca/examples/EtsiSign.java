@@ -20,7 +20,10 @@
 package fi.laverca.examples;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
+
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
@@ -34,13 +37,13 @@ import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.util.DTBS;
-import fi.laverca.util.JvmSsl;
+import fi.laverca.util.LavercaSSLTrustManager;
 
 /**
  * Simple signature request example
  * 
  * <ul>
- * <li>Uses EtsiClient instead of FiComClient
+ * <li>Uses MssClient
  * <li>Sends a SignatureRequest with DTBS "sign this"
  * <li>Uses synchronous messaging mode
  * <li>No AdditionalServices
@@ -50,7 +53,7 @@ import fi.laverca.util.JvmSsl;
 public class EtsiSign {
     
     private static final Log log = LogFactory.getLog(EtsiSign.class);
-
+    
     /**
      * The main method
      * @param args
@@ -61,13 +64,21 @@ public class EtsiSign {
         Properties properties = ExampleConf.getProperties();
         
         // Setup SSL
-        log.info("Setting up ssl");
-        JvmSsl.setSSL(properties.getProperty(ExampleConf.TRUSTSTORE_FILE),
-                      properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD),
-                      properties.getProperty(ExampleConf.KEYSTORE_FILE),
-                      properties.getProperty(ExampleConf.KEYSTORE_PASSWORD),
-                      properties.getProperty(ExampleConf.KEYSTORE_TYPE));
+        SSLSocketFactory ssf = null;
         
+        try {
+            
+            log.info("Setting up ssl");
+            String ksFile = properties.getProperty(ExampleConf.KEYSTORE_FILE);
+            String ksPwd  = properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD);
+            String ksType = properties.getProperty(ExampleConf.KEYSTORE_TYPE, "JKS");
+            ssf = MssClient.createSSLFactory(ksFile, ksPwd, ksType);
+
+        } catch (Exception e) {
+            log.fatal("Keystore problem: " + e.getMessage());
+            return;        
+        }
+
         String apId  = properties.getProperty(ExampleConf.AP_ID);
         String apPwd = properties.getProperty(ExampleConf.AP_PASSWORD);
         
@@ -83,19 +94,26 @@ public class EtsiSign {
                                              msspStatusUrl, 
                                              msspReceiptUrl);
 
+        // Set SSL socket factory
+        etsiClient.setSSLSocketFactory(ssf);
+        
+        // Set empty trust list
+        // TODO: Read the truststore configuration instead!
+        LavercaSSLTrustManager.getInstance().setExpectedServerCerts(Collections.<byte[]> emptyList());
+        
         String apTransId = "A" + System.currentTimeMillis();
         String msisdn    = "+35847001001";
         
         // Create DataToBeSigned
         DTBS dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
-                        
+        
         MSSSignatureReq sigReq = etsiClient.createSignatureRequest(apTransId, // AP Transaction ID
-                                                                    msisdn,    // MSISDN
-                                                                    dtbs,      // Data to be signed
-                                                                    null,      // Data to be displayed
-                                                                    SignatureProfiles.FICOM_SIGNATURE, // Signature profile
-                                                                    MSS_Formats.PKCS7,                 // MSS Format
-                                                                    MessagingModeType.SYNCH);          // Messaging Mode
+                                                                   msisdn,    // MSISDN
+                                                                   dtbs,      // Data to be signed
+                                                                   null,      // Data to be displayed
+                                                                   SignatureProfiles.FICOM_SIGNATURE, // Signature profile
+                                                                   MSS_Formats.PKCS7,                 // MSS Format
+                                                                   MessagingModeType.SYNCH);          // Messaging Mode
                                                                     
         
         MSSSignatureResp sigResp = null;
@@ -114,5 +132,5 @@ public class EtsiSign {
         log.info("  StatusCode   : " + sigResp.getStatus().getStatusCode().getValue());
         log.info("  StatusMessage: " + sigResp.getStatus().getStatusMessage());
     }
-
+    
 }
