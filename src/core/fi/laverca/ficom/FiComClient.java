@@ -21,7 +21,6 @@ package fi.laverca.ficom;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import fi.laverca.ClientHelper;
 import fi.laverca.MSS_Formats;
@@ -42,11 +41,11 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
     
     public static final ObjectFactory ficomFact = new ObjectFactory();
 
-    public FiComClient( String apId,             // AP settings
-                        String apPwd, 
-                        String msspSignatureUrl, // AE connection settings
-                        String msspStatusUrl,
-                        String msspReceiptUrl)
+    public FiComClient(final String apId,             // AP settings
+                       final String apPwd, 
+                       final String msspSignatureUrl, // AE connection settings
+                       final String msspStatusUrl,
+                       final String msspReceiptUrl)
     throws IllegalArgumentException
     {
         super(apId, 
@@ -58,8 +57,6 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
         this.initialWait    = 20 * 1000;      // Initial wait 20 s   as per MSS FiCom Implementation Guideline, section 5.1
         this.subsequentWait = 5  * 1000;      // Subsequent wait 5 s as per MSS FiCom Implementation Guideline, section 5.1
         this.timeout        = 5  * 1000 * 60; // Timeout 5 min       as per MSS FiCom Implementation Guideline, section 6.4
-
-        this.threadExecutor = Executors.newCachedThreadPool();
     }
 
     /**

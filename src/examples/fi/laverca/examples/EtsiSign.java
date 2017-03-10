@@ -78,10 +78,10 @@ public class EtsiSign {
         
         // Create client
         MssClient etsiClient = new MssClient(apId, 
-                                               apPwd, 
-                                               msspSignatureUrl, 
-                                               msspStatusUrl, 
-                                               msspReceiptUrl);
+                                             apPwd, 
+                                             msspSignatureUrl, 
+                                             msspStatusUrl, 
+                                             msspReceiptUrl);
 
         String apTransId = "A" + System.currentTimeMillis();
         String msisdn    = "+35847001001";
