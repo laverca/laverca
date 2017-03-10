@@ -24,8 +24,6 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.apache.axis.AxisFault;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * MSS Error Codes
@@ -34,9 +32,16 @@ import org.apache.commons.logging.LogFactory;
  * <li>ETSI TS 102 204
  * <li>MSS FiCom Implementation Guideline v2.1
  * </ul>
+ * <p>This class can be used to check whether the received Fault is a specific error.
+ * <p>For example:
+ * <pre>
+ * {@code
+ * AxisFault af = new AxisFault();
+ * WRONG_PARAM.is(af); // false
+ * }
+ * </pre>
  */
 public class ErrorCodes {
-    private static final Log log = LogFactory.getLog(ErrorCodes.class);
 
     public static final String FICOM_NS_URI = "http://mss.ficom.fi/TS102204/v1.0.0#";
     public static final String FICOM_PREFIX = "fi";
@@ -145,30 +150,35 @@ public class ErrorCodes {
             this.primaryCode = primary;
         }
 
-        public boolean is(AxisFault af) {
-            if(af == null)
+        /**
+         * Check if this StatusCode matches the given AxisFault
+         * @param af AxisFault
+         * @return true 
+         */
+        public boolean is(final AxisFault af) {
+            if(af == null) {
                 return false;
+            }
             List<QName> subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.size() == 0)
+            if(subcodes == null || subcodes.size() == 0) {
                 return false;
+            }
             return subcodeMatch(this.primaryCode, subcodes.get(0));
         }
         
-        static boolean subcodeMatch(int i, QName subcode) {
-            String underscored = "_"+i;
-            boolean itsaFiComCode = false;
-            if(FICOM_NS_URI.equals(subcode.getNamespaceURI()))
-                itsaFiComCode = true; // definite match
-            else if(FICOM_PREFIX.equals(subcode.getPrefix())) {
-                log.debug("got an uncertain ficom prefix. Using it.");
-                itsaFiComCode = true;
-            }
-
-            if(itsaFiComCode) {
-                String localPart = subcode.getLocalPart();
-                if(underscored.equals(localPart)) {
-                    return true;
-                }
+        /**
+         * Match the {@link StatusCode#primaryCode} to the AxisFault subcode QName
+         * @param primaryCode Primary code of a {@link StatusCode} object
+         * @param subcode QName of the AxisFault subcode element
+         * @return true if the codes match
+         */
+        protected boolean subcodeMatch(final int primaryCode, 
+                                       final QName subcode) {
+            
+            String underscored = "_"+primaryCode;
+            String localPart   = subcode.getLocalPart();
+            if(underscored.equals(localPart)) {
+                return true;
             }
             return false;
         }
@@ -183,13 +193,13 @@ public class ErrorCodes {
         }
         
         @Override
-        public boolean is(AxisFault af) {
+        public boolean is(final AxisFault af) {
             List<QName> subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.size() < 2)
+            if(subcodes == null || subcodes.size() < 2) {
                 return false;
-            return 
-            subcodeMatch(this.primaryCode,   subcodes.get(0)) &&
-            subcodeMatch(this.secondaryCode, subcodes.get(1));
+            }
+            return subcodeMatch(this.primaryCode,   subcodes.get(0)) &&
+                   subcodeMatch(this.secondaryCode, subcodes.get(1));
         }
     }
 }
