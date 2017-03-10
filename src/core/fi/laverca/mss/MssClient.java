@@ -355,12 +355,12 @@ public class MssClient {
      * @return Created signature request
      */
     public MSSSignatureReq createSignatureRequest(final String apTransId,
-                                                   final String msisdn,
-                                                   final DTBS dtbs,
-                                                   final String dataToBeDisplayed,
-                                                   final String signatureProfile,
-                                                   final String mss_format,
-                                                   final MessagingModeType messagingMode) {
+                                                  final String msisdn,
+                                                  final DTBS dtbs,
+                                                  final String dataToBeDisplayed,
+                                                  final String signatureProfile,
+                                                  final String mss_format,
+                                                  final MessagingModeType messagingMode) {
         final MSSSignatureReq req = mssObjFact.createMSSSignatureReq();
         
         this.initializeRequestMessage(req, apTransId);

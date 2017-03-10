@@ -43,7 +43,7 @@ import fi.laverca.util.LavercaSSLTrustManager;
  * Simple signature request example
  * 
  * <ul>
- * <li>Uses MssClient
+ * <li>Uses the generic MssClient
  * <li>Sends a SignatureRequest with DTBS "sign this"
  * <li>Uses synchronous messaging mode
  * <li>No AdditionalServices
