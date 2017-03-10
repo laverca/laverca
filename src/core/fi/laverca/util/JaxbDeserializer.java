@@ -24,9 +24,6 @@ import javax.xml.bind.MarshalException;
 import javax.xml.bind.ValidationException;
 import javax.xml.namespace.QName;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.Constants;
-import org.apache.axis.MessageContext;
 import org.apache.axis.encoding.DeserializationContext;
 import org.apache.axis.encoding.DeserializerImpl;
 import org.apache.axis.message.MessageElement;
@@ -47,22 +44,6 @@ import org.xml.sax.SAXException;
 public class JaxbDeserializer extends DeserializerImpl {
 
     protected static final Log log = LogFactory.getLog(JaxbDeserializer.class);
-
-    protected AbstractSoapFaultFactory faultfactory = new DefaultFaultFactory();
-    public void setFaultFactory(AbstractSoapFaultFactory ff) {
-        this.faultfactory = ff;
-    }
-
-    private static class DefaultFaultFactory extends AbstractSoapFaultFactory {
-        public DefaultFaultFactory() {
-            super(JaxbDeserializer.log);
-        }
-        @Override
-        public String mapSubcodeToReason(final QName subcode) {
-            return null;
-        }
-    }
-
     
     final public QName xmlType;
     final public Class<?> javaType;
@@ -81,11 +62,9 @@ public class JaxbDeserializer extends DeserializerImpl {
                               final DeserializationContext context )
         throws SAXException
     {
-        final boolean trace = log.isTraceEnabled();
-        if (trace) {
-            log.trace("onEndElement ns={"+namespace+ "}"+localName+" javatype="+this.javaType);
+        if (log.isTraceEnabled()) {
+            log.trace("onEndElement ns={" + namespace + "}" + localName + " javatype=" + this.javaType);
         }
-        final MessageContext messageContext = MessageContext.getCurrentContext();
         try {
             final MessageElement msgElem = context.getCurElement();
             if (msgElem != null) {
@@ -96,51 +75,21 @@ public class JaxbDeserializer extends DeserializerImpl {
                 // Unmarshal the nested XML element into a JAXB object of type 'javaType'
                 this.value = JMarshallerFactory.unmarshal( this.javaType, elt ); 
 
-                if (trace) {
+                if (log.isTraceEnabled()) {
                     log.trace("Unmarshal result = "+this.value);
                 }
             }
         } catch (final MarshalException | ValidationException | IllegalArgumentException e) {
-            log.debug("Unable to unmarshal from XML to Jaxb Object (localName="+localName+
-                      ", javatype="+this.javaType+"): "+e.getMessage());
+            log.debug("Unable to unmarshal from XML to Jaxb Object (localName=" + localName + ", javatype="+this.javaType + "): " + e.getMessage());
             log.trace(e);
-            
-            if (messageContext != null) { // TODO: What's this?!?
-                messageContext.setProperty("DESERIALIZATION_ERROR", e.getLocalizedMessage());
-            }
 
             final String detailStr = this.getDetail(e);
-            String label = "";
-            
-            if (detailStr != null) {
-                if ((detailStr.indexOf("missing, required") > 0) ||
-                    (detailStr.indexOf("is a required field") > 0) ||
-                    (detailStr.indexOf("are required for class") > 0)) {
-                    
-                    label = "MISSING_PARAM";
-                }
-            }
-            
-            final AxisFault af =
-                this.faultfactory
-                .createFault(label,
-                             Constants.FAULT_SOAP12_SENDER,
-                             null, // subcode
-                             null, // subsubcode
-                             null, // reason
-                             null, // node
-                             null, // role
-                             detailStr);
-            throw new SAXException("Unable to unmarshal from XML to Jaxb Object: "
-                                   + detailStr, af);
+
+            throw new SAXException("Unable to unmarshal from XML to Jaxb Object: " + detailStr);
         } catch (Exception e) {
-            log.debug("Unable to unmarshal from XML to Jaxb Object (localName="+localName+", javatype="+this.javaType+")");
+            log.debug("Unable to unmarshal from XML to Jaxb Object (localName=" + localName + ", javatype=" + this.javaType + ")");
             log.trace(e);
-            
-            if (messageContext != null)
-                messageContext.setProperty("DESERIALIZATION_ERROR", e.getLocalizedMessage());
-            throw new SAXException("Unmarshal from XML to Jaxb Object"
-                                   + e.getLocalizedMessage(), e);
+            throw new SAXException("Unmarshal from XML to Jaxb Object" + e.getLocalizedMessage(), e);
         } catch (Throwable t) {
             log.error("Unexpected throwable");
             log.trace(t);

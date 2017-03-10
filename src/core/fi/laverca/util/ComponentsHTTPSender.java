@@ -92,6 +92,8 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import fi.laverca.ErrorCodes;
+
 
 
 /**
@@ -119,7 +121,6 @@ public class ComponentsHTTPSender extends BasicHandler {
     public ComponentsHTTPSender() {
         // Empty constructor
     }
-
 
     /**
      * invoke creates a socket connection, sends the request SOAP message and then
@@ -441,31 +442,9 @@ public class ComponentsHTTPSender extends BasicHandler {
             // Includes memory overflow..  cleanup initially just to be sure.
             httpClient.closeQuietly(post, response);
 
-            // TODO: Need to change the FaultFactory to accept Throwable
-            //       in place of Exception to get rid of this wrapper.
             final Exception e = new Exception(t.getMessage(), t);
             throw this.makeFault(e, deadline, remoteURL, msgContext);
-
-        } finally {
-
-            // AXIS closure processing rules..
-            //
-            // 1: Always release the connection back to the pool
-            //    IF it was ONE WAY invocation
-
-            /*
-            if (msgContext.isPropertyTrue(Call.ONE_WAY)) {
-                log.debug("An axis.one.way call releasing the connection immediate back to the pool.");
-                this.cleanSockets(httpClient, post, response);
-            // } else {
-            // log.debug("A HTTP POST which did NOT plan to release the HTTP connection back to the pool");
-            }
-            */
-
-            // 2: Otherwise the Axis machinery will process call
-            //    close() on the releaseConnectionOnCloseStream.
         }
-
         if (trace) {
             log.trace("KiuruSOAPSender::invoke end");
         }
@@ -479,16 +458,7 @@ public class ComponentsHTTPSender extends BasicHandler {
      * @return
      */
     private AxisFault createFault(final MessageContext msgContext, final QName code, final String detail) {
-
-        // If context supplies a FaultFactory instance (protocol specific)
-        final Object ff = msgContext.getProperty(FAULTFACTORY_INSTANCE);
-        if (ff instanceof AbstractSoapFaultFactory) {
-            return ((AbstractSoapFaultFactory)ff).createFault(AbstractSoapFaultFactory.COMEXCEPTION, code,
-                                                     null, null, null, null, null, detail);
-        }
-
-        // TODO: Is there any way we could get this constant from somewhere? (ETSITS102207Constants is not visible here)
-        final QName[] subcodes = {new QName("http://uri.etsi.org/TS102207/v1.1.2#", "_780", "msrs")};
+        final QName[] subcodes = {new QName(ErrorCodes.ETSI_207_NS_URI, "_780", "msrs")};
 
         final AxisFault af = new AxisFault(code,
                                            subcodes,
@@ -524,16 +494,6 @@ public class ComponentsHTTPSender extends BasicHandler {
         if (deadline != 0L) {
             didTimeout = Boolean.valueOf(deadline < System.currentTimeMillis());
         }
-
-        // If context supplies a FaultFactory instance (protocol specific)
-        final Object ff = msgContext.getProperty(FAULTFACTORY_INSTANCE);
-        if (ff instanceof FaultFactory) {
-            return ((AbstractSoapFaultFactory)ff).makeFault(e, didTimeout, remoteURL);
-        }
-
-        // The fault-factory above is supposed to run with this fault.
-        // In case it didn't, we fall back on something which is possibly
-        // wrong, but at least produces a fault.
 
         return this.makeFault(msgContext, e, remoteURL);
     }

@@ -28,14 +28,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * FiCom MSS Error Codes
- * <p>As per MSS FiCom Implementation Guideline v2.1
+ * MSS Error Codes
+ * <p>As per:
+ * <ul>
+ * <li>ETSI TS 102 204
+ * <li>MSS FiCom Implementation Guideline v2.1
+ * </ul>
  */
 public class ErrorCodes {
     private static final Log log = LogFactory.getLog(ErrorCodes.class);
 
     public static final String FICOM_NS_URI = "http://mss.ficom.fi/TS102204/v1.0.0#";
     public static final String FICOM_PREFIX = "fi";
+    
+    public static final String ETSI_204_NS_URI = "http://uri.etsi.org/TS102204/v1.1.2#";
+    public static final String ETSI_207_NS_URI = "http://uri.etsi.org/TS102207/v1.1.2#";
 
     public final static int NO_SECONDARY_CODE = -1;
 

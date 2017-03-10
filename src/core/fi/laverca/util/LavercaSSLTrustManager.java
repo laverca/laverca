@@ -19,15 +19,15 @@
 
 package fi.laverca.util;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
-import java.security.cert.X509Certificate;
-import java.security.cert.CertificateException;
 
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.axis.components.logger.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A custom singleton implementation of SSL TrustManager.
