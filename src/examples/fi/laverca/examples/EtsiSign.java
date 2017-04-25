@@ -70,7 +70,7 @@ public class EtsiSign {
             
             log.info("Setting up ssl");
             String ksFile = properties.getProperty(ExampleConf.KEYSTORE_FILE);
-            String ksPwd  = properties.getProperty(ExampleConf.TRUSTSTORE_PASSWORD);
+            String ksPwd  = properties.getProperty(ExampleConf.KEYSTORE_PASSWORD);
             String ksType = properties.getProperty(ExampleConf.KEYSTORE_TYPE, "JKS");
             ssf = MssClient.createSSLFactory(ksFile, ksPwd, ksType);
 
