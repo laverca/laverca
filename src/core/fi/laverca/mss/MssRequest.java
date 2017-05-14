@@ -27,8 +27,8 @@ import fi.laverca.jaxb.mss.MSSSignatureResp;
 
 public abstract class MssRequest<Resp> {
 
-    public MSSSignatureReq          sigReq;
-    public MSSSignatureResp         sigResp;
+    public MSSSignatureReq   sigReq;
+    public MSSSignatureResp  sigResp;
     public FutureTask<Resp>  ft;
 
     public MssRequest() {
@@ -43,13 +43,16 @@ public abstract class MssRequest<Resp> {
      * @throws ExecutionException if the wait was aborted
      */
     public Resp waitForResponse() throws InterruptedException, ExecutionException {
+        if (ft == null) return null;
         return this.ft.get();
     }
 
     /**
-     * Cancel the sent request.
+     * Cancel the request sending.
+     * This will stop the StatusRequest polling.
      */
     public void cancel() {
+        if (ft == null) return;
         this.ft.cancel(true);
     }
     
