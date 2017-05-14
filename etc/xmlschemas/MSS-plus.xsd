@@ -9,13 +9,6 @@
            xmlns:env="http://www.w3.org/2003/05/soap-envelope" 
            xmlns:sco="http://www.swisscom.ch/TS102204/ext/v1.0.0"
            elementFormDefault="qualified"> 
-<!--
-  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
-             schemaLocation="http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd"/> 
-  <xs:import namespace="http://www.w3.org/2001/04/xmlenc#"
-             schemaLocation="http://www.w3.org/TR/xmlenc-core/xenc-schema.xsd"/>
--->
-  <!-- Note the localized imports -->
 
   <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
              schemaLocation="xmldsig-core-schema.xsd"/> 
@@ -23,31 +16,15 @@
              schemaLocation="xenc-schema.xsd"/>
   <xs:import namespace="http://www.w3.org/2003/05/soap-envelope" 
              schemaLocation="soap-envelope.xsd"/>
-
-  <!-- The following import is a manual addition; see Ficom 1.1 -->
   <xs:import namespace="http://mss.ficom.fi/TS102204/v1.0.0#"
              schemaLocation="ficom.xsd"/>
   <xs:import namespace="urn:oasis:names:tc:SAML:2.0:protocol"
              schemaLocation="saml-schema-protocol-2.0.xsd"/>
-  <!-- The following import is a manual addition; see Kiuru MSSP Integration Guide -->
-  <!--
-  <xs:import namespace="http://www.methics.fi/MSSPRegistration/v1.0.0#"
-             schemaLocation="mssp-registration-1.0.xsd"/> 
-  -->
   <xs:import namespace="http://www.swisscom.ch/TS102204/ext/v1.0.0"
              schemaLocation="MSS-ReceiptExt.xsd" />
   <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
              schemaLocation="MSS-SubscriberInfo.xsd" />
-
-<!-- This is the ETSI TS 102 204 XML Schema, 
-     but we've added direct references to
-     the Ficom schema in here. 
-
-     We've added MobileUser to MSS_StatusReq, as per Tdoc CSPt 040513.
-
-     We've added MSSP_TransID to MSS_StatusResp, as per Tdoc SCPt 040534.
--->
-    
+             
   <xs:complexType name="MessageAbstractType" abstract="true"> 
     <xs:sequence> 
       <xs:element name="AP_Info"> 
@@ -156,19 +133,6 @@
           <xs:element name="EncryptResponseBy" type="xs:anyURI" minOccurs="0"/> 
           <xs:element name="CertificateURI" type="xs:anyURI" minOccurs="0"/> 
           <xs:element name="X509Certificate" type="xs:base64Binary" minOccurs="0"/> 
-
-          <!-- Kiuru-specific addition -->
-          <!--
-          <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element ref="mreg:RegistrationInput"/>
-            <xs:element ref="mreg:EncryptedRegistrationInput"/>
-            <xs:element ref="mreg:EncryptionCertificates"/>
-            <xs:any namespace="##other" processContents="lax" />
-          </xs:choice>
-          -->
-          <!-- Original ETSI'204:
-               <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   
-          -->
           <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   
         </xs:sequence> 
       </xs:extension> 
@@ -408,14 +372,7 @@
       </xs:sequence>
       <xs:attribute ref="env:role"           use="required"/>
       <xs:attribute ref="env:mustUnderstand" use="required"/>
-      <!-- Bunch of optional SOAP header attributes for
-           SOAP 1.0 compability to be able to ignore them if client sends them -->
       <xs:anyAttribute namespace="##other" processContents="lax"/>
-      <!--
-          <xs:attribute ref="env:relay"          use="optional"/>
-          <xs:attribute ref="env:processed"      use="optional"/>
-          <xs:attribute ref="env:actor"          use="optional"/>
-      -->
     </xs:complexType> 
   </xs:element>
 
@@ -429,7 +386,7 @@
             <xs:element ref="fi:EventID"/>
             <xs:element ref="fi:NoSpamCode"/>
             <xs:element ref="fi:UserLang"/> 
-            <!-- <xs:element ref="mreg:CaseId"/> -->
+            <xs:element ref="fi:DisplayName"/>
             <xs:element ref="samlp:AttributeQuery"/> 
             <xs:any namespace="##other" processContents="lax" />
       </xs:choice>
@@ -457,13 +414,7 @@
   <xs:complexType name="StatusDetailType">   
     <xs:sequence> 
       <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> 
-      <!-- Kiuru-specific addition -->
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <!--
-            <xs:element ref="mreg:RegistrationOutput"/>
-            <xs:element ref="mreg:EncryptedRegistrationOutput"/>
-            <xs:element ref="mreg:EncryptionCertificates"/>
-        -->
         <xs:element ref="fi:ServiceResponses"/>
         <xs:element ref="sco:ReceiptRequestExtension"/>
         <xs:element ref="sco:ReceiptResponseExtension"/>
