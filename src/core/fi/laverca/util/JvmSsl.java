@@ -37,8 +37,7 @@ public class JvmSsl {
     /**
      * Sets JVM global SSL settings. This needs to be called only
      * once, before any EtsiClient or FiComClient objects are
-     * used. The method tries to open the stores in order to
-     * validate the parameters.
+     * used.
      *<p>
      * Note: This is STATIC, and uses global JVM settings.
      *       This can conflict with settings done by some other
@@ -64,10 +63,31 @@ public class JvmSsl {
     }
     
     /**
+     * Sets JVM global TrustStore settings. This needs to be called only
+     * once, before any EtsiClient or FiComClient objects are
+     * used.
+     *<p>
+     * Note: This is STATIC, and uses global JVM settings.
+     *       This can conflict with settings done by some other
+     *       code, or by runtime settings.
+     *
+     * @param trustStore the keystore file containing trusted SSL server certificates.
+     * @param trustStorePassword the password to the truststore.
+     * @param trustStoreType either "JKS" (Java native) or "PKCS12".
+     * @exception IllegalArgumentException if the store can not be opened.
+     *
+     */
+    public static void setTrustStore(final String trustStore,
+                                     final String trustStorePassword,
+                                     final String trustStoreType) {
+        setSSL(trustStore, trustStorePassword, trustStoreType, null, null, null);
+    }
+    
+    /**
      * Sets JVM global SSL settings. This needs to be called only
      * once, before any EtsiClient or FiComClient objects are
-     * used. The method tries to open the stores in order to
-     * validate the parameters.
+     * used.
+     * 
      *<p>
      * Note: This is STATIC, and uses global JVM settings.
      *       This can conflict with settings done by some other

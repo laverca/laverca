@@ -21,12 +21,15 @@ package fi.laverca.examples.swisscom;
 
 import java.io.IOException;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.axis.AxisFault;
 
 import fi.laverca.MSS_Formats;
 import fi.laverca.ProgressUpdate;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.examples.ExampleConf;
+import fi.laverca.mss.MssClient;
 import fi.laverca.swisscom.SwisscomClient;
 import fi.laverca.swisscom.SwisscomRequest;
 import fi.laverca.swisscom.SwisscomResponse;
@@ -63,21 +66,26 @@ public class Sign {
         ExampleConf conf = ExampleConf.getInstance();
         
         // Setup SSL
-        System.out.println("Setting up ssl");
-        JvmSsl.setSSL(conf.getTruststore(),
-                      conf.getTruststorePwd(),
-                      conf.getTruststoreType(),
-                      conf.getKeystore(),
-                      conf.getKeystorePwd(),
-                      conf.getKeystoreType());
+        SSLSocketFactory ssf = null;
+        try {
+            System.out.println("Setting up ssl");
+            ssf = MssClient.createSSLFactory(conf.getKeystore(), conf.getKeystorePwd(), conf.getKeystoreType());
+        } catch (Exception e) {
+            System.out.println("Keystore problem: " + e.getMessage());
+            return;
+        }
+        JvmSsl.setTrustStore(conf.getTruststore(),
+                             conf.getTruststorePwd(),
+                             conf.getTruststoreType());
 
         // Create client
-        SwisscomClient client = new SwisscomClient(conf.getApId(), 
-                                                   conf.getApPwd(), 
-                                                   conf.getSignatureUrl(), 
-                                                   conf.getStatusUrl(), 
+        SwisscomClient client = new SwisscomClient(conf.getApId(),
+                                                   conf.getApPwd(),
+                                                   conf.getSignatureUrl(),
+                                                   conf.getStatusUrl(),
                                                    conf.getReceiptUrl());
 
+        client.setSSLSocketFactory(ssf);
         
         // Create DataToBeSigned
         DTBS        dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
