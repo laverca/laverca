@@ -29,7 +29,7 @@
   <property name="examples"  location="examples"/>
   <property name="conf"      value="${examples}/conf"/>
   <property name="etc"       value="${examples}/etc"/>
-  <property name="script"    value="${examples}/script" />
+  <property name="bin"       value="${examples}/bin" />
 
   <property name="core-lib"      location="${build}/laverca-core.jar" />
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
@@ -76,14 +76,15 @@
     <attribute name="todir" />
     <attribute name="file" />
     <sequential>
-      <java classname="com.sun.tools.internal.xjc.XJCFacade"
+     <echo>Generating JAXB datatypes with XJC</echo>
+     <java classname="com.sun.tools.internal.xjc.XJCFacade"
             failonerror="true"
             classpathref="anttasks.classpath">
         <arg line="-npa -no-header -nv" />
         <arg line="-d @{todir}"/>
         <arg line="-extension"/>
         <!-- <arg line="-verbose"/> -->
-        <arg line="-quiet"/>
+        <!-- <arg line="-quiet"/>   -->
         <arg line="-encoding UTF-8"/>
         <arg line="-XexplicitAnnotation"/>
         <!-- <arg line="-XautoNameResolution"/> -->
@@ -95,14 +96,11 @@
     </sequential>
   </macrodef>
 
-
-
-
   <target name="clean">
-    <delete dir="${build}" />
-    <delete dir="${dist}" />
-    <delete dir="${apidocs}" />
-    <delete dir="${datatypes-src}" />
+    <delete dir="${build}"         failonerror="false" />
+    <delete dir="${dist}"          failonerror="false" />
+    <delete dir="${apidocs}"       failonerror="false" />
+    <delete dir="${datatypes-src}" failonerror="false" />
   </target>
 
   <target name="generate-datatypes" >
@@ -110,12 +108,10 @@
     <mkdir dir="${datatypes-src}" />
     <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
                       todir="${datatypes-src}" />
-
+                      
   </target>
   
 
-  <!-- BUILD -->
-  
   <target name="build"  depends="build-core, build-examples" />  
 
   <target name="build-core"
@@ -156,9 +152,9 @@
     <copy todir="${dist}/examples/conf">   <fileset dir="${conf}"/>         </copy>
     <copy todir="${dist}/examples/etc">    <fileset dir="${etc}"/>          </copy>
     <copy todir="${dist}/examples/src">    <fileset dir="${examples-src}"/> </copy>
-    <copy todir="${dist}/examples/script"> <fileset dir="${script}"/>       </copy>
+    <copy todir="${dist}/examples/bin">    <fileset dir="${bin}"/>       </copy>
     
-    <chmod dir="${dist}/examples/script" perm="755"/>    
+    <chmod dir="${dist}/examples/bin" perm="755"/>    
     
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>
     <copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>

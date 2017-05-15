@@ -79,5 +79,14 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  
+  <xs:element name="DisplayName">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:minLength value="2"/>
+        <xs:maxLength value="64"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
 
 </xs:schema>

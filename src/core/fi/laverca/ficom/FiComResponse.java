@@ -123,7 +123,6 @@ public class FiComResponse extends MssResponse {
         }
     }
 
-
     /**
      * Check if this response has a valid signature
      * 

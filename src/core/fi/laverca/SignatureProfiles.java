@@ -32,4 +32,6 @@ public class SignatureProfiles {
     
     public static final String SWISSCOM_AUTHENTICATION = "http://mid.swisscom.ch/MID/v1/AuthProfile1";
     
+    public static final String ALAUDA_SIGNATURE        = "http://alauda.mobi/digitalSignature";
+    
 }

@@ -21,7 +21,7 @@ package fi.laverca.etsi;
 
 import java.util.List;
 
-import fi.laverca.ClientHelper;
+import fi.laverca.ClientBase;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
@@ -32,7 +32,7 @@ import fi.laverca.util.DTBS;
 /**  
  * An asynchronous client for standard ETSI TS 102 204 signature requests.
  */
-public class EtsiClient extends ClientHelper<EtsiRequest, EtsiResponse> {
+public class EtsiClient extends ClientBase<EtsiRequest, EtsiResponse> {
 
     public EtsiClient(final String apId,             // AP settings
                       final String apPwd, 

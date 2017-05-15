@@ -22,7 +22,7 @@ package fi.laverca.ficom;
 import java.io.IOException;
 import java.util.List;
 
-import fi.laverca.ClientHelper;
+import fi.laverca.ClientBase;
 import fi.laverca.MSS_Formats;
 import fi.laverca.ResponseHandler;
 import fi.laverca.SignatureProfiles;
@@ -37,7 +37,7 @@ import fi.laverca.util.DTBS;
 /**  
  * An asynchronous client for FiCom -style signature requests.
  */
-public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
+public class FiComClient extends ClientBase<FiComRequest, FiComResponse> {
     
     public static final ObjectFactory ficomFact = new ObjectFactory();
 
@@ -54,16 +54,16 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
               msspStatusUrl, 
               msspReceiptUrl);
         
-        this.initialWait    = 20 * 1000;      // Initial wait 20 s   as per MSS FiCom Implementation Guideline, section 5.1
-        this.subsequentWait = 5  * 1000;      // Subsequent wait 5 s as per MSS FiCom Implementation Guideline, section 5.1
-        this.timeout        = 5  * 1000 * 60; // Timeout 5 min       as per MSS FiCom Implementation Guideline, section 6.4
+        this.initialWait    = 5 * 1000;      // Initial wait 5 s
+        this.subsequentWait = 2 * 1000;      // Subsequent wait 2 s
+        this.timeout        = 5 * 1000 * 60; // Timeout 5 min
     }
 
     /**
      * Create an EtsiRequest instance
      * @param apTransId AP Transaction ID
      * @param dtbs Data to be signed
-     * @param phoneNumber MSISDN of the target user
+     * @param msisdn MSISDN of the target user
      * @param noSpamService Service for sending nospam code
      * @param eventIDService Service containing the wanted EventId for the request
      * @param additionalServices List of FiCom additionalservices to add to the request
@@ -73,7 +73,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      */
     public FiComRequest createRequest(final String apTransId, 
                                       final DTBS dtbs,
-                                      final String phoneNumber,
+                                      final String msisdn,
                                       final AdditionalServiceType noSpamService,
                                       final AdditionalServiceType eventIDService,
                                       final List<AdditionalServiceType> additionalServices, 
@@ -82,7 +82,6 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
         
         final FiComRequest req = new FiComRequest();
 
-        String msisdn = phoneNumber; //consider using some kind of normalizer
         String dataToBeDisplayed = null;
         MessagingModeType messagingMode = MessagingModeType.ASYNCH_CLIENT_SERVER;
 
@@ -124,7 +123,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
+     * @see ClientBase#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest authenticate(final String apTransId,
                                      final byte[] authnChallenge,
@@ -159,7 +158,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request. 
-     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
+     * @see ClientBase#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest authenticateAnon(final String apTransId,
                                          final byte[] authnChallenge,
@@ -195,7 +194,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
+     * @see ClientBase#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest signText(final String apTransId,
                                  final String textToBeSigned,
@@ -217,7 +216,6 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
                                               MSS_Formats.PKCS7);
         
         return this.call(req, handler);
-
     }
 
     /**
@@ -232,7 +230,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
+     * @see ClientBase#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest signData(final String apTransId,
                                  final byte [] digestToBeSigned,
@@ -268,7 +266,7 @@ public class FiComClient extends ClientHelper<FiComRequest, FiComResponse> {
      * @param handler FiComResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
+     * @see ClientBase#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public FiComRequest consent(final String apTransId,
                                  final String textToBeConsentedTo,

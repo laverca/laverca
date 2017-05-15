@@ -22,7 +22,7 @@ package fi.laverca.swisscom;
 import java.io.IOException;
 import java.util.List;
 
-import fi.laverca.ClientHelper;
+import fi.laverca.ClientBase;
 import fi.laverca.MSS_Formats;
 import fi.laverca.ResponseHandler;
 import fi.laverca.SignatureProfiles;
@@ -37,7 +37,7 @@ import fi.laverca.util.DTBS;
 /**  
  * An asynchronous client for Swisscom -style signature requests.
  */
-public class SwisscomClient extends ClientHelper<SwisscomRequest, SwisscomResponse> {
+public class SwisscomClient extends ClientBase<SwisscomRequest, SwisscomResponse> {
     
     public static final ObjectFactory factory = new ObjectFactory();
 
@@ -86,8 +86,9 @@ public class SwisscomClient extends ClientHelper<SwisscomRequest, SwisscomRespon
         req.sigReq = sigReq;
 
         final List<AdditionalServiceType> as = sigReq.getAdditionalServices().getServices();
-        if (userLangService != null)
+        if (userLangService != null) {
             as.add(userLangService);
+        }
         
         if (additionalServices != null) {
             for (final AdditionalServiceType s : additionalServices) {
@@ -111,7 +112,7 @@ public class SwisscomClient extends ClientHelper<SwisscomRequest, SwisscomRespon
      * @param handler SwisscomResponseHandler for receiving asynch responses.
      * @return Sent request.
      * @throws IOException if handler is null or if an IOException was caught when sending the request.
-     * @see ClientHelper#call(fi.laverca.mss.MssRequest, ResponseHandler)
+     * @see ClientBase#call(fi.laverca.mss.MssRequest, ResponseHandler)
      */
     public SwisscomRequest authenticate(final String apTransId,
                                         final byte[] dtbs,

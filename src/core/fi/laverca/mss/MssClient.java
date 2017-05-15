@@ -25,11 +25,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.GregorianCalendar;
 
 import javax.net.ssl.SSLContext;
@@ -84,18 +80,17 @@ public class MssClient {
     public static ObjectFactory mssObjFact = new ObjectFactory();
     
     // AP settings
-    String apId = null;
-    String apPwd = null;
+    private String apId = null;
+    private String apPwd = null;
 
     // MSSP AE connection settings
-    final MSS_SignatureServiceLocator mssService = new MSS_SignatureServiceLocator();
-    URL MSSP_SI_URL = null;
-    URL MSSP_RC_URL = null;
-    URL MSSP_HS_URL = null;
-    URL MSSP_ST_URL = null;
-    URL MSSP_PR_URL = null;
-    URL MSSP_RG_URL = null;
-    MeshMemberType aeMsspId = null;
+    private final MSS_SignatureServiceLocator mssService = new MSS_SignatureServiceLocator();
+    private URL MSSP_SI_URL = null;
+    private URL MSSP_RC_URL = null;
+    private URL MSSP_HS_URL = null;
+    private URL MSSP_ST_URL = null;
+    private URL MSSP_PR_URL = null;
+    private URL MSSP_RG_URL = null;
 
     private int poolSize = 16;
     /** New connection timeout: milliseconds, 0 &leq; not set */
@@ -495,7 +490,7 @@ public class MssClient {
                 req.setAdditionalServices(null);
             }
         }
-        return (MSSSignatureResp)sendMat(req);
+        return (MSSSignatureResp)this.sendMat(req);
     }
 
     /**
@@ -509,7 +504,7 @@ public class MssClient {
      */
     public MSSReceiptResp send(final MSSReceiptReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
-        return (MSSReceiptResp)sendMat(req);
+        return (MSSReceiptResp)this.sendMat(req);
     }
 
     /**
@@ -523,7 +518,7 @@ public class MssClient {
      */
     public MSSHandshakeResp send(final MSSHandshakeReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
-        return (MSSHandshakeResp)sendMat(req);
+        return (MSSHandshakeResp)this.sendMat(req);
     }
 
     /**
@@ -537,7 +532,7 @@ public class MssClient {
      */
     public MSSStatusResp send(final MSSStatusReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null StatusReq");
-        return (MSSStatusResp)sendMat(req);
+        return (MSSStatusResp)this.sendMat(req);
     }
 
     /**
@@ -551,7 +546,7 @@ public class MssClient {
      */
     public MSSProfileResp send(final MSSProfileReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
-        return (MSSProfileResp)sendMat(req);
+        return (MSSProfileResp)this.sendMat(req);
     }
 
     /**
@@ -565,7 +560,7 @@ public class MssClient {
      */
     public MSSRegistrationResp send(final MSSRegistrationReq req) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null RegistrationReq");
-        return (MSSRegistrationResp)sendMat(req);
+        return (MSSRegistrationResp)this.sendMat(req);
     }
 
     /**
