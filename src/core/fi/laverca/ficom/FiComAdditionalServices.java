@@ -44,6 +44,7 @@ public class FiComAdditionalServices extends AdditionalServices {
     public static final String USER_LANG_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#userLang";
     public static final String PERSON_ID_URI  = "http://mss.ficom.fi/TS102204/v1.0.0#personIdentity";
     public static final String VALIDATE_URI   = "http://mss.ficom.fi/TS102204/v1.0.0#validate";
+    public static final String DISPLAY_NAME_URI = "http://mss.ficom.fi/TS102204/v1.0.0#displayName";
 
     // PersonID attributes
     public static final String PERSON_ID_HETU       = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#hetu";
@@ -153,6 +154,19 @@ public class FiComAdditionalServices extends AdditionalServices {
                                                                     final AttributeQuery attributeQuery) {
         final AdditionalServiceType s = EtsiAdditionalServices.createService(uri);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(attributeQuery);
+        return s;
+    }
+    
+    /**
+     * Create an AdditionalService for FiCom AP DisplayName service
+     * <p><b>Note:</b> This AdditionalService usually requires special authorization on the MSSP side.
+     * @param displayName Name to show on the user's screen instead of the AP_ID
+     * @return FiCom DisplayName AdditionalService
+     */
+    public static AdditionalServiceType createDisplayNameService(final String displayName) {
+        final AdditionalServiceType s = EtsiAdditionalServices.createService(DISPLAY_NAME_URI);
+        final JAXBElement<String> u = FiComClient.ficomFact.createDisplayName(displayName);
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(u);
         return s;
     }
     
