@@ -20,7 +20,6 @@
 package fi.laverca;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +31,6 @@ import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.jaxb.mss.MSSReceiptReq;
 import fi.laverca.jaxb.mss.MSSReceiptResp;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
@@ -46,8 +44,6 @@ import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssException;
 import fi.laverca.mss.MssRequest;
 import fi.laverca.mss.MssResponse;
-import fi.laverca.swisscom.SwisscomRequest;
-import fi.laverca.util.DTBS;
 
 /**
  * Abstract base class for ETSI TS 102 204 Signature operations

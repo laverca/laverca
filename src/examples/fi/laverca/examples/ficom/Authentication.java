@@ -34,6 +34,8 @@ import fi.laverca.ficom.PersonIdAttribute;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
+import fi.laverca.util.XmlDsigUtil;
+import fi.laverca.util.XmlDsigUtil.ValidationException;
 
 /**
  * Example FiCom application for demonstrating authentication.
@@ -104,6 +106,17 @@ public class Authentication {
                     for (PersonIdAttribute a : resp.getPersonIdAttributes()) {
                         System.out.println("  " + a.getName() + " " + a.getStringValue());
                     }
+                    
+                    // Validate XML Signature
+                    try {
+                        XmlDsigUtil.validate(resp);
+                    } catch (ValidationException e) {
+                        System.out.println("Invalid XML signature!");
+                    } catch (Exception e) {
+                        System.out.println("Unable to validate the XML signature:");
+                        e.printStackTrace();
+                    }
+                    
                 } else {
                     System.out.println("No Person ID Attributes received");
                 }
@@ -168,7 +181,6 @@ public class Authentication {
 
         return additionalServices;
     }
-        
 
 }
 

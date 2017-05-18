@@ -2,6 +2,7 @@ package fi.laverca.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,6 +12,9 @@ import java.security.KeyException;
 import java.security.PublicKey;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
 import javax.xml.crypto.KeySelectorException;
@@ -36,6 +40,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import fi.laverca.ficom.FiComResponse;
+import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MSSStatusResp;
+
 public class XmlDsigUtil {
 
     private static Log log = LogFactory.getLog(XmlDsigUtil.class);
@@ -51,7 +59,7 @@ public class XmlDsigUtil {
     }
     
     /**
-     * Validate an XML signature
+     * Validate XML signature of a message
      * @param xml String containing the XML document
      * @throws IOException if the parsing of the XML fails
      * @throws ValidationException if the validation failed
@@ -102,6 +110,32 @@ public class XmlDsigUtil {
             }
         } catch (UnsupportedEncodingException | SAXException | ParserConfigurationException | MarshalException | XMLSignatureException e) {
             throw new IOException(e);
+        }
+    }
+    
+    /**
+     * Validate XML signature of a FiComResponse
+     * @param resp
+     * @throws IOException if the parsing of the XML fails
+     * @throws ValidationException if the validation failed
+     * @throws JAXBException if the response marshalling failed
+     */
+    public static void validate(final FiComResponse resp) throws IOException, ValidationException, JAXBException {
+        
+        if (resp.finalStatusResp != null) {
+            // Asynch client-server
+            JAXBContext jc = JAXBContext.newInstance(MSSStatusResp.class);
+            Marshaller m = jc.createMarshaller();
+            StringWriter writer = new StringWriter();
+            m.marshal(resp.finalStatusResp, writer);
+            validate(writer.toString());
+        } else if (resp.originalSigResp != null) {
+            // Synch
+            JAXBContext jc = JAXBContext.newInstance(MSSSignatureResp.class);
+            Marshaller m = jc.createMarshaller();
+            StringWriter writer = new StringWriter();
+            m.marshal(resp.originalSigResp, writer);
+            validate(writer.toString());
         }
     }
 

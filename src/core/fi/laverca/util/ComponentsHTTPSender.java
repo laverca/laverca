@@ -39,23 +39,19 @@
 package fi.laverca.util;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPException;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.Constants;
@@ -64,9 +60,7 @@ import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.axis.SocketInputStream;
 import org.apache.axis.handlers.BasicHandler;
-import org.apache.axis.soap.SOAPConstants;
 import org.apache.axis.utils.JavaUtils;
-import org.apache.axis.utils.Messages;
 import org.apache.axis.utils.NetworkUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,18 +72,10 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import fi.laverca.ErrorCodes;
@@ -100,7 +86,7 @@ import fi.laverca.ErrorCodes;
  * A replacement of the default Axis Commons HTTP sender that makes it
  * possible to share a connection manager among RoamingClient instances.
  */
-@SuppressWarnings({"serial", "deprecation"})
+@SuppressWarnings({"serial"})
 public class ComponentsHTTPSender extends BasicHandler {
     
     private static Log log = LogFactory.getLog(ComponentsHTTPSender.class);
@@ -153,16 +139,10 @@ public class ComponentsHTTPSender extends BasicHandler {
         final String remoteURL = msgContext.getStrProp(MessageContext.TRANS_URL);
 
         if (httpClient == null) {
-            // You have probably not set property KiuruSOAPSender.HTTPCLIENT_INSTANCE to a port or stub. See for example RoamingClient or OpmClient. 
             final String msg = "Code bug: Calling convention error. Got NULL HttpClient object.";
             final NullPointerException npe = new NullPointerException(msg);
             log.fatal(msg, npe);
             throw npe;
-        }
-
-        if (trace) {
-            log.trace("KiuruSOAPSender::invoke start; httpClient="+httpClient+
-                      "; remoteURL="+remoteURL);
         }
 
         long deadline = 0L; // when it does time out?
@@ -244,59 +224,35 @@ public class ComponentsHTTPSender extends BasicHandler {
                 log.debug("HTTP status code: "+statusCode+", contentType: "+contentType);
             }
 
-            /*
-            final boolean isSOAP = (contentType != null &&
-                                   (contentType.startsWith(KiuruSOAPSender.CONTENTTYPE_APPLICATION_SOAPXML) ||
-                                    contentType.startsWith(KiuruSOAPSender.CONTENTTYPE_TEXT_XML))
-                                   );
-
-            if (!isSOAP) {
-                if (contentType == null) {
-                    throw new AxisFault("No Content-Type received");
-                } else {
-                    throw new AxisFault("Invalid Content-Type " + contentType);
-                }
-            }
-            */
-
             // Wrap the response body stream so that close() also releases
             // the connection back to the pool.
-            final ReleasingFilterInputStream releaseConnectionOnCloseStream;
+            final ReleasingFilterInputStream inputStream;
 
-            final Header contentEncoding =
-                response.getFirstHeader(HTTPConstants.HEADER_CONTENT_ENCODING);
+            final Header contentEncoding = response.getFirstHeader(HTTPConstants.HEADER_CONTENT_ENCODING);
 
             if (contentEncoding != null) {
-                if (contentEncoding.getValue().
-                    equalsIgnoreCase(HTTPConstants.COMPRESSION_GZIP)) {
+                if (contentEncoding.getValue().equalsIgnoreCase(HTTPConstants.COMPRESSION_GZIP)) {
                     log.debug(" .. wrapping with GZIPInputStream()");
                     // Wrap the stream with GZIPInputStream ...
                     final GZIPInputStream gis = new GZIPInputStream(response.getEntity().getContent());
-                    releaseConnectionOnCloseStream =
-                        new ReleasingFilterInputStream(httpClient, post, response, gis);
-
+                    inputStream = new ReleasingFilterInputStream(httpClient, post, response, gis);
                 } else {
-                    final String msg = ("Unsupported Content-Encoding of '"+ contentEncoding.getValue()
-                                        + "' found");
+                    final String msg = ("Unsupported Content-Encoding of '"+ contentEncoding.getValue() + "' found");
                     log.debug(msg);
-
                     httpClient.closeQuietly(post, response);
-
                     throw this.createFault(msgContext, AxisFault.soap12sender, msg);
                 }
             } else {
-                releaseConnectionOnCloseStream =
-                    new ReleasingFilterInputStream(httpClient, post, response,
-                                                   response.getEntity().getContent());
+                inputStream = new ReleasingFilterInputStream(httpClient, post, response, response.getEntity().getContent());
             }
 
             // Try reading one byte from stream
             boolean isEmpty = true;
             try {
-                int c = releaseConnectionOnCloseStream.read();
+                int c = inputStream.read();
                 if (c >= 0) {
                     // Got something, put it back
-                    releaseConnectionOnCloseStream.unread(c);
+                    inputStream.unread(c);
                     isEmpty = false;
                 } else {
                     // Void end-point? Something else wrong?
@@ -316,13 +272,14 @@ public class ComponentsHTTPSender extends BasicHandler {
                     throw fault;
                 } finally {
                     httpClient.closeQuietly(post, response);
+                    inputStream.close();
                 }
             }
             
             // After this phase, the response and post are NOT to be closed/released
             // in this code path! See comments further below at "AXIS closure processing rules"
 
-            final Message outMsg = new Message(releaseConnectionOnCloseStream,
+            final Message outMsg = new Message(inputStream,
                                                false, contentType, contentLocation);
             // Transfer HTTP headers of HTTP message to MIME headers of SOAP message
             final Header[] responseHeaders = post.getAllHeaders();
@@ -445,9 +402,6 @@ public class ComponentsHTTPSender extends BasicHandler {
             final Exception e = new Exception(t.getMessage(), t);
             throw this.makeFault(e, deadline, remoteURL, msgContext);
         }
-        if (trace) {
-            log.trace("KiuruSOAPSender::invoke end");
-        }
     }
 
     /**
@@ -489,12 +443,6 @@ public class ComponentsHTTPSender extends BasicHandler {
 
         // Clear the expected server certificate set from this thread
         LavercaSSLTrustManager.getInstance().setExpectedServerCerts(null);
-
-        Boolean didTimeout = null;
-        if (deadline != 0L) {
-            didTimeout = Boolean.valueOf(deadline < System.currentTimeMillis());
-        }
-
         return this.makeFault(msgContext, e, remoteURL);
     }
 
