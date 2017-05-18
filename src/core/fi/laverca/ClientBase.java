@@ -119,6 +119,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         } catch (AxisFault af) {
             log.error("Got SOAP fault", af);
             handler.onError(req, af);
+            return req;
         } catch (IOException ioe) {
             log.error("Got IOException ", ioe);
             throw ioe;
@@ -236,6 +237,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                         throw ioe;
                     }
                 }
+                log.info("return resp");
                 return resp;
             }
         };
