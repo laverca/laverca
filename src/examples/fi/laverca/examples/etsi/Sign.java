@@ -124,6 +124,9 @@ public class Sign {
             System.out.println("Got an IOException:");
             ioe.printStackTrace();
         }
+        
+        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+        client.shutdown();
     }
 
 }

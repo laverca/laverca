@@ -131,6 +131,9 @@ public class AnonAuthentication {
             System.out.println("Error establishing connection:");
             ioe.printStackTrace();
         }
+        
+        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+        client.shutdown();
     }
     
 }

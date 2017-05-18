@@ -237,7 +237,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                         throw ioe;
                     }
                 }
-                log.info("return resp");
                 return resp;
             }
         };
