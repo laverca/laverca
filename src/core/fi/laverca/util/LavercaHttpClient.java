@@ -124,26 +124,20 @@ public class LavercaHttpClient {
             log.trace("  URL " + poolUrl);
         }
 
-        this.poolUrl = poolUrl;
+        this.poolUrl  = poolUrl;
         this.username = newUsername;
         this.password = newPassword;
         
-        // Multiple threads (workers) share the HTTP connection
-        // pool
+        // Multiple threads (workers) share the HTTP connection pool
         final RegistryBuilder<ConnectionSocketFactory> rb = RegistryBuilder.create();
         rb.register("http", PlainConnectionSocketFactory.getSocketFactory());
         
         // Use the system properties for initializing the HTTPS
 
-        // Pre HC 4.4 HostnameVerifier:
-        //final HostnameVerifier hnv = org.apache.http.conn.ssl.AllowAllHostnameVerifier.INSTANCE;
         final HostnameVerifier hnv = org.apache.http.conn.ssl.NoopHostnameVerifier.INSTANCE;
         rb.register("https", new SSLConnectionSocketFactory(ssf, hnv));
 
-        this.connectionManager =
-                new PoolingHttpClientConnectionManager(rb.build(), null, null, null, 30L, TimeUnit.SECONDS);
-
-        // CleanupHttpClients.register(this.connectionManager);
+        this.connectionManager = new PoolingHttpClientConnectionManager(rb.build(), null, null, null, 30L, TimeUnit.SECONDS);
 
         this.connectionManager.setMaxTotal(newPoolSize);
         this.connectionManager.setDefaultMaxPerRoute(newPoolSize);
@@ -210,12 +204,6 @@ public class LavercaHttpClient {
             if (log.isTraceEnabled()) {
                 log.trace("Setting up basic server authentication. "+newUsername+ " : " + newPassword);
             }
-            /*
-            client
-                .getCredentialsProvider()
-                .setCredentials(AuthScope.ANY, // FIXME: Does this ANY cause problems?
-                                new UsernamePasswordCredentials(newUsername, newPassword));
-            */
             this.targetAuthCredentials = new UsernamePasswordCredentials(newUsername, newPassword);
             this.targetAuthScheme = new BasicScheme();
         } else {
@@ -310,21 +298,15 @@ public class LavercaHttpClient {
         return this.client;
     }
     
-    
     /**
      * Get initialized HttpContext
      * @return initialized HttpContext
      */
     public HttpClientContext buildContext() {
         final HttpClientContext hc = HttpClientContext.create();
-        if (this.credentialsProvider != null)
-            hc.setCredentialsProvider(this.credentialsProvider);
-        if (this.requestConfigBuilder != null)
-            hc.setRequestConfig(this.requestConfigBuilder.build());
-        
-        // MSSP-2158: Eager authorization needs the AUTH_CACHE attribute.
+        if (this.credentialsProvider  != null) hc.setCredentialsProvider(this.credentialsProvider);
+        if (this.requestConfigBuilder != null) hc.setRequestConfig(this.requestConfigBuilder.build());
         hc.setAttribute(HttpClientContext.AUTH_CACHE, this.authCache);
-        
         return hc;
     }
 

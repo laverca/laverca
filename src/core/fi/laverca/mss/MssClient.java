@@ -101,10 +101,8 @@ public class MssClient {
     private String newUsername;
     private String newPassword;
 
-    private ProxySettings proxySettings;
-
-    private SSLSocketFactory sslSocketFactory;
-    
+    private ProxySettings     proxySettings;
+    private SSLSocketFactory  sslSocketFactory;
     private LavercaHttpClient httpClient;
 
     private static boolean marshallerInitDone;
