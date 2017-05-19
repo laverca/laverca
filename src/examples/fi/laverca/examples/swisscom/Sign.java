@@ -35,7 +35,6 @@ import fi.laverca.swisscom.SwisscomRequest;
 import fi.laverca.swisscom.SwisscomResponse;
 import fi.laverca.swisscom.SwisscomResponseHandler;
 import fi.laverca.util.DTBS;
-import fi.laverca.util.JvmSsl;
 
 
 /**

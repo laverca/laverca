@@ -19,6 +19,8 @@
 
 package fi.laverca.util;
 
+import javax.net.ssl.SSLSocketFactory;
+
 /**
  * This has old style static setter of JVM global SSL settings.
  * <p>
@@ -30,8 +32,10 @@ package fi.laverca.util;
  * to specify what certificates are expected at the server side,
  * you can use LavercaSSLTrustManager.setExpectedServerCerts()
  * to set a list of possible certificates.
- *  
+ * @deprecated Use {@link fi.laverca.mss.MssClient#createSSLFactory(String, String, String, String, String, String)} and 
+ * {@link #setSSLSocketFactory(SSLSocketFactory)} instead
  */
+@Deprecated
 public class JvmSsl {
 
     /**

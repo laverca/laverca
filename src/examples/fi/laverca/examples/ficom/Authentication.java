@@ -36,7 +36,6 @@ import fi.laverca.ficom.PersonIdAttribute;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.util.DTBS;
-import fi.laverca.util.JvmSsl;
 import fi.laverca.util.XmlDsigUtil;
 import fi.laverca.util.XmlDsigUtil.ValidationException;
 
