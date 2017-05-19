@@ -22,6 +22,8 @@ package fi.laverca.examples.ficom;
 import java.io.IOException;
 import java.util.Collections;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import fi.laverca.ProgressUpdate;
 import fi.laverca.examples.ExampleConf;
 import fi.laverca.ficom.FiComAdditionalServices;
@@ -31,6 +33,7 @@ import fi.laverca.ficom.FiComResponse;
 import fi.laverca.ficom.FiComResponseHandler;
 import fi.laverca.ficom.PersonIdAttribute;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
+import fi.laverca.mss.MssClient;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JvmSsl;
 
@@ -58,13 +61,20 @@ public class AnonAuthentication {
         
         ExampleConf  conf = ExampleConf.getInstance();
                 
-        System.out.println("Setting up ssl");
-        JvmSsl.setSSL(conf.getTruststore(),
-                      conf.getTruststorePwd(),
-                      conf.getTruststoreType(),
-                      conf.getKeystore(),
-                      conf.getKeystorePwd(),
-                      conf.getKeystoreType());
+        // Setup SSL
+        SSLSocketFactory ssf = null;
+        try {
+            System.out.println("Setting up ssl");
+            ssf = MssClient.createSSLFactory(conf.getKeystore(),
+                                             conf.getKeystorePwd(),
+                                             conf.getKeystoreType(),
+                                             conf.getTruststore(),
+                                             conf.getTruststorePwd(),
+                                             conf.getTruststoreType());
+        } catch (Exception e) {
+            System.out.println("TLS initialization problem: " + e.getMessage());
+            return;
+        }
 
         System.out.println("Creating FiComClient");
         FiComClient client = new FiComClient(conf.getApId(), 
@@ -72,6 +82,8 @@ public class AnonAuthentication {
                                              conf.getSignatureUrl(), 
                                              conf.getStatusUrl(), 
                                              conf.getReceiptUrl());
+        
+        client.setSSLSocketFactory(ssf);
         
         // Generate IDs
         final String millis    = ""  + System.currentTimeMillis();

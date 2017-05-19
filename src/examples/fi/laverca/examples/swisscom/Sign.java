@@ -69,14 +69,16 @@ public class Sign {
         SSLSocketFactory ssf = null;
         try {
             System.out.println("Setting up ssl");
-            ssf = MssClient.createSSLFactory(conf.getKeystore(), conf.getKeystorePwd(), conf.getKeystoreType());
+            ssf = MssClient.createSSLFactory(conf.getKeystore(),
+                                             conf.getKeystorePwd(),
+                                             conf.getKeystoreType(),
+                                             conf.getTruststore(),
+                                             conf.getTruststorePwd(),
+                                             conf.getTruststoreType());
         } catch (Exception e) {
             System.out.println("Keystore problem: " + e.getMessage());
             return;
         }
-        JvmSsl.setTrustStore(conf.getTruststore(),
-                             conf.getTruststorePwd(),
-                             conf.getTruststoreType());
 
         // Create client
         SwisscomClient client = new SwisscomClient(conf.getApId(),

@@ -28,6 +28,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.GregorianCalendar;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -207,31 +208,62 @@ public class MssClient {
     public void setSSLSocketFactory(SSLSocketFactory ssf) {
         this.sslSocketFactory = ssf;
     }
-    
+  
     /**
      * Create an SSLSocketFactory
      * @param ksFile Keystore filename
      * @param ksPwd  Keystore password
      * @param ksType Keystore type
      * @return Created SSLSocketFactory
+     * @throws IOException 
+     * @throws GeneralSecurityException 
      */
-    public static SSLSocketFactory createSSLFactory(final String ksFile, final String ksPwd, final String ksType) 
+    public static SSLSocketFactory createSSLFactory(final String ksFile, final String ksPwd, final String ksType)
+        throws GeneralSecurityException, IOException 
+    {
+        return createSSLFactory(ksFile, ksPwd, ksType, null, null, null);
+    }
+    
+    /**
+     * Create an SSLSocketFactory
+     * @param ksFile Keystore filename
+     * @param ksPwd  Keystore password
+     * @param ksType Keystore type
+     * @param tsFile Truststore filename
+     * @param tsPwd  Truststore password
+     * @param tsType Truststore type
+     * @return Created SSLSocketFactory
+     */
+    public static SSLSocketFactory createSSLFactory(final String ksFile, final String ksPwd, final String ksType,
+                                                    final String tsFile, final String tsPwd, final String tsType) 
         throws GeneralSecurityException, IOException 
     {
         KeyStore    ks = KeyStore.getInstance(ksType);
-        InputStream is = new FileInputStream(ksFile);
+        KeyStore    ts = KeyStore.getInstance(tsType);
+        InputStream kis = new FileInputStream(ksFile);
+        InputStream tis = null;
+        
+        if (tsFile != null) {
+            tis = new FileInputStream(tsFile);
+        }
+
         try {
-            SSLContext ctx = SSLContext.getInstance("TLSv1");
-    
-            ks.load(is, ksPwd.toCharArray());
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            ks.load(kis, ksPwd.toCharArray());
+            kmf.init(ks, ksPwd.toCharArray());
             
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ks);
-            ctx.init(null, tmf.getTrustManagers(), null);
+            TrustManagerFactory tmf = null;
+            if (tsFile != null) {
+                tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                ts.load(tis, tsPwd.toCharArray());
+                tmf.init(ts);
+            }
+            SSLContext ctx = SSLContext.getInstance("TLSv1.2");
+            ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
             return ctx.getSocketFactory();
-            
         } finally {
-            is.close();
+            tis.close();
+            kis.close();
         }
     }
     

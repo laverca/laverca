@@ -21,6 +21,8 @@ package fi.laverca.examples.etsi;
 
 import java.io.IOException;
 
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.axis.AxisFault;
 
 import fi.laverca.MSS_Formats;
@@ -32,8 +34,8 @@ import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.etsi.EtsiResponseHandler;
 import fi.laverca.examples.ExampleConf;
 import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.mss.MssClient;
 import fi.laverca.util.DTBS;
-import fi.laverca.util.JvmSsl;
 
 
 /**
@@ -64,13 +66,19 @@ public class Sign {
         ExampleConf conf = ExampleConf.getInstance();
         
         // Setup SSL
-        System.out.println("Setting up ssl");
-        JvmSsl.setSSL(conf.getTruststore(),
-                      conf.getTruststorePwd(),
-                      conf.getTruststoreType(),
-                      conf.getKeystore(),
-                      conf.getKeystorePwd(),
-                      conf.getKeystoreType());
+        SSLSocketFactory ssf = null;
+        try {
+            System.out.println("Setting up ssl");
+            ssf = MssClient.createSSLFactory(conf.getKeystore(),
+                                             conf.getKeystorePwd(),
+                                             conf.getKeystoreType(),
+                                             conf.getTruststore(),
+                                             conf.getTruststorePwd(),
+                                             conf.getTruststoreType());
+        } catch (Exception e) {
+            System.out.println("TLS initialization problem: " + e.getMessage());
+            return;
+        }
 
         // Create client
         EtsiClient client = new EtsiClient(conf.getApId(), 
@@ -79,6 +87,7 @@ public class Sign {
                                            conf.getStatusUrl(), 
                                            conf.getReceiptUrl());
 
+        client.setSSLSocketFactory(ssf);
         
         // Create DataToBeSigned
         DTBS        dtbs = new DTBS("sign this", DTBS.ENCODING_UTF8);
