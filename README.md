@@ -66,9 +66,7 @@ Usage
     
     Run the examples by using the scripts in the examples/script directory:
     
-    $ sh examples/script/SignText.sh
-     OR
-    $ examples/script/SignText.bat
+    $ sh examples/bin/etsi-sign.sh
     
 
 Configuration
