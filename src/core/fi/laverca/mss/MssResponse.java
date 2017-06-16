@@ -185,4 +185,16 @@ public abstract class MssResponse {
         return null;
     }
     
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("StatusCode=").append(this.getStatusCode());
+        sb.append(", StatusMessage=").append(this.getStatusMessage());
+        sb.append(", HasSignature=").append(this.hasSignature());
+        sb.append("]");
+        return sb.toString();
+    }
+    
 }
