@@ -66,9 +66,7 @@ Usage
     
     Run the examples by using the scripts in the examples/script directory:
     
-    $ sh examples/script/SignText.sh
-     OR
-    $ examples/script/SignText.bat
+    $ sh examples/bin/etsi-sign.sh
     
 
 Configuration
@@ -103,39 +101,6 @@ Configuration
          (FiComClient)
     11. The format of the digital signature is base64-encoding and PKCS#7 or PKCS#1 with the users certificate.
          (FiComResponse)
-
-## Dynamic setting of TLS keys and trusts
-
-Setting client key+cert on connection, and server certificate trust list
-
-    // Prepare SSLSocketFactory
-    
-    SSLSocketFactory ssf = ... 
-
-Supply a custom SSLSocketFactory that has a client TLS key configured to it for outbound calls.
-If this is not supplied, then Java default socket factory is used, and it picks up possible client keystore via JvmSsl class setter. (Oracle Java, OpenJDK)
-
-    // Prepare trusted server certificate list
-    
-    List<byte[]> certDerList = ... 
-
-Supply list of certificates that the target MSSP server has.
-This list may contain past, present and future instances of the certificates.
-Each certificate is in binary DER format stored byte[] elements of the List.
-
-    // Prepare EtsiClient
-    
-    EtsiClient ec = new EtsiClient(...);
-    ec.setSSLSocketFactory( ssf );
-    
-    // Now call MSS services
-    
-    // Application must set the expected server certs list every time
-    // just prior to service call.
-    LavercaSSLTrustManager.getInstance().setExpectedServerCerts( certDerList );
-    // ... actual service call ...
-
-The  list of trusted certificates is delivered via ThreadLocal storage, and therefore the trustmanager setter call must be done just prior to each MSSP service call.
 
 
 ## Copyright and License
