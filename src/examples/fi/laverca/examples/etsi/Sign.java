@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.encoding.Base64;
 
 import fi.laverca.MSS_Formats;
 import fi.laverca.ProgressUpdate;
@@ -110,6 +111,11 @@ public class Sign {
                 System.out.println("Got a response");
                 System.out.println("  StatusCode   : " + resp.getStatusCode());
                 System.out.println("  StatusMessage: " + resp.getStatusMessage());
+                if (resp.hasSignature()) {
+                    System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
+                } else {
+                    System.out.println("  Signature    :");
+                }
             }
 
             @Override

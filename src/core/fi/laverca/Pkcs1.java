@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2017 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 
 package fi.laverca;
 
-import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -36,9 +35,9 @@ import fi.laverca.util.X509Util;
 
 
 /** 
- * A PKCS1 signature wrapper.
+ * A FiCom PKCS1 signature wrapper.
  */ 
-public class Pkcs1 {
+public class Pkcs1 implements Signature {
     private static final Log log = LogFactory.getLog(Pkcs1.class);
 
     private PKCS1 pkcs1;
@@ -49,25 +48,20 @@ public class Pkcs1 {
      */
     public Pkcs1(final PKCS1 pkcs1) throws IllegalArgumentException {
     	
-        if(pkcs1 == null) {
+        if (pkcs1 == null) {
             throw new IllegalArgumentException("Can't construct a PKCS1 SignedData element from null input.");
         }
-        
         this.pkcs1 = pkcs1;
     }
     
     /**
      * Get the MSS Signature value
      * @return MSS Signature as a String
+     * @deprecated Use {@link #getBase64Signature()} instead
      */
+    @Deprecated
     public String getMssSignatureValue() {
-    	String signature = null;
-    	try {
-        	signature = new String(Base64.encode(pkcs1.getSignatureValue()), "ASCII");
-		} catch (UnsupportedEncodingException e) {
-			log.error("Unable to decode signature: " + e.getMessage());
-		}
-		return signature;
+        return this.getBase64Signature();
     }
 
     /**
@@ -77,8 +71,9 @@ public class Pkcs1 {
      * 
      * @return Signer certificate
      */
+    @Override
     public X509Certificate getSignerCert() {
-    	return(X509Util.DERtoX509Certificate(pkcs1.getX509Certificate()));
+    	return(X509Util.DERtoX509Certificate(this.pkcs1.getX509Certificate()));
     }
 
     /**
@@ -87,6 +82,7 @@ public class Pkcs1 {
      * then parsing out the CN from the certificate's Subject field.
      * @return Signer's CN or null if there's a problem.
      */
+    @Override
     public String getSignerCn() {
         try {
             X509Certificate signerCert = this.getSignerCert();
@@ -96,7 +92,7 @@ public class Pkcs1 {
             try {
                 LdapName ldapDn = new LdapName(dn);
                 List<Rdn> rdns = ldapDn.getRdns();
-                for(Rdn r : rdns) {
+                for (Rdn r : rdns) {
                     if("CN".equals(r.getType())) {
                         cn = r.getValue().toString();
                     }
@@ -112,4 +108,14 @@ public class Pkcs1 {
         }
     }
 
+    @Override
+    public byte[] getRawSignature() {
+        return this.pkcs1.getSignatureValue();
+    }
+
+    @Override
+    public String getBase64Signature() {
+        return Base64.toBase64String(this.getRawSignature());
+    }
+    
 }

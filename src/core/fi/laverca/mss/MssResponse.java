@@ -22,12 +22,14 @@ package fi.laverca.mss;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import fi.laverca.CmsSignature;
 import fi.laverca.Pkcs1;
-import fi.laverca.Pkcs7;
+import fi.laverca.Signature;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mssfi.PKCS1;
 
 public abstract class MssResponse {
 
@@ -44,12 +46,62 @@ public abstract class MssResponse {
         this.originalSigResp = originalSigResp;
         this.finalStatusResp = finalStatusResp;
     }
+    
+    /** 
+     * Get the MSS signature
+     * 
+     * @return signature or null if the response contains no signature. 
+     */
+    public Signature getSignature() {
+        
+        if (this.finalStatusResp == null) return null;
+        if (this.finalStatusResp.getMSSSignature() == null) return null;
+        
+        Signature s = null;
+
+        // CMS
+        byte[] sig = this.finalStatusResp.getMSSSignature().getBase64Signature();
+        if (sig != null) {
+            s = new CmsSignature(sig);
+        }
+        
+        // FiCom PKCS1
+        PKCS1 p1 = this.finalStatusResp.getMSSSignature().getPKCS1();
+        if (p1 != null) {
+            s = new Pkcs1(p1);
+        }
+        
+        return s;
+    }
+    
+    /**
+     * Check if the response has signature available
+     * 
+     * @return true if signature is available
+     */
+    public boolean hasSignature() {
+        if (this.finalStatusResp == null) return false;
+        if (this.finalStatusResp.getMSSSignature() == null) return false;
+        
+        boolean hasSignature = false;
+        
+        if (this.finalStatusResp.getMSSSignature().getBase64Signature() != null) {
+            hasSignature = true;
+        }
+        if (this.finalStatusResp.getMSSSignature().getPKCS1() != null) {
+            hasSignature = true;
+        }
+        
+        return hasSignature;
+    }
 
     /** 
      * Get the PKCS7 signature from this response
-     * @return PKCS7 signature or null if the signature is not in this format. 
+     * @return PKCS7 signature or null if the signature is not in this format.
+     * @deprecated Use {@link #getSignature()} instead
      */
-    public Pkcs7 getPkcs7Signature() {
+    @Deprecated
+    public CmsSignature getPkcs7Signature() {
         try {
             if (this.finalStatusResp == null)
                 throw new RuntimeException("Illegal state. Null statusResp.");
@@ -57,7 +109,7 @@ public abstract class MssResponse {
             if (this.finalStatusResp.getMSSSignature() == null)
                 throw new RuntimeException("Illegal state. Null statusResp.MSS_Signature");
             
-            final Pkcs7 p7 = new Pkcs7(this.finalStatusResp.getMSSSignature().getBase64Signature());
+            final CmsSignature p7 = new CmsSignature(this.finalStatusResp.getMSSSignature().getBase64Signature());
             return p7;
         } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs7?", iae);
@@ -68,8 +120,10 @@ public abstract class MssResponse {
     
     /** 
      * Get the PKCS1 signature from this response
-     * @return PKCS1 signature or null if the signature is not in this format. 
-     */    
+     * @return PKCS1 signature or null if the signature is not in this format.
+     * @deprecated Use {@link #getSignature()} instead
+     */
+    @Deprecated
     public Pkcs1 getPkcs1Signature() {
         try {
             if (this.finalStatusResp == null)
