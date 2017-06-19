@@ -8,7 +8,7 @@
   <property name="build.sysclasspath"           value="last" />
 
   
-  <property name="project-version" value="2.0.0" />
+  <property name="project-version" value="2.0.1" />
   <property name="project-name"    value="laverca" />
   
   <property name="build"     location="build" />
@@ -25,11 +25,12 @@
 
   <property name="libs"      location="libs"/>
   <property name="docs"      location="docs"/>	
-  
+
   <property name="examples"  location="examples"/>
   <property name="conf"      value="${examples}/conf"/>
   <property name="etc"       value="${examples}/etc"/>
   <property name="bin"       value="${examples}/bin" />
+  <property name="example-libs" location="${examples}/libs"/>	
 
   <property name="core-lib"      location="${build}/laverca-core.jar" />
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
@@ -152,8 +153,9 @@
     <copy todir="${dist}/examples/conf">   <fileset dir="${conf}"/>         </copy>
     <copy todir="${dist}/examples/etc">    <fileset dir="${etc}"/>          </copy>
     <copy todir="${dist}/examples/src">    <fileset dir="${examples-src}"/> </copy>
-    <copy todir="${dist}/examples/bin">    <fileset dir="${bin}"/>       </copy>
-    
+    <copy todir="${dist}/examples/bin">    <fileset dir="${bin}"/>          </copy>
+    <copy todir="${dist}/examples/libs">   <fileset dir="${example-libs}"/> </copy>
+
     <chmod dir="${dist}/examples/bin" perm="755"/>    
     
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>

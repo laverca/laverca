@@ -7,20 +7,24 @@
 	
   <property name="examples-src" location="src"/>
 	
-  <property name="libs"      location="../libs"/>
+  <property name="libs"      location="libs"/>
+  <property name="ex-libs"   location="examples/libs"/>
   <property name="conf"      location="conf"/>
   <property name="scripts"   location="scripts" />
 
-  <property name="core-lib"      location="${libs}/laverca-core.jar" />
-  <property name="datatypes-lib" location="${libs}/laverca-datatypes.jar" />
-  <property name="examples-lib"  location="${build}/laverca-examples.jar" />
-
+  <property name="core-jar"      location="${build}/laverca-core.jar" />
+  <property name="datatypes-jar" location="${build}/laverca-datatypes.jar" />
+  <property name="examples-jar"  location="${build}/laverca-examples.jar" />
+ 
   <path id="example-libs">
     <fileset dir="${libs}">
       <include name="*.jar"/>
     </fileset>
-    <pathelement location="${core-lib}" />
-    <pathelement location="${datatypes-lib}" />
+    <fileset dir="${ex-libs}">
+      <include name="*.jar"/>
+    </fileset>
+    <pathelement location="${core-jar}" />
+    <pathelement location="${datatypes-jar}" />
   </path>
 
   <target name="clean">
@@ -39,7 +43,7 @@
       </classpath>
       <include name="**/**.java" />
     </javac>
-    <jar jarfile="${examples-lib}">
+    <jar jarfile="${examples-jar}">
       <fileset dir="${build}/examples">
         <include name="**" />
       </fileset>
@@ -47,7 +51,7 @@
   </target>
 	
   <target name="dist" depends="build">
-    <copy file="${examples-lib}" todir="." />
+    <copy file="${examples-jar}" todir="." />
   </target>
 
 </project>

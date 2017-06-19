@@ -70,6 +70,7 @@ public class CmsSignature implements Signature {
             throw new IllegalArgumentException("Can't construct a PKCS7 SignedData element from null input.");
         }
         this.rawSignature = bytes;
+        
 
         this._sd = bytesToPkcs7SignedData(bytes);
 
@@ -130,7 +131,7 @@ public class CmsSignature implements Signature {
             return null;
         }
     }
-    
+
     @Override
     public byte[] getRawSignature() {
         return this.rawSignature;
@@ -139,6 +140,25 @@ public class CmsSignature implements Signature {
     @Override
     public String getBase64Signature() {
         return Base64.toBase64String(this.getRawSignature());
+    }
+    
+    /**
+     * Get the CMS SignatureValue as byte[]
+     * @return CMS SignatureValue as byte[]
+     */
+    public byte[] getSignatureValue() {
+        return readSignatureValue(this.getSignerInfo());
+    }
+    
+    /**
+     * Get the SignerInfo object if found
+     * @return SignerInfo or null
+     */
+    public SignerInfo getSignerInfo() {
+        for (SignerInfo si : readSignerInfos(this._sd)) {
+            return si;
+        }
+        return null;
     }
 
     /**
@@ -297,7 +317,7 @@ public class CmsSignature implements Signature {
     }
 
     /**
-     * Read the Serial element from a SignedData
+     * Read the Serial element from a SignedInfo object
      * @param si data
      * @return Serial as String
      */
@@ -313,7 +333,7 @@ public class CmsSignature implements Signature {
     }
 
     /**
-     * Read the Issuer from a SignedData
+     * Read the Issuer from a SignedInfo object
      * @param si data
      * @return Issuer as String
      */
@@ -326,6 +346,18 @@ public class CmsSignature implements Signature {
         final X500Name       issuerName = ias.getName();
 
         return issuerName.toString();
+    }
+    
+    /**
+     * Read the SignatureValue from a SignedInfo
+     * @param si data
+     * @return SignatureValue as byte[]
+     */
+    public static byte[] readSignatureValue(final SignerInfo si) {
+        if (si == null) {
+            return null;
+        }
+        return si.getEncryptedDigest().getOctets();
     }
 
     /** 
