@@ -25,6 +25,6 @@ This project includes:
 Examples in this project include:
   Apache Commons Collections under The Apache Software License, Version 2.0
   Apache Commons IO under The Apache Software License, Version 2.0
+  Apache Santuario under The Apache Software License, Version 2.0
   Esig DSS under LGPL-2.1
   SLF4j under the MIT license
-  XML Security under the MIT license
