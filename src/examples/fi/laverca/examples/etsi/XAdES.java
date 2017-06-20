@@ -174,6 +174,9 @@ public class XAdES {
             System.out.println("Got an Exception:");
             ioe.printStackTrace();
         }
+        
+        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+        client.shutdown();
     }
     
     /**
@@ -248,5 +251,5 @@ public class XAdES {
             e.printStackTrace();
         }
     }
-    
+
 }
