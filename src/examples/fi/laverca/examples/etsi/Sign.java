@@ -24,7 +24,6 @@ import java.io.IOException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.AxisFault;
-import org.apache.axis.encoding.Base64;
 
 import fi.laverca.MSS_Formats;
 import fi.laverca.ProgressUpdate;
