@@ -15,13 +15,16 @@ under the License.
 
 This project includes:
   Apache Commons Codec under The Apache Software License, Version 2.0
-  Apache Commons Collections under The Apache Software License, Version 2.0
   Apache Commons Discovery under The Apache Software License, Version 2.0
-  Apache Commons IO under The Apache Software License, Version 2.0
   Apache Commons Lang under The Apache Software License, Version 2.0
   Apache Commons Logging under The Apache Software License, Version 2.0
   Apache HttpComponents under The Apache Software License, Version 2.0
   Apache Axis under The Apache Software License, Version 2.0
+  Bouncy Castle under the MIT license
+
+Examples in this project include:
+  Apache Commons Collections under The Apache Software License, Version 2.0
+  Apache Commons IO under The Apache Software License, Version 2.0
   Esig DSS under LGPL-2.1
   SLF4j under the MIT license
   XML Security under the MIT license
