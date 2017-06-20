@@ -22,6 +22,9 @@ package fi.laverca.examples.etsi;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -148,7 +151,18 @@ public class XAdES {
             X509Certificate signingCert = resp.getSignature().getSignerCert();
             
             // 2. Send the actual XAdES signature request
-            parameters.setSigningCertificate(new CertificateToken(signingCert));
+
+            // Fill certs to XAdESSignatureParameters
+            CertificateToken     signerCert = new CertificateToken(signingCert);
+            Set<CertificateToken> certChain = new HashSet<>();
+            
+            for (X509Certificate c : ((CmsSignature)resp.getSignature()).getCertificates()) {
+                certChain.add(new CertificateToken(c));
+            }
+                        
+            parameters.setCertificateChain(certChain);
+            parameters.setSigningCertificate(signerCert);
+            
             ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
             
             dtbs      = new DTBS(dataToSign.getBytes(), DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);

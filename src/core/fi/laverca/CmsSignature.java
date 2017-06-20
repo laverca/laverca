@@ -22,6 +22,7 @@ package fi.laverca;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -46,7 +47,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.util.encoders.Base64;
 
-import fi.laverca.ficom.FiComException;
 import fi.laverca.mss.MssException;
 import fi.laverca.util.X509Util;
 
@@ -162,6 +162,14 @@ public class CmsSignature implements Signature {
     }
 
     /**
+     * Get the certificates
+     * @return All certificates or an empty list
+     */
+    public List<X509Certificate> getCertificates() {
+        return readCerts(this._sd);
+    }
+    
+    /**
      * Convert a byte array to a PKCS7 SignedData object
      * @param bytes byte array
      * @return PKCS7 SignedData object
@@ -201,9 +209,9 @@ public class CmsSignature implements Signature {
      * 
      * @param sd PKCS7 SignedData
      * @return List of X509 certificates
-     * @throws FiComException if no certificate or signer info is found from the data
+     * @throws MssException if no certificate or signer info is found from the data
      */
-    public static List<X509Certificate> getSignerCerts(final SignedData sd) throws FiComException {
+    public static List<X509Certificate> getSignerCerts(final SignedData sd) throws MssException {
 
         // 0. Setup. 
         // 1. Read PKCS7.Certificates to get all possible certs.
@@ -222,7 +230,7 @@ public class CmsSignature implements Signature {
         List<X509Certificate> certs = readCerts(sd);
         
         if (certs.isEmpty()) {
-            throw new FiComException("PKCS7 SignedData certificates not found");
+            throw new MssException("PKCS7 SignedData certificates not found");
         }
 
         // 2. Read PKCS7.SignerInfo to get all signers.
@@ -230,7 +238,7 @@ public class CmsSignature implements Signature {
         List<SignerInfo> signerInfos = readSignerInfos(sd);
         
         if (signerInfos.isEmpty()) {
-            throw new FiComException("PKCS7 SignedData signerInfo not found");
+            throw new MssException("PKCS7 SignedData signerInfo not found");
         }
 
         // 3. Verify that signerInfo cert details match the cert on hand
@@ -264,11 +272,11 @@ public class CmsSignature implements Signature {
     /**
      * Read all certificates from a SignedData
      * @param sd data
-     * @return all X509 certificates or null
+     * @return all X509 certificates or an empty list
      */
     public static List<X509Certificate> readCerts(final SignedData sd) {
         if (sd == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<X509Certificate> certs = new ArrayList<X509Certificate>();
