@@ -19,8 +19,6 @@
 
 package fi.laverca.mss.ws;
 
-import java.security.Security;
-
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
 

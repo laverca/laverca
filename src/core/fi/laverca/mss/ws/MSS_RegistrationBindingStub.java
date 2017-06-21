@@ -19,8 +19,6 @@
 
 package fi.laverca.mss.ws;
 
-import java.security.Security;
-
 import javax.xml.namespace.QName;
 
 import org.apache.axis.AxisEngine;
