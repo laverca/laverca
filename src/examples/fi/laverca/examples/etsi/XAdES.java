@@ -21,9 +21,9 @@ package fi.laverca.examples.etsi;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.net.ssl.SSLSocketFactory;
@@ -71,11 +71,9 @@ public class XAdES {
         
     /**
      * The main method
-     * @param args
      */
     public static void main(final String[] args) {
-       
-        
+
         String msisdn     = "+35847001001";
         String fileToSign = null;
         if (args.length == 1) {
@@ -87,14 +85,27 @@ public class XAdES {
             System.err.println("Usage: [msisdn] filename");
             return;
         }
-        
+
+        final MessageDigest md;
+
+        final DigestAlgorithm da = DigestAlgorithm.SHA256;
+        try {
+            // da.getName() returns "SHA256", which is not Java MessageDigest instance name...
+            // ESIG-DSS 5.0 adds  ds.getJavaName() method, this example uses ESIG-DSS 4.7.
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (Exception e) {
+            System.err.println("Failed to instantiate MessageDigest "+da.getName());
+            return;
+        }
+
         final DSSDocument      doc = new FileDocument(fileToSign);
+
         final XAdESService service = new XAdESService(new CommonCertificateVerifier());
         
         final XAdESSignatureParameters parameters = new XAdESSignatureParameters();
         parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
         parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
-        parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
+        parameters.setDigestAlgorithm(da);
         
         final EtsiResponseHandler handler = createHandler(parameters, service, doc);
         
@@ -164,8 +175,12 @@ public class XAdES {
             parameters.setSigningCertificate(signerCert);
             
             ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
+            byte[] dataToSignBytes = dataToSign.getBytes();
+            md.reset();
+            md.update(dataToSignBytes);
+            byte[] dataToSignDigest = md.digest();
             
-            dtbs      = new DTBS(dataToSign.getBytes(), DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
+            dtbs      = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
             apTransId = "A" + System.currentTimeMillis();
           
             req = client.createRequest(apTransId, // AP Transaction ID
@@ -174,7 +189,7 @@ public class XAdES {
                                        dtbs.toString(),                    // Data to be displayed
                                        null,                               // Additional services
                                        SignatureProfiles.ALAUDA_SIGNATURE, // Signature profile
-                                       MSS_Formats.PKCS7,                  // MSS Format
+                                       MSS_Formats.PKCS1,                  // MSS Format
                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
     
             
