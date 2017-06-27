@@ -108,6 +108,9 @@ public class Pkcs1 implements Signature {
         }
     }
 
+    /**
+     * Get PKCS1 raw signature.
+     */
     @Override
     public byte[] getRawSignature() {
         return this.pkcs1.getSignatureValue();

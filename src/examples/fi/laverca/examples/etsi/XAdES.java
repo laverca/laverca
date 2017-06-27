@@ -68,6 +68,87 @@ import fi.laverca.util.DTBS;
  *
  */
 public class XAdES {
+    
+    protected static class XAdESResponseHandler implements EtsiResponseHandler {
+        
+        private final XAdESSignatureParameters parameters;
+        private final XAdESService service;
+        private final SignatureAlgorithm sigAlg;
+        private final DSSDocument doc;
+        
+        private DSSDocument signedDocument;
+
+
+        /**
+         * Create an asynchronous response handler that handles both signature responses (#1 and #2)
+         * 
+         * @param parameters XAdES Signature Parameters - only used for XAdES signing
+         * @param service    XAdES Service              - only used for XAdES signing
+         * @param doc        XAdES Document             - only used for XAdES signing
+         */
+        public XAdESResponseHandler(final XAdESSignatureParameters parameters,
+                                    final XAdESService             service,
+                                    final SignatureAlgorithm       sigAlg,
+                                    final DSSDocument              doc) {
+            this.parameters = parameters;
+            this.service = service;
+            this.sigAlg = sigAlg;
+            this.doc = doc;
+        }
+
+        @Override
+        public void onResponse(final EtsiRequest req, final EtsiResponse resp) {
+            System.out.println("Got a response");
+            System.out.println("  StatusCode   : " + resp.getStatusCode());
+            System.out.println("  StatusMessage: " + resp.getStatusMessage());
+
+            // TODO: Status code should be 500 ("Signature") or 502 ("Valid Signature")
+            
+            // If we have the Signing cert, do XAdES sign
+            if (this.parameters.getSigningCertificate() != null) {
+                // PKCS#1 raw signature value without e.g. CMS wrapper
+                xadesSign(resp.getSignature().getRawSignature());
+            }
+        }
+
+        @Override
+        public void onError(final EtsiRequest req, final Throwable t) {
+            System.out.println("Got an error:");
+            t.printStackTrace();
+        }
+
+        @Override
+        public void onOutstandingProgress(final EtsiRequest req, final ProgressUpdate update) {
+            System.out.println("Got a progress update");
+        }
+        
+        /**
+         * Run XAdES sign on the given document.
+         * Prints the output to stdout.
+         * 
+         * @param parameters XAdES parameters
+         * @param service    XAdES service object
+         * @param doc        Document to sign
+         * @param signature  SignatureValue as byte[]
+         */
+        private void xadesSign(final byte[] signature) {
+            try {
+
+                final SignatureValue signatureValue = new SignatureValue(this.sigAlg, signature);
+                this.signedDocument = this.service.signDocument(this.doc, this.parameters, signatureValue);
+
+            } catch (Throwable e) {
+                System.out.println("XAdES sign failed:");
+                e.printStackTrace();
+            }
+        }
+
+        public DSSDocument getSignedDocument() {
+            return this.signedDocument;
+        }
+
+    }
+    
         
     /**
      * The main method
@@ -88,7 +169,14 @@ public class XAdES {
 
         final MessageDigest md;
 
+        final String mssSigProf = SignatureProfiles.ALAUDA_SIGNATURE;
+        
+        // Setting signature algorithm bits.
+        // Note that these must match with what the MSS SignatureProfile uses.
+        // (It would be folly to claim RSA-SHA256 and sign ECDSA-SHA512..)
+        
         final DigestAlgorithm da = DigestAlgorithm.SHA256;
+        final SignatureAlgorithm sigAlg = SignatureAlgorithm.RSA_SHA256;
         try {
             // da.getName() returns "SHA256", which is not Java MessageDigest instance name...
             // ESIG-DSS 5.0 adds  ds.getJavaName() method, this example uses ESIG-DSS 4.7.
@@ -106,8 +194,7 @@ public class XAdES {
         parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
         parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
         parameters.setDigestAlgorithm(da);
-        
-        final EtsiResponseHandler handler = createHandler(parameters, service, doc);
+        final XAdESResponseHandler handler = new XAdESResponseHandler(parameters, service, sigAlg, doc);
         
         // Load config
         ExampleConf conf = ExampleConf.getInstance();
@@ -141,16 +228,17 @@ public class XAdES {
         // This could be for example done on service login.
         // Note: This does not work if the authentication and signature use different key/cert (e.g. FiCom)
         
-        DTBS        dtbs = new DTBS("XAdES Example Login");
+        DTBS        dtbs = new DTBS("XAdES dummy signature to pick certificates.");
+        String      dtbd = dtbs.toString();
         String apTransId = "A" + System.currentTimeMillis();
       
-        EtsiRequest req = client.createRequest(apTransId, // AP Transaction ID
-                                               msisdn,    // MSISDN
-                                               dtbs,      // Data to be signed
-                                               dtbs.toString(),                    // Data to be displayed
-                                               null,                               // Additional services
-                                               SignatureProfiles.ALAUDA_SIGNATURE, // Signature profile
-                                               MSS_Formats.PKCS7,                  // MSS Format
+        EtsiRequest req = client.createRequest(apTransId,         // AP Transaction ID
+                                               msisdn,            // MSISDN
+                                               dtbs,              // Data to be signed
+                                               dtbd,              // Data to be displayed
+                                               null,              // Additional services
+                                               mssSigProf,        // Signature profile
+                                               MSS_Formats.PKCS7, // MSS Format
                                                MessagingModeType.ASYNCH_CLIENT_SERVER);
         
         try {
@@ -159,42 +247,65 @@ public class XAdES {
 
             // Get the signing cert from the response
             EtsiResponse resp = req.waitForResponse();
-            X509Certificate signingCert = resp.getSignature().getSignerCert();
+            final X509Certificate signingCert = resp.getSignature().getSignerCert();
             
             // 2. Send the actual XAdES signature request
 
             // Fill certs to XAdESSignatureParameters
-            CertificateToken     signerCert = new CertificateToken(signingCert);
-            Set<CertificateToken> certChain = new HashSet<>();
+            final CertificateToken     signerCert = new CertificateToken(signingCert);
+            final Set<CertificateToken> certChain = new HashSet<>();
             
-            for (X509Certificate c : ((CmsSignature)resp.getSignature()).getCertificates()) {
+            for (final X509Certificate c : ((CmsSignature)resp.getSignature()).getCertificates()) {
                 certChain.add(new CertificateToken(c));
             }
                         
             parameters.setCertificateChain(certChain);
             parameters.setSigningCertificate(signerCert);
             
-            ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
-            byte[] dataToSignBytes = dataToSign.getBytes();
+            final ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
+            final byte[] dataToSignBytes = dataToSign.getBytes();
             md.reset();
             md.update(dataToSignBytes);
-            byte[] dataToSignDigest = md.digest();
+            final byte[] dataToSignDigest = md.digest();
             
             dtbs      = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
             apTransId = "A" + System.currentTimeMillis();
-          
-            req = client.createRequest(apTransId, // AP Transaction ID
-                                       msisdn,    // MSISDN
-                                       dtbs,      // Data to be signed
-                                       dtbs.toString(),                    // Data to be displayed
-                                       null,                               // Additional services
-                                       SignatureProfiles.ALAUDA_SIGNATURE, // Signature profile
-                                       MSS_Formats.PKCS1,                  // MSS Format
+
+            // Data to be displayed -- TODO: something nicer than an internal hash
+            dtbd = dtbs.toString();
+            
+            req = client.createRequest(apTransId,         // AP Transaction ID
+                                       msisdn,            // MSISDN
+                                       dtbs,              // Data to be signed
+                                       dtbd,              // Data to be displayed
+                                       null,              // Additional services
+                                       mssSigProf,        // Signature profile
+                                       MSS_Formats.PKCS1, // MSS Format
                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
     
             
             // Send second SigReq
             client.call(req, handler);
+            
+            try {
+                final DSSDocument signedDocument = handler.getSignedDocument();
+
+                // Print
+                try (InputStream in  = signedDocument.openStream()) {
+                    OutputStream out = System.out;
+
+                    int size = 0;
+                    byte[] buffer = new byte[1024];
+                    while ((size = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, size);
+                    }
+                    out.flush();
+                }
+            } catch (Throwable e) {
+                System.out.println("XAdES sign failed:");
+                e.printStackTrace();
+            }
+
 
         } catch (AxisFault af) {
             System.out.println("Got a SOAP fault:");
@@ -207,78 +318,4 @@ public class XAdES {
         // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
         client.shutdown();
     }
-    
-    /**
-     * Create an asynchronous response handler that handles both signature responses (#1 and #2)
-     * @param parameters XAdES Signature Parameters - only used for XAdES signing
-     * @param service    XAdES Service              - only used for XAdES signing
-     * @param doc        XAdES Document             - only used for XAdES signing
-     * @return Created response handler
-     */
-    private static EtsiResponseHandler createHandler(final XAdESSignatureParameters parameters,
-                                                     final XAdESService             service,
-                                                     final DSSDocument              doc)
-    {
-        return new EtsiResponseHandler() {
-
-            @Override
-            public void onResponse(final EtsiRequest req, final EtsiResponse resp) {
-                System.out.println("Got a response");
-                System.out.println("  StatusCode   : " + resp.getStatusCode());
-                System.out.println("  StatusMessage: " + resp.getStatusMessage());
-    
-                // If we have the Signing cert, do XAdES sign
-                if (parameters.getSigningCertificate() != null) {
-                    xadesSign(parameters, service, doc, ((CmsSignature)resp.getSignature()).getSignatureValue());
-                }
-            }
-    
-            @Override
-            public void onError(final EtsiRequest req, final Throwable t) {
-                System.out.println("Got an error:");
-                t.printStackTrace();
-            }
-    
-            @Override
-            public void onOutstandingProgress(final EtsiRequest req, final ProgressUpdate update) {
-                System.out.println("Got a progress update");
-            }
-        };
-    }
-    
-    /**
-     * Run XAdES sign on the given document.
-     * Prints the output to stdout.
-     * 
-     * @param parameters XAdES parameters
-     * @param service    XAdES service object
-     * @param doc        Document to sign
-     * @param signature  SignatureValue as byte[]
-     */
-    private static void xadesSign(final XAdESSignatureParameters parameters,
-                                  final XAdESService             service,
-                                  final DSSDocument              doc,
-                                  final byte[]                   signature)
-    {
-        try {
-            SignatureValue signatureValue = new SignatureValue(SignatureAlgorithm.RSA_SHA256, signature);
-            DSSDocument    signedDocument = service.signDocument(doc, parameters, signatureValue);
-
-            // Print
-            try (InputStream in  = signedDocument.openStream()) {
-                OutputStream out = System.out;
-
-                int size = 0;
-                byte[] buffer = new byte[1024];
-                while ((size = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, size);
-                }
-                out.flush();
-            }
-        } catch (Throwable e) {
-            System.out.println("XAdES sign failed:");
-            e.printStackTrace();
-        }
-    }
-
 }
