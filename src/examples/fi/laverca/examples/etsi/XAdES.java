@@ -102,8 +102,6 @@ public class XAdES {
             System.out.println("  StatusCode   : " + resp.getStatusCode());
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
 
-            // TODO: Status code should be 500 ("Signature") or 502 ("Valid Signature")
-            
             // If we have the Signing cert, do XAdES sign
             if (this.parameters.getSigningCertificate() != null) {
                 // PKCS#1 raw signature value without e.g. CMS wrapper
