@@ -20,11 +20,11 @@
 package fi.laverca.examples.etsi;
 
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.PrintStream;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -39,6 +39,8 @@ import eu.europa.esig.dss.SignaturePackaging;
 import eu.europa.esig.dss.SignatureValue;
 import eu.europa.esig.dss.ToBeSigned;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.validation.reports.SimpleReport;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
@@ -104,8 +106,31 @@ public class XAdES {
 
             // If we have the Signing cert, do XAdES sign
             if (this.parameters.getSigningCertificate() != null) {
-                // PKCS#1 raw signature value without e.g. CMS wrapper
-                xadesSign(resp.getSignature().getRawSignature());
+                
+                try {
+                    // Sign
+                    this.signedDocument = xadesSign(resp.getSignature().getRawSignature());
+                    
+                    // Print
+                    try (InputStream in = this.signedDocument.openStream()) {
+                        PrintStream out = System.out;
+    
+                        int size = 0;
+                        byte[] buffer = new byte[1024];
+                        while ((size = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, size);
+                        }
+                        out.flush();
+                        out.println();
+                    }
+                } catch (Throwable e) {
+                    System.out.println("XAdES sign failed:");
+                    e.printStackTrace();
+                }
+                
+                // Validate
+                boolean isValid = xadesValidate(doc, this.signedDocument);
+                System.out.println("XAdES signature is " + (isValid ? "valid" : "invalid"));
             }
         }
 
@@ -124,29 +149,38 @@ public class XAdES {
          * Run XAdES sign on the given document.
          * Prints the output to stdout.
          * 
-         * @param parameters XAdES parameters
-         * @param service    XAdES service object
-         * @param doc        Document to sign
          * @param signature  SignatureValue as byte[]
          */
-        private void xadesSign(final byte[] signature) {
-            try {
-
-                final SignatureValue signatureValue = new SignatureValue(this.sigAlg, signature);
-                this.signedDocument = this.service.signDocument(this.doc, this.parameters, signatureValue);
-
-            } catch (Throwable e) {
-                System.out.println("XAdES sign failed:");
-                e.printStackTrace();
-            }
+        private DSSDocument xadesSign(final byte[] signature) {
+            final SignatureValue signatureValue = new SignatureValue(this.sigAlg, signature);
+            return this.service.signDocument(this.doc, this.parameters, signatureValue);
         }
 
-        public DSSDocument getSignedDocument() {
-            return this.signedDocument;
+        /**
+         * Validate the XAdES signature
+         * 
+         * @param originalDoc Original document
+         * @param signedDoc   Signature document
+         * @return true if the signature is valid
+         */
+        private static boolean xadesValidate(final DSSDocument originalDoc, final DSSDocument signedDoc) {
+     
+            SignedDocumentValidator validator = SignedDocumentValidator.fromDocument(signedDoc);
+     
+            CommonCertificateVerifier verifier = new CommonCertificateVerifier();
+            validator.setCertificateVerifier(verifier);
+     
+            SimpleReport simpleReport = validator.validateDocument().getSimpleReport();
+            String  id = simpleReport.getFirstSignatureId();
+            System.out.println("Validation:");
+            System.out.println("  Info    : " + simpleReport.getInfo(id));
+            System.out.println("  Errors  : " + simpleReport.getErrors(id));
+            System.out.println("  Warnings: " + simpleReport.getWarnings(id));
+            
+            return simpleReport.isSignatureValid(id);
         }
-
+        
     }
-    
         
     /**
      * The main method
@@ -173,14 +207,12 @@ public class XAdES {
         // Note that these must match with what the MSS SignatureProfile uses.
         // (It would be folly to claim RSA-SHA256 and sign ECDSA-SHA512..)
         
-        final DigestAlgorithm da = DigestAlgorithm.SHA256;
+        final DigestAlgorithm digestAlg = DigestAlgorithm.SHA256;
         final SignatureAlgorithm sigAlg = SignatureAlgorithm.RSA_SHA256;
         try {
-            // da.getName() returns "SHA256", which is not Java MessageDigest instance name...
-            // ESIG-DSS 5.0 adds  ds.getJavaName() method, this example uses ESIG-DSS 4.7.
             md = MessageDigest.getInstance("SHA-256");
         } catch (Exception e) {
-            System.err.println("Failed to instantiate MessageDigest "+da.getName());
+            System.err.println("Failed to instantiate MessageDigest " + digestAlg.getName());
             return;
         }
 
@@ -191,7 +223,7 @@ public class XAdES {
         final XAdESSignatureParameters parameters = new XAdESSignatureParameters();
         parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
         parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
-        parameters.setDigestAlgorithm(da);
+        parameters.setDigestAlgorithm(digestAlg);
         final XAdESResponseHandler handler = new XAdESResponseHandler(parameters, service, sigAlg, doc);
         
         // Load config
@@ -250,13 +282,13 @@ public class XAdES {
             // 2. Send the actual XAdES signature request
 
             // Fill certs to XAdESSignatureParameters
-            final CertificateToken     signerCert = new CertificateToken(signingCert);
-            final Set<CertificateToken> certChain = new HashSet<>();
+            final CertificateToken      signerCert = new CertificateToken(signingCert);
+            final List<CertificateToken> certChain = new ArrayList<>();
             
             for (final X509Certificate c : ((CmsSignature)resp.getSignature()).getCertificates()) {
                 certChain.add(new CertificateToken(c));
             }
-                        
+            
             parameters.setCertificateChain(certChain);
             parameters.setSigningCertificate(signerCert);
             
@@ -269,7 +301,7 @@ public class XAdES {
             dtbs      = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
             apTransId = "A" + System.currentTimeMillis();
 
-            // Data to be displayed -- TODO: something nicer than an internal hash
+            // Data to be displayed
             dtbd = dtbs.toString();
             
             req = client.createRequest(apTransId,         // AP Transaction ID
@@ -278,32 +310,12 @@ public class XAdES {
                                        dtbd,              // Data to be displayed
                                        null,              // Additional services
                                        mssSigProf,        // Signature profile
-                                       MSS_Formats.PKCS1, // MSS Format
+                                       MSS_Formats.PKCS7, // MSS Format
                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
     
             
             // Send second SigReq
             client.call(req, handler);
-            
-            try {
-                final DSSDocument signedDocument = handler.getSignedDocument();
-
-                // Print
-                try (InputStream in  = signedDocument.openStream()) {
-                    OutputStream out = System.out;
-
-                    int size = 0;
-                    byte[] buffer = new byte[1024];
-                    while ((size = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, size);
-                    }
-                    out.flush();
-                }
-            } catch (Throwable e) {
-                System.out.println("XAdES sign failed:");
-                e.printStackTrace();
-            }
-
 
         } catch (AxisFault af) {
             System.out.println("Got a SOAP fault:");
@@ -316,4 +328,5 @@ public class XAdES {
         // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
         client.shutdown();
     }
+
 }
