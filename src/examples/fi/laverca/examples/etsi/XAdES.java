@@ -103,6 +103,7 @@ public class XAdES {
             System.out.println("Got a response");
             System.out.println("  StatusCode   : " + resp.getStatusCode());
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
+            System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
 
             // If we have the Signing cert, do XAdES sign
             if (this.parameters.getSigningCertificate() != null) {
