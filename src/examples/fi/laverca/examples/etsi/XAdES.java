@@ -311,7 +311,7 @@ public class XAdES {
                                        dtbd,              // Data to be displayed
                                        null,              // Additional services
                                        mssSigProf,        // Signature profile
-                                       MSS_Formats.PKCS7, // MSS Format
+                                       MSS_Formats.KIURU_PKCS1, // MSS Format
                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
     
             
