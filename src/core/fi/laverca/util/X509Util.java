@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.InvalidNameException;
@@ -123,5 +124,42 @@ public class X509Util {
         
         return name;
     }
+    
+    /**
+     * Convert the X509Certificate boolean[] to List<String>
+     * 
+     * The following list shows the String vs the corresponding boolean[] index:
+     * <pre>
+     *     digitalSignature        (0),
+     *     nonRepudiation          (1),
+     *     keyEncipherment         (2),
+     *     dataEncipherment        (3),
+     *     keyAgreement            (4),
+     *     keyCertSign             (5),
+     *     cRLSign                 (6),
+     *     encipherOnly            (7),
+     *     decipherOnly            (8)
+     * </pre>
+     * @param keyUsage KeyUsage boolean[]
+     * @return KeyUsage List<String>
+     */
+   public static List<String> keyUsageToString(final boolean[] keyUsage) {
+       
+       List<String> str = new ArrayList<>();
+       
+       if (keyUsage != null && keyUsage.length >= 9) {
+           if (keyUsage[0]) str.add("digitalSignature");
+           if (keyUsage[1]) str.add("nonRepudiation");
+           if (keyUsage[2]) str.add("keyEncipherment");
+           if (keyUsage[3]) str.add("dataEncipherment");
+           if (keyUsage[4]) str.add("keyAgreement");
+           if (keyUsage[5]) str.add("keyCertSign");
+           if (keyUsage[6]) str.add("cRLSign");
+           if (keyUsage[7]) str.add("encipherOnly");
+           if (keyUsage[8]) str.add("decipherOnly");
+       }
+       
+       return str;
+   }
 
 }
