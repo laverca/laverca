@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.CmsSignature;
+import fi.laverca.MSS_Formats;
 import fi.laverca.Pkcs1;
 import fi.laverca.Signature;
 import fi.laverca.etsi.EtsiResponse;
@@ -35,9 +36,9 @@ public abstract class MssResponse {
 
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
 
-    public MSSSignatureReq  originalSigReq;
-    public MSSSignatureResp originalSigResp;
-    public MSSStatusResp    finalStatusResp;
+    public final MSSSignatureReq  originalSigReq;
+    public final MSSSignatureResp originalSigResp;
+    public final MSSStatusResp    finalStatusResp;
 
     public MssResponse(final MSSSignatureReq  originalSigReq,
                        final MSSSignatureResp originalSigResp,
@@ -50,49 +51,49 @@ public abstract class MssResponse {
     /** 
      * Get the MSS signature
      * 
-     * @return signature or null if the response contains no signature. 
+     * @return signature or null if the response contains no signature.
+     * @throws IllegalStateException if the signature parsing fails
      */
-    public Signature getSignature() {
+    public Signature getSignature() throws IllegalStateException {
         
         if (this.finalStatusResp == null) return null;
         if (this.finalStatusResp.getMSSSignature() == null) return null;
         
-        Signature s = null;
+        Signature signature = null;
 
-        // CMS
-        byte[] sig = this.finalStatusResp.getMSSSignature().getBase64Signature();
-        if (sig != null) {
-            s = new CmsSignature(sig);
+        try {
+        
+            PKCS1  p1  = this.finalStatusResp.getMSSSignature().getPKCS1();
+            byte[] sig = this.finalStatusResp.getMSSSignature().getBase64Signature();
+            
+            if (p1 != null) {
+                signature = new Pkcs1(p1);
+            }
+            
+            if (sig != null) {
+                if (MSS_Formats.KIURU_PKCS1.equals(this.getMssFormat())) {
+                    p1 = new PKCS1();
+                    p1.setSignatureValue(sig);
+                    signature = new Pkcs1(p1);
+                } else {
+                    signature = new CmsSignature(sig);
+                } 
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
         
-        // FiCom PKCS1
-        PKCS1 p1 = this.finalStatusResp.getMSSSignature().getPKCS1();
-        if (p1 != null) {
-            s = new Pkcs1(p1);
-        }
-        
-        return s;
+        return signature;
     }
     
     /**
      * Check if the response has signature available
      * 
      * @return true if signature is available
+     * @throws IllegalStateException if the signature parsing fails
      */
-    public boolean hasSignature() {
-        if (this.finalStatusResp == null) return false;
-        if (this.finalStatusResp.getMSSSignature() == null) return false;
-        
-        boolean hasSignature = false;
-        
-        if (this.finalStatusResp.getMSSSignature().getBase64Signature() != null) {
-            hasSignature = true;
-        }
-        if (this.finalStatusResp.getMSSSignature().getPKCS1() != null) {
-            hasSignature = true;
-        }
-        
-        return hasSignature;
+    public boolean hasSignature() throws IllegalStateException {
+        return this.getSignature() != null;
     }
 
     /** 
@@ -155,9 +156,11 @@ public abstract class MssResponse {
     public long getStatusCode() {
         
         try {
+            // Asynch
             if (this.finalStatusResp != null) {
                 return this.finalStatusResp.getStatus().getStatusCode().getValue().longValue();
             }
+            // Synch
             if (this.originalSigResp != null) {
                 return this.originalSigResp.getStatus().getStatusCode().getValue().longValue();
             }
@@ -181,6 +184,19 @@ public abstract class MssResponse {
             }
         } catch (NullPointerException npe) {
             // Got a faulty response... ignore
+        }
+        return null;
+    }
+    
+    /**
+     * Get the requested MSS_Format as String
+     * @return requested MSS_Format as String. May be null.
+     */
+    public String getMssFormat() {
+        if (this.originalSigReq != null &&
+            this.originalSigReq.getMSSFormat() != null) {
+            
+            return this.originalSigReq.getMSSFormat().getMssURI();
         }
         return null;
     }

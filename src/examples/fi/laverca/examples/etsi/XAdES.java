@@ -93,9 +93,9 @@ public class XAdES {
                                     final SignatureAlgorithm       sigAlg,
                                     final DSSDocument              doc) {
             this.parameters = parameters;
-            this.service = service;
-            this.sigAlg = sigAlg;
-            this.doc = doc;
+            this.service    = service;
+            this.sigAlg     = sigAlg;
+            this.doc        = doc;
         }
 
         @Override
@@ -110,7 +110,7 @@ public class XAdES {
                 
                 try {
                     // Sign
-                    this.signedDocument = xadesSign(resp.getSignature().getRawSignature());
+                    this.signedDocument = this.xadesSign(resp.getSignature().getRawSignature());
                     
                     // Print
                     try (InputStream in = this.signedDocument.openStream()) {
@@ -130,7 +130,7 @@ public class XAdES {
                 }
                 
                 // Validate
-                boolean isValid = xadesValidate(doc, this.signedDocument);
+                boolean isValid = this.xadesValidate(doc, this.signedDocument);
                 System.out.println("XAdES signature is " + (isValid ? "valid" : "invalid"));
             }
         }
@@ -164,7 +164,7 @@ public class XAdES {
          * @param signedDoc   Signature document
          * @return true if the signature is valid
          */
-        private static boolean xadesValidate(final DSSDocument originalDoc, final DSSDocument signedDoc) {
+        private boolean xadesValidate(final DSSDocument originalDoc, final DSSDocument signedDoc) {
      
             SignedDocumentValidator validator = SignedDocumentValidator.fromDocument(signedDoc);
      
@@ -311,7 +311,7 @@ public class XAdES {
                                        dtbd,              // Data to be displayed
                                        null,              // Additional services
                                        mssSigProf,        // Signature profile
-                                       MSS_Formats.PKCS7, // MSS Format
+                                       MSS_Formats.KIURU_PKCS1, // MSS Format
                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
     
             

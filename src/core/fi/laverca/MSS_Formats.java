@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2017 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,26 @@ package fi.laverca;
  */
 public class MSS_Formats {
 
+    /**
+     * http://uri.etsi.org/TS102204/v1.1.2#PKCS7
+     */
     public final static String PKCS7 = "http://uri.etsi.org/TS102204/v1.1.2#PKCS7";
-    public final static String PKCS1 = "http://mss.ficom.fi/TS102204/v1.0.0#PKCS1";
+
+    /**
+     * http://www.methics.fi/KiuruMSSP/v3.2.0#PKCS1
+     */
+    public final static String KIURU_PKCS1 = "http://www.methics.fi/KiuruMSSP/v3.2.0#PKCS1";
     
+    /**
+     * http://mss.ficom.fi/TS102204/v1.0.0#PKCS1
+     */
+    public final static String FICOM_PKCS1 = "http://mss.ficom.fi/TS102204/v1.0.0#PKCS1";
+    
+    /**
+     * http://mss.ficom.fi/TS102204/v1.0.0#PKCS1
+     * @deprecated Use {@link MSS_Formats#FICOM_PKCS1} instead.
+     */
+    @Deprecated
+    public final static String PKCS1 = FICOM_PKCS1;
+
 }
