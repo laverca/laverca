@@ -78,7 +78,7 @@ import fi.laverca.util.ProxySettings;
 public class MssClient {
     private static Log log = LogFactory.getLog(MssClient.class);
 
-    public static ObjectFactory mssObjFact = new ObjectFactory();
+    public static ObjectFactory mssObjFactory = new ObjectFactory();
     
     // AP settings
     private String apId = null;
@@ -248,21 +248,25 @@ public class MssClient {
         }
 
         try {
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            KeyManagerFactory   kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            
             ks.load(kis, ksPwd.toCharArray());
             kmf.init(ks, ksPwd.toCharArray());
+
+            SSLContext ctx = SSLContext.getInstance("TLSv1.2");
             
-            TrustManagerFactory tmf = null;
             if (tsFile != null) {
-                tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 ts.load(tis, tsPwd.toCharArray());
                 tmf.init(ts);
+                ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            } else {
+                ctx.init(kmf.getKeyManagers(), null, null);
             }
-            SSLContext ctx = SSLContext.getInstance("TLSv1.2");
-            ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            
             return ctx.getSocketFactory();
         } finally {
-            tis.close();
+            if (tis != null) tis.close();
             kis.close();
         }
     }
@@ -343,25 +347,25 @@ public class MssClient {
      * @param apTransId AP Transaction ID
      */
     private void initializeRequestMessage(final MessageAbstractType mat, final String apTransId) {
-        if (mat == null)
-            throw new IllegalArgumentException("can't fill a null mat");
-        if (apTransId == null) 
-            throw new IllegalArgumentException("null apTransId not allowed.");
+        
+        if (mat == null) throw new IllegalArgumentException("Invalid request (null)");
     
         // Set the interface versions. 1 for both, as per ETSI TS 102 204.
         mat.setMajorVersion(Long.valueOf(1));
         mat.setMinorVersion(Long.valueOf(1));
 
-        // Create the AP_Info.
-        final MessageAbstractType.APInfo aiObject = mssObjFact.createMessageAbstractTypeAPInfo();
-        aiObject.setAPID(this.apId);
-        aiObject.setAPPWD(this.apPwd);
-        aiObject.setAPTransID(apTransId);
-        aiObject.setInstant(new GregorianCalendar());
-        mat.setAPInfo(aiObject);
+        if (apTransId != null) {
+            // Create the AP_Info.
+            final MessageAbstractType.APInfo aiObject = mssObjFactory.createMessageAbstractTypeAPInfo();
+            aiObject.setAPID(this.apId);
+            aiObject.setAPPWD(this.apPwd);
+            aiObject.setAPTransID(apTransId);
+            aiObject.setInstant(new GregorianCalendar());
+            mat.setAPInfo(aiObject);
+        }
         
-        final MessageAbstractType.MSSPInfo miObject = mssObjFact.createMessageAbstractTypeMSSPInfo();
-        miObject.setMSSPID(mssObjFact.createMeshMemberType()); 
+        final MessageAbstractType.MSSPInfo miObject = mssObjFactory.createMessageAbstractTypeMSSPInfo();
+        miObject.setMSSPID(mssObjFactory.createMeshMemberType()); 
 
         mat.setMSSPInfo(miObject);
     }
@@ -386,44 +390,40 @@ public class MssClient {
                                                   final String signatureProfile,
                                                   final String mss_format,
                                                   final MessagingModeType messagingMode) {
-        final MSSSignatureReq req = mssObjFact.createMSSSignatureReq();
         
+        if (msisdn           == null) throw new IllegalArgumentException("Invalid MSISDN (null)");
+        if (dtbs             == null) throw new IllegalArgumentException("Invalid DTBS (null)");
+        if (signatureProfile == null) throw new IllegalArgumentException("Invalid SignatureProfile (null)");
+        if (messagingMode    == null) throw new IllegalArgumentException("Invalid MessagingMode (null)");
+        
+        final MSSSignatureReq req = mssObjFactory.createMSSSignatureReq();
         this.initializeRequestMessage(req, apTransId);
         
-        if (msisdn == null)
-            throw new IllegalArgumentException("null msisdn is not allowed.");
-        MobileUserType muObject = mssObjFact.createMobileUserType();
+        MobileUserType muObject = mssObjFactory.createMobileUserType();
         muObject.setMSISDN(msisdn);
         req.setMobileUser(muObject);
 
-        if (dtbs == null)
-            throw new IllegalArgumentException("null dataToBeSigned is not allowed.");
         final DataType dsObject = dtbs.toDataToBeSigned();
         req.setDataToBeSigned(dsObject);
         
         if (dataToBeDisplayed != null) {
-            final DataType ddObject = mssObjFact.createDataType();
+            final DataType ddObject = mssObjFactory.createDataType();
             ddObject.setValue(dataToBeDisplayed);
             req.setDataToBeDisplayed(ddObject);
         }
         
-        if (signatureProfile == null)
-            throw new IllegalArgumentException("null signatureProfile is not allowed.");
-        final MssURIType spObject = mssObjFact.createMssURIType();
+        final MssURIType spObject = mssObjFactory.createMssURIType();
         spObject.setMssURI(signatureProfile);
         req.setSignatureProfile(spObject);
 
-        if(mss_format != null) {
-            MssURIType mfObject = mssObjFact.createMssURIType();
+        if (mss_format != null) {
+            MssURIType mfObject = mssObjFactory.createMssURIType();
             mfObject.setMssURI(mss_format);
             req.setMSSFormat(mfObject);
         }
-        
-        if (messagingMode == null)
-            throw new IllegalArgumentException("null messagingMode is not allowed.");
-        req.setMessagingMode(messagingMode);
 
-        req.setAdditionalServices(MssClient.mssObjFact.createMSSSignatureReqAdditionalServices());
+        req.setMessagingMode(messagingMode);
+        req.setAdditionalServices(MssClient.mssObjFactory.createMSSSignatureReqAdditionalServices());
         
         return req;
     }
@@ -440,28 +440,20 @@ public class MssClient {
                                               final String apTransId,
                                               final String message) 
     {
-        final MSSReceiptReq req = mssObjFact.createMSSReceiptReq();
+        if (sigResp               == null) throw new IllegalArgumentException("Invalid Signature Response (null)");
+        if (sigResp.getMSSPInfo() == null) throw new IllegalArgumentException("Invalid Signature Response MSSP Info (null)");
         
-        this.initializeRequestMessage(req, apTransId);
-        
-        if (sigResp == null) {
-            throw new IllegalArgumentException("null sigResp not allowed.");
-        }
-        
-        if (sigResp.getMSSPInfo() == null) {
-            throw new IllegalArgumentException("null sigResp.MSSP_Info not allowed.");
-        }
         final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
-        if (msspId == null) {
-            throw new IllegalArgumentException("null sigResp.MSSP_Info.MSSP_ID not allowed.");
-        }
-        req.getMSSPInfo().setMSSPID(msspId); // fillMatStuff creates an empty MSSP_Info
+        if (msspId == null) throw new IllegalArgumentException("Invalid Signature Response MSSP ID");
+        
+        final MSSReceiptReq req = mssObjFactory.createMSSReceiptReq();
+        this.initializeRequestMessage(req, apTransId);
 
-        final String msspTransId = sigResp.getMSSPTransID();
-        req.setMSSPTransID(msspTransId);
+        req.getMSSPInfo().setMSSPID(msspId);
+        req.setMSSPTransID(sigResp.getMSSPTransID());
         
         if (message != null) {
-            final DataType meObject = mssObjFact.createDataType();
+            final DataType meObject = mssObjFactory.createDataType();
             meObject.setValue(message);
             req.setMessage(meObject);
         }
@@ -477,28 +469,42 @@ public class MssClient {
      * @throws IllegalArgumentException if the given signature response does not contain all the necessary data to create an MSS_StatusReq
      */
     public MSSStatusReq createStatusRequest(final MSSSignatureResp sigResp,
-                                             final String apTransId) 
+                                            final String apTransId) 
         throws IllegalArgumentException
     {
-        MSSStatusReq req = new MSSStatusReq();
+        if (sigResp               == null) throw new IllegalArgumentException("Invalid Signature Response (null)");
+        if (sigResp.getMSSPInfo() == null) throw new IllegalArgumentException("Invalid Signature Response MSSP Info (null)");
         
+        final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
+        if (msspId == null) throw new IllegalArgumentException("Invalid Signature Response MSSP ID");
+
+        MSSStatusReq req = mssObjFactory.createMSSStatusReq();
         this.initializeRequestMessage(req, apTransId);
         
-        if (sigResp == null) {
-            throw new IllegalArgumentException("null sigResp not allowed.");
-        }
+        req.getMSSPInfo().setMSSPID(msspId);
+        req.setMSSPTransID(sigResp.getMSSPTransID());
         
-        if (sigResp.getMSSPInfo() == null) {
-            throw new IllegalArgumentException("null sigResp.MSSP_Info not allowed.");
-        }
-        final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
-        if (msspId == null) {
-            throw new IllegalArgumentException("null sigResp.MSSP_Info.MSSP_ID not allowed.");
-        }
-        req.getMSSPInfo().setMSSPID(msspId); // fillMatStuff creates an empty MSSP_Info
+        return req;
+    }
+    
 
-        final String msspTransId = sigResp.getMSSPTransID();
-        req.setMSSPTransID(msspTransId);
+    /**
+     * Create a profile query request for given MSISDN
+     * @param msisdn MSISDN of the mobile user
+     * @return Created MSS_ProfileReq
+     *  @throws IllegalArgumentException if the given MSISDN is null
+     */
+    public MSSProfileReq createProfileRequest(final String msisdn) {
+        
+        if (msisdn == null) throw new IllegalArgumentException("Invalid MSISDN (null)");
+        
+        MSSProfileReq req = mssObjFactory.createMSSProfileReq();
+        
+        this.initializeRequestMessage(req, null);
+        
+        MobileUserType mu = mssObjFactory.createMobileUserType();
+        mu.setMSISDN(msisdn);
+        req.setMobileUser(mu);        
         
         return req;
     }
@@ -675,4 +681,5 @@ public class MssClient {
             return org.apache.axis.types.NCName.isValid(s);
         }
     }
+
 }

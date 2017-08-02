@@ -1,14 +1,15 @@
 <xs:schema targetNamespace="http://uri.etsi.org/TS102204/v1.1.2#"
-           xmlns:ds="http://www.w3.org/2000/09/xmldsig#"  
-           xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"  
-           xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"  
+           xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+           xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+           xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"
+           xmlns:mcs="http://www.methics.fi/TS102204/ext/v1.0.0"
            xmlns:fi="http://mss.ficom.fi/TS102204/v1.0.0#"
            xmlns:mreg="http://www.methics.fi/MSSPRegistration/v1.0.0#"
            xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema"  
-           xmlns:env="http://www.w3.org/2003/05/soap-envelope" 
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:env="http://www.w3.org/2003/05/soap-envelope"
            xmlns:sco="http://www.swisscom.ch/TS102204/ext/v1.0.0"
-           elementFormDefault="qualified"> 
+           elementFormDefault="qualified">
 
   <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
              schemaLocation="xmldsig-core-schema.xsd"/> 
@@ -22,6 +23,8 @@
              schemaLocation="saml-schema-protocol-2.0.xsd"/>
   <xs:import namespace="http://www.swisscom.ch/TS102204/ext/v1.0.0"
              schemaLocation="MSS-ReceiptExt.xsd" />
+  <xs:import namespace="http://www.methics.fi/TS102204/ext/v1.0.0"
+             schemaLocation="MSS-ProfileExt.xsd" />
   <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
              schemaLocation="MSS-SubscriberInfo.xsd" />
              
@@ -418,6 +421,7 @@
         <xs:element ref="fi:ServiceResponses"/>
         <xs:element ref="sco:ReceiptRequestExtension"/>
         <xs:element ref="sco:ReceiptResponseExtension"/>
+        <xs:element ref="mcs:ProfileQueryExtension"/>
         <xs:any namespace="##other" processContents="lax" />
       </xs:choice>
     </xs:sequence> 

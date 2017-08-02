@@ -25,6 +25,11 @@ import java.util.concurrent.FutureTask;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 
+/**
+ * MSS Signature Request
+ *
+ * @param <Resp> Response type
+ */
 public abstract class MssRequest<Resp> {
 
     public MSSSignatureReq   sigReq;

@@ -36,8 +36,8 @@ public class EtsiAdditionalServices extends AdditionalServices {
      * @return Created Service
      */
     public static AdditionalServiceType createService(final String uri) {
-        final AdditionalServiceType s = MssClient.mssObjFact.createAdditionalServiceType();
-        final MssURIType d = MssClient.mssObjFact.createMssURIType();
+        final AdditionalServiceType s = MssClient.mssObjFactory.createAdditionalServiceType();
+        final MssURIType d = MssClient.mssObjFactory.createMssURIType();
         d.setMssURI(uri);
         s.setDescription(d);
         return s;

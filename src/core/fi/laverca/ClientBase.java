@@ -31,6 +31,7 @@ import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import fi.laverca.jaxb.mss.MSSProfileReq;
 import fi.laverca.jaxb.mss.MSSReceiptReq;
 import fi.laverca.jaxb.mss.MSSReceiptResp;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
@@ -44,6 +45,7 @@ import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssException;
 import fi.laverca.mss.MssRequest;
 import fi.laverca.mss.MssResponse;
+import fi.laverca.mss.ProfileQueryResponse;
 
 /**
  * Abstract base class for ETSI TS 102 204 Signature operations
@@ -257,16 +259,29 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         throws IOException
     {    
         if (fiResp == null) {
-            throw new IllegalArgumentException("Can't send receipt wihtout a proper response");
+            throw new IllegalArgumentException("Can't send receipt without a proper response");
         }
         
         log.debug("Sending receipt");
-        final MSSReceiptReq receiptReq = 
-            this.mssClient.createReceiptRequest(fiResp.originalSigResp, 
-                                                fiResp.originalSigReq.getAPInfo().getAPTransID(), 
-                                                message);
+        final MSSReceiptReq receiptReq = this.mssClient.createReceiptRequest(fiResp.originalSigResp, 
+                                                                             fiResp.originalSigReq.getAPInfo().getAPTransID(), 
+                                                                             message);
         receiptReq.setMobileUser(fiResp.originalSigReq.getMobileUser());
         return this.mssClient.send(receiptReq);
+    }
+    
+    /**
+     * Sends a profile query.
+     * @param msisdn MSISDN of the user whose profile is to be queried 
+     * @return received receipt response
+     * @throws IOException 
+     * @throws IllegalArgumentException if the given MSISDN is null
+     */
+    public ProfileQueryResponse sendProfileQuery(final String msisdn) 
+        throws IOException 
+    {
+        MSSProfileReq profileReq = this.mssClient.createProfileRequest(msisdn);
+        return new ProfileQueryResponse(this.mssClient.send(profileReq));
     }
 
     private static final long NO_STATUS = -1; // -1 is not used by ETSI or by FiCom
