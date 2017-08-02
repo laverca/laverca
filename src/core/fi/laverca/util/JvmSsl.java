@@ -33,7 +33,7 @@ import javax.net.ssl.SSLSocketFactory;
  * you can use LavercaSSLTrustManager.setExpectedServerCerts()
  * to set a list of possible certificates.
  * @deprecated Use {@link fi.laverca.mss.MssClient#createSSLFactory(String, String, String, String, String, String)} and 
- * {@link #setSSLSocketFactory(SSLSocketFactory)} instead
+ * {@link fi.laverca.mss.MssClient#setSSLSocketFactory(SSLSocketFactory)} instead
  */
 @Deprecated
 public class JvmSsl {
@@ -63,7 +63,7 @@ public class JvmSsl {
                               final String keyStoreType) 
     throws IllegalArgumentException
     {
-        setSSL(trustStore, trustStorePassword, null, keyStore, keyStorePassword, keyStoreType);
+        JvmSsl.setSSL(trustStore, trustStorePassword, null, keyStore, keyStorePassword, keyStoreType);
     }
     
     /**
@@ -84,7 +84,7 @@ public class JvmSsl {
     public static void setTrustStore(final String trustStore,
                                      final String trustStorePassword,
                                      final String trustStoreType) {
-        setSSL(trustStore, trustStorePassword, trustStoreType, null, null, null);
+        JvmSsl.setSSL(trustStore, trustStorePassword, trustStoreType, null, null, null);
     }
     
     /**
