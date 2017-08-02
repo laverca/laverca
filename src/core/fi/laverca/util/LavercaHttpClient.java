@@ -107,7 +107,7 @@ public class LavercaHttpClient {
      * @param newUsername if set, use this to authenticate to the remote service. Use null to not authenticate.
      * @param newPassword see user.
      * @param proxySettings Optional proxy parameters, null for none.
-     * @param ksf SSL Socket factory with specific client certificate and key, null for use of system wide default.
+     * @param ssf SSL Socket factory with specific client certificate and key, null for use of system wide default.
      *
      */
     public LavercaHttpClient( final String poolUrl,
@@ -262,6 +262,8 @@ public class LavercaHttpClient {
      * @param req HttpGet/HttpPost request object with URI inside it
      * @param ctx HttpContext
      * @return HttpResponse data
+     * @throws ClientProtocolException if an error in the HTTP protocol occurs.
+     * @throws IOException If the execution fails
      */
     public HttpResponse execute( final HttpUriRequest req, final HttpContext ctx )
         throws ClientProtocolException, IOException
@@ -281,6 +283,8 @@ public class LavercaHttpClient {
      * 
      * @param req HttpGet/HttpPost request object with URI inside it
      * @return HttpResponse data
+     * @throws ClientProtocolException if an error in the HTTP protocol occurs.
+     * @throws IOException If the execution fails
      */
     public HttpResponse execute( final HttpUriRequest req )
         throws ClientProtocolException, IOException
@@ -440,7 +444,7 @@ public class LavercaHttpClient {
      * <p>
      * This one is used when it is explicitly wanted that connection is not kept alive in pool.
      * 
-     * @param _url Target URL, note: this is <b>not</b> the same one that class constructor used. 
+     * @param u Target URL, note: this is <b>not</b> the same one that class constructor used. 
      * @return result
      */
     public HttpPost buildHttpPost1( final String u ) {

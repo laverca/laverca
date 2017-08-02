@@ -145,7 +145,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
      * @param sigResp A response to the original signature request
      * @param handler A response handler for receiving asynch responses.
      * @return A FutureTask wrapping the StatusRequest poll logic
-     * @throws IOException
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      */
     protected FutureTask<Resp> initializeTask(final Req req,
                                               final MSSSignatureResp sigResp,
@@ -274,7 +274,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
      * Sends a profile query.
      * @param msisdn MSISDN of the user whose profile is to be queried 
      * @return received receipt response
-     * @throws IOException 
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if the given MSISDN is null
      */
     public ProfileQueryResponse sendProfileQuery(final String msisdn) 

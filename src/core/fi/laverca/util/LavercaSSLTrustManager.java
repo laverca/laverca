@@ -65,6 +65,8 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * <p>
      * This sets data into ThreadLocal storage, and therefore must always be called
      * just prior the service function calls to make sure the correct data is present.
+     * 
+     * @param ss List of server certificates
      */
     public void setExpectedServerCerts(final List<byte[]> ss) {
         this.expectedServerCerts.set(ss);
@@ -79,6 +81,9 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * Set new "next trust manager" to be called, return previous value.
      * This is applied only on server certificates, and happens in JRE
      * context executing SSL socket under multiple layers of other libraries.
+     * 
+     * @param tm TrustManager
+     * @return Old TrustManager
      */
     public X509TrustManager setNextTrustManager(final X509TrustManager tm) {
         X509TrustManager oldTm = this.nextTrustManager.get();
@@ -90,6 +95,11 @@ public class LavercaSSLTrustManager implements X509TrustManager {
     /**
      * For API symmetry, on TLS server check incoming client certificate.
      * Really pass it on to next checker in the chain.
+     * 
+     * @param chain    Certificate Chain (X509Certificate)
+     * @param derChain Certificate Chain (byte[]) (not used)
+     * @param authType TrustManager authentication type
+     * @throws CertificateException if client is not trusted
      */
     public void checkClientTrusted( final List<X509Certificate> chain,
                                     final List<byte[]> derChain,
@@ -104,7 +114,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
         }
     }
 
-    /**
+    /*
      * For API symmetry, on TLS server check incoming client certificate.
      * Really pass it on to next checker in the chain.
      */
@@ -138,7 +148,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
         }
     }
 
-    /**
+    /*
      * On client connections, check that the server certificate is valid
      * (by calling next of the chained trust managers), and then check
      * that the observed server certificate is in our internal expected
@@ -183,6 +193,9 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * (by calling next of the chained trust managers), and then check
      * that the observed server certificate is in our internal expected
      * certificate's list.
+     * 
+     * @param x509cert X.509 Certificate
+     * @throws CertificateException if expected server certs do not match
      */
     public void checkExpectedServerCerts(final X509Certificate x509cert)
         throws CertificateException
@@ -239,7 +252,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * @throws CertificateException if the certificate chain is not trusted
      *         by this TrustManager.
      */
-
     //@Override
     public void checkClientTrusted(final X509Certificate[] chain,
                                    final String authType,
@@ -277,7 +289,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * @throws CertificateException if the certificate chain is not trusted
      *         by this TrustManager.
      */
-
     //@Override
     public void checkServerTrusted(final X509Certificate[] chain,
                                    final String authType,

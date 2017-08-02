@@ -52,9 +52,6 @@ public class AxisContentHandler extends DefaultHandler {
         AxisContentHandler.tlCtx.set(ctx);
     }
 
-    /**
-     * Debug tool
-     */
     protected String elt2string( final String uri,
                                  final String localName,
                                  final String prefixedName,
@@ -78,7 +75,7 @@ public class AxisContentHandler extends DefaultHandler {
     }
 
     /**
-     * serialization context to delegate to
+     * Serialization context to delegate to
      */
     protected SerializationContext context;
 
@@ -123,9 +120,6 @@ public class AxisContentHandler extends DefaultHandler {
         this.context = context;
     }
 
-    /**
-     * delegates to the serialization context
-     */
     @Override
     public void startElement( final String uri,
                               final String localName,
@@ -174,10 +168,6 @@ public class AxisContentHandler extends DefaultHandler {
         }
     }
 
-
-    /**
-     * delegates to the serialization context
-     */
     @Override
     public void endElement(String uri, String localName, String qName)
             throws SAXException
@@ -212,9 +202,6 @@ public class AxisContentHandler extends DefaultHandler {
         }        
     }
 
-    /**
-     * delegates to the serialization context
-     */
     @Override
     public void characters(char[] ch, int start, int length)
             throws org.xml.sax.SAXException

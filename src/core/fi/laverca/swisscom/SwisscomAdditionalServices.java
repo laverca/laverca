@@ -38,7 +38,7 @@ public class SwisscomAdditionalServices extends AdditionalServices {
 
     /**
      * Create an additional service for selecting the user language
-     * @param language
+     * @param language User language (ISO 639-1)
      * @return AdditionalService element
      */
     public static AdditionalServiceType createUserLangService(final String language) {
