@@ -149,62 +149,11 @@
       <package name="fi.laverca.jaxb.xkms"/>
     </schemaBindings>
   </bindings>
-<!--
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SPML:2:0">
+  
+    <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/TS102204/ext/v1.0.0">
     <schemaBindings map="true">
-      <package name="fi.laverca.jaxb.spml2core"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SPML:2:0:search">
-    <schemaBindings map="true">
-      <package name="fi.laverca.jaxb.spml2search"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SPML:2:0:reference">
-    <schemaBindings map="true">
-      <package name="fi.laverca.jaxb.spml2ref"/>
+      <package name="fi.laverca.jaxb.mcs204ext1"/>
     </schemaBindings>
   </bindings>
 
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/MSSPCertificateTemplate/v1.0.0#">
-    <schemaBindings map="true">
-      <package name="fi.methics.www.msspcertificatetemplate.v1_0_0"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:dss:1.0:core:schema">
-    <schemaBindings map="true">
-      <package name="oasis.names.tc.dss.v1_0.core.schema"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:SAML:1.0:assertion">
-    <schemaBindings map="true">
-      <package name="oasis.names.tc.SAML.v1_0.assertion"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="urn:oasis:names:tc:DSML:2:0:core">
-    <schemaBindings map="true">
-      <package name="oasis.names.tc.DSML.v2_0.core"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-    <schemaBindings map="true">
-      <package name="datatype.oasis._200401.wsssec.secext"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
-    <schemaBindings map="true">
-      <package name="datatype.oasis._200401.wsssec.utility"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/mspec/v1.0.0#">
-    <schemaBindings map="true">
-      <package name="fi.methics.www.mspec.v1_0_0"/>
-    </schemaBindings>
-  </bindings>
-  <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.methics.fi/usecase/v1.0.0#">
-    <schemaBindings map="true">
-      <package name="fi.methics.www.usecase.v1_0_0"/>
-    </schemaBindings>
-  </bindings>
--->
 </bindings>
