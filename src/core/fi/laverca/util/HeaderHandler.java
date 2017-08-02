@@ -24,8 +24,6 @@ import org.apache.axis.MessageContext;
 import org.apache.axis.handlers.BasicHandler;
 import org.apache.axis.message.SOAPEnvelope;
 import org.apache.axis.message.SOAPHeaderElement;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Mark all SOAP headers as understood, but do nothing. 
@@ -36,8 +34,6 @@ import org.apache.commons.logging.LogFactory;
  */
 @SuppressWarnings("serial")
 public class HeaderHandler extends BasicHandler {
-
-    private static final Log log = LogFactory.getLog(HeaderHandler.class);
 
     @Override
     public void invoke(MessageContext msgContext) throws AxisFault {

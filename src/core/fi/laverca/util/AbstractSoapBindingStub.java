@@ -73,7 +73,9 @@ public abstract class AbstractSoapBindingStub extends Stub {
      * Note: The MessageContext will be cleared deep inside
      *       Axis during the client call, so anything set into
      *       its context is not stable before the call.
-     *
+     * 
+     * @return the MessageContext object
+     * @throws ServiceException if creating the Call fails
      */
     public MessageContext getMessageContext()
         throws ServiceException
@@ -107,14 +109,16 @@ public abstract class AbstractSoapBindingStub extends Stub {
      *
      * @param send true if SOAPAction is send
      */
-    public void setSendSOAPAction(boolean send) {
+    public void setSendSOAPAction(final boolean send) {
         this.sendSOAPAction = send;
     }
 
     /**
      * Stub implementations must supply this value.
+     * 
+     * @param uri SOAP Action URI
      */
-    public void setSOAPActionUri(String uri) {
+    public void setSOAPActionUri(final String uri) {
         this.soapActionURI = uri;
     }
 
@@ -143,7 +147,7 @@ public abstract class AbstractSoapBindingStub extends Stub {
         return this.createCall((String)null);
     }
 
-    protected Call createCall(String encodingStyle)
+    protected Call createCall(final String encodingStyle)
             throws RemoteException
     {
         try {
@@ -186,6 +190,7 @@ public abstract class AbstractSoapBindingStub extends Stub {
      *
      * @param soapConstants Preferably SOAP12Constants
      * @param encodingStyleURI null or Constants.URI_SOAP12_ENC, or Constants.URI_SOAP12_NOENC
+     * @param operationDesc OperationDesc
      * @return Prepared Call object.
      * @throws RemoteException for a number of initialization failures
      */

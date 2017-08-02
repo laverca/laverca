@@ -112,9 +112,9 @@ public class ComponentsHTTPSender extends BasicHandler {
      * invoke creates a socket connection, sends the request SOAP message and then
      * reads the response SOAP message back from the SOAP server
      *
-     * @param msgContext the message context
+     * @param msgContext the MessageContext object
      *
-     * @throws AxisFault
+     * @throws AxisFault if the call fails
      */
     @Override
     public void invoke(MessageContext msgContext)
@@ -407,9 +407,10 @@ public class ComponentsHTTPSender extends BasicHandler {
     /**
      * Create a connection problem fault with a code and a detail
      *
-     * @param code
-     * @param detail
-     * @return
+     * @param msgContext MessageContext object
+     * @param code   Fault Code
+     * @param detail Fault Detail
+     * @return Created Fault
      */
     private AxisFault createFault(final MessageContext msgContext, final QName code, final String detail) {
         final QName[] subcodes = {new QName(ErrorCodes.ETSI_207_NS_URI, "_780", "msrs")};
@@ -429,9 +430,9 @@ public class ComponentsHTTPSender extends BasicHandler {
      * Create an connection problem AxisFault from an Exception
      *
      * @param e Exception
-     * @param didTimeout Not used
+     * @param deadline Not used
      * @param remoteURL Remote URL
-     * @param msgContext Message context
+     * @param msgContext MessageContext object
      * @return AxisFault
      */
     private AxisFault makeFault(final Exception e,
@@ -449,8 +450,8 @@ public class ComponentsHTTPSender extends BasicHandler {
     /**
      * Create an connection problem AxisFault from an Exception
      *
+     * @param msgContext MessageContext object
      * @param e Exception
-     * @param didTimeout Not used
      * @param remoteURL Remote URL
      * @return AxisFault
      */

@@ -39,10 +39,8 @@ public class AdditionalServices {
      * Read ServiceResponses from a StatusDetail element
      * @param sd StatusDetail
      * @return ServiceResponses or null
-     * @throws JAXBException 
      */
     public static ServiceResponses readServiceResponses(final StatusDetailType sd)
-        throws JAXBException
     {
         if (sd == null) {
             return null;
@@ -70,11 +68,9 @@ public class AdditionalServices {
      * @param sd StatusDetail
      * @param serviceUri URI of the ServiceResponse
      * @return single ServiceResponse or null
-     * @throws JAXBException 
      */
     public static ServiceResponse readServiceResponse(final StatusDetailType sd, 
-                                                      final String       serviceUri)
-        throws JAXBException
+                                                      final String   serviceUri)
     {
         if (sd == null) {
             return null;

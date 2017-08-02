@@ -110,8 +110,8 @@ public class JMarshallerFactory {
          * Register a prefix to have additional inclusion prefixes.
          * Does actually register URI to inclusion URIs and uses external URI->prefix mapping.
          *
-         * @param prefix
-         * @param additionals
+         * @param prefix Prefix to register
+         * @param additionals Additional prefixes
          */
         public void setInclusion(String prefix, String...additionals) {
             final String keyuri = this.pfx2uri.get(prefix);
@@ -128,14 +128,6 @@ public class JMarshallerFactory {
             this.uriInclusions.put(keyuri, adds);
         }
 
-        /**
-         *
-         * @param nsuri Master entry namespace
-         * @return null if no inclusion set, otherwise a String[].
-         */
-//        public String[] getInclusions(String nsuri) {
-//            return this.uriInclusions.get(nsuri);
-//        }
     }
 
     static {
@@ -146,6 +138,7 @@ public class JMarshallerFactory {
         nsp.setNamespaceMapping("ilink","http://www.comptel.com/ilink/api/soap/2005/09");
         nsp.setNamespaceMapping("mmd",  "http://www.methics.fi/MSSPMetadata/v1.0.0#");
         nsp.setNamespaceMapping("mreg", "http://www.methics.fi/MSSPRegistration/v1.0.0#");
+        nsp.setNamespaceMapping("mcs",  "http://www.methics.fi/TS102204/ext/v1.0.0");
         nsp.setNamespaceMapping("msrs", "http://uri.etsi.org/TS102207/v1.1.2#");
         nsp.setNamespaceMapping("mss",  "http://uri.etsi.org/TS102204/v1.1.2#");
         nsp.setNamespaceMapping("saml", "urn:oasis:names:tc:SAML:2.0:assertion");
@@ -160,15 +153,20 @@ public class JMarshallerFactory {
         nsp.setNamespaceMapping("xsi",  "http://www.w3.org/2001/XMLSchema-instance");
     }
 
-    /** Externally used interface matching the one at Axis ContextSerializer */
+    /** 
+     * Externally used interface matching the one at Axis ContextSerializer
+     * 
+     * @param prefix Prefix to register
+     * @param uri    Namespace URI
+     */
     public static void registerPrefix(final String prefix, final String uri) {
         nsp.setNamespaceMapping(prefix, uri);
     }
 
     /**
      *
-     * @param prefix
-     * @param additionals
+     * @param prefix Prefix to register
+     * @param additionals Additional prefixes
      */
     public static void registerPrefixInclusion( String prefix, String... additionals ) {
         nsp.setInclusion(prefix, additionals);
@@ -236,6 +234,8 @@ public class JMarshallerFactory {
      * <p>
      * The JAXBContext is thread safe, it is then used to instantiate Marshaller/Unmarshaller,
      * which are not thread safe themselves.
+     * 
+     * @param clazz Class to get the JAXBContext from
      */
     private static JAXBContext getJAXBContext(final Class<?> clazz)
         throws JAXBException
@@ -250,6 +250,8 @@ public class JMarshallerFactory {
 
     /**
      * Register given class for contained JAXB metadata parsing
+     * 
+     * @param clazz Class to register
      */
     public static void registerForJAXBContext(final Class<?> clazz)
     {
@@ -263,7 +265,8 @@ public class JMarshallerFactory {
      * Make unmarshaller with globally shared mapping database
      *
      * @param clazz Expected unmarshalling output class.
-     *              It must be pointing to a class with JAXB {{@XmlRootElement}} annotation.
+     *              It must be pointing to a class with JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotation.
+     * @return Created unmarshaller
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
     public static Unmarshaller createUnmarshaller(final Class<?> clazz)
@@ -275,7 +278,7 @@ public class JMarshallerFactory {
     }
 
     /**
-     * @param clazz A JAXB @XmlRootElement annotated class reference.
+     * @param clazz A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated class reference.
      * @return JAXB Marshaller instance
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
@@ -291,8 +294,9 @@ public class JMarshallerFactory {
     /**
      * Marshal given object using JAXB Marshaller to SAX(2) DefaultHandler.
      *
+     * @param value A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated object instance.
      * @param hand A SAX2 Event Handler receiving serialization events.
-     * @param value A JAXB @XmlRootElement annotated object instance.
+     * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
     public static void marshal( final Object value, final DefaultHandler hand)
        throws JAXBException
@@ -312,7 +316,7 @@ public class JMarshallerFactory {
     }
 
     /**
-     * @param object A JAXB @XmlRootElement annotated object instance.
+     * @param object A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated object instance.
      * @param writer A Writer instance receiving marshalling output as characters
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
@@ -326,7 +330,7 @@ public class JMarshallerFactory {
     /**
      * Marshall the JAXB object to a String with XML headers and all.
      *
-     * @param object A JAXB @XmlRootElement annotated object instance.
+     * @param object A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated object instance.
      * @return Marshalled string representation of the input data
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */

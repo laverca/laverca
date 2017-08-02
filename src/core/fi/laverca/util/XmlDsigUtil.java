@@ -4,9 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.Key;
 import java.security.KeyException;
 import java.security.PublicKey;
@@ -48,16 +45,6 @@ public class XmlDsigUtil {
 
     private static Log log = LogFactory.getLog(XmlDsigUtil.class);
 
-    /**
-     * Validate an XML signature in a file
-     * @param args file path
-     * @throws IOException
-     * @throws ValidationException 
-     */
-    public static void main(final String[] args) throws IOException, ValidationException {
-        validate(new String(Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8));
-    }
-    
     /**
      * Validate XML signature of a message
      * @param xml String containing the XML document
@@ -115,7 +102,7 @@ public class XmlDsigUtil {
     
     /**
      * Validate XML signature of a FiComResponse
-     * @param resp
+     * @param resp FiComResponse
      * @throws IOException if the parsing of the XML fails
      * @throws ValidationException if the validation failed
      * @throws JAXBException if the response marshalling failed

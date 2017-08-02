@@ -137,7 +137,7 @@ public class X509Util {
     }
     
     /**
-     * Convert the X509Certificate boolean[] to List<String>
+     * Convert the X509Certificate {@code boolean[]} to {@code List<String>}
      * 
      * The following list shows the String vs the corresponding boolean[] index:
      * <pre>
@@ -151,8 +151,8 @@ public class X509Util {
      *     encipherOnly            (7),
      *     decipherOnly            (8)
      * </pre>
-     * @param keyUsage KeyUsage boolean[]
-     * @return KeyUsage List<String>
+     * @param keyUsage KeyUsage {@code boolean[]}
+     * @return KeyUsage {@code List<String>}
      */
    public static List<String> keyUsageToString(final boolean[] keyUsage) {
        
