@@ -288,7 +288,9 @@ public class CmsSignature implements Signature {
             try {
                 byte[] certDer = ((DERSequence)o).getEncoded();
                 X509Certificate cert = X509Util.DERtoX509Certificate(certDer);
-                certs.add(cert);
+                if (cert != null) {
+                    certs.add(cert);                    
+                }
             } catch (IOException e) {
                 log.debug("Failed to read cert", e);
             }

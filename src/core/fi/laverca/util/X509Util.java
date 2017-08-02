@@ -43,16 +43,20 @@ public class X509Util {
     /**
      * Convert a DER certificate to X509Certificate
      * @param der Certificate to convert
-     * @return Converted certificate as X509Certificate or null if the conversion failed
+     * @return Converted certificate as X509Certificate. Returns null if the conversion failed or input is null. 
      */
     public static X509Certificate DERtoX509Certificate(final byte[] der) {
+        if (der == null) {
+            log.error("Trying to convert a null DER to X509Certificate.");
+            return null;
+        }
+        
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(der);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate)cf.generateCertificate(bis);
         } catch (CertificateException e) {
-            log.error(e);
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return null;
     }
@@ -63,11 +67,15 @@ public class X509Util {
      * @return Converted certificate as byte[] DER or null if the conversion failed
      */
     public static byte[] X509CertificateToDER(final X509Certificate cert) {
+        if (cert == null) {
+            log.error("Trying to convert null X509Cert to DER.");
+            return null;
+        }
+        
         try {
             return cert.getEncoded();
         } catch (CertificateException e) {
-            log.error(e);
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return null;
     }
