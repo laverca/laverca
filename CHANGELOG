@@ -1,6 +1,13 @@
 Laverca Changelog
 =================
 
+    2017-06-20 2.01
+      Added support for XML dsig validation
+      Added an example for XAdES signing
+      Added support for using keystore/truststore without jvm SSL
+      Updated demo keystore and truststore to work with the latest test MSSP
+      Improved MSS Response signature API
+
     2017-02-21 2.0
       Debugging, bugfixing, documenting.
 
