@@ -21,12 +21,16 @@ package fi.laverca.examples.etsi;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.net.ssl.SSLSocketFactory;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.apache.axis.AxisFault;
 
@@ -40,8 +44,12 @@ import eu.europa.esig.dss.SignatureValue;
 import eu.europa.esig.dss.ToBeSigned;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.validation.reports.DetailedReport;
+import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.validation.reports.SimpleReport;
+import eu.europa.esig.dss.x509.CertificateSource;
 import eu.europa.esig.dss.x509.CertificateToken;
+import eu.europa.esig.dss.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import fi.laverca.CmsSignature;
@@ -72,7 +80,7 @@ import fi.laverca.util.DTBS;
 public class XAdES {
     
     protected static class XAdESResponseHandler implements EtsiResponseHandler {
-        
+    
         private final XAdESSignatureParameters parameters;
         private final XAdESService service;
         private final SignatureAlgorithm sigAlg;
@@ -104,7 +112,7 @@ public class XAdES {
             System.out.println("  StatusCode   : " + resp.getStatusCode());
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
             System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
-
+            
             // If we have the Signing cert, do XAdES sign
             if (this.parameters.getSigningCertificate() != null) {
                 
@@ -168,18 +176,53 @@ public class XAdES {
      
             SignedDocumentValidator validator = SignedDocumentValidator.fromDocument(signedDoc);
      
-            CommonCertificateVerifier verifier = new CommonCertificateVerifier();
-            validator.setCertificateVerifier(verifier);
-     
-            SimpleReport simpleReport = validator.validateDocument().getSimpleReport();
+            validator.setCertificateVerifier(this.createVerifier());
+            
+            Reports reports = validator.validateDocument();
+            
+            SimpleReport simpleReport = reports.getSimpleReport();
             String  id = simpleReport.getFirstSignatureId();
             System.out.println("Validation:");
             System.out.println("  Info    : " + simpleReport.getInfo(id));
             System.out.println("  Errors  : " + simpleReport.getErrors(id));
             System.out.println("  Warnings: " + simpleReport.getWarnings(id));
             
+            if (!simpleReport.isSignatureValid(id)) {
+                this.printDetailedReport(reports.getDetailedReport());                
+            }
+            
             return simpleReport.isSignatureValid(id);
         }
+        
+        /**
+         * Create a verifier with a trusted cert source. 
+         * @return
+         */
+        private CommonCertificateVerifier createVerifier() {
+            CommonCertificateVerifier verifier = new CommonCertificateVerifier();
+            CertificateSource trusted = new CommonTrustedCertificateSource();
+            trusted.addCertificate(this.parameters.getCertificateChain().get(0));
+            verifier.setTrustedCertSource(trusted);
+            return verifier;
+        }
+        
+        private void printDetailedReport(DetailedReport details) {
+            try {
+                System.out.println("\nDetailed report:");
+                JAXBContext context = JAXBContext.newInstance(details.getJAXBModel().getClass());
+                final Marshaller marshaller = context.createMarshaller();
+                final StringWriter stringWriter = new StringWriter();
+               // Marshal the javaObject and write the XML to the stringWriter
+                marshaller.marshal(details.getJAXBModel(), stringWriter);
+         
+                // Print out the contents of the stringWriter
+                System.out.println(stringWriter.toString() + "\n");
+            } catch (JAXBException e) {
+                System.err.println("Failed to print detailed report. ");
+                e.printStackTrace();
+            }
+        }
+        
         
     }
         
@@ -208,10 +251,10 @@ public class XAdES {
         // Note that these must match with what the MSS SignatureProfile uses.
         // (It would be folly to claim RSA-SHA256 and sign ECDSA-SHA512..)
         
-        final DigestAlgorithm digestAlg = DigestAlgorithm.SHA256;
-        final SignatureAlgorithm sigAlg = SignatureAlgorithm.RSA_SHA256;
+        final DigestAlgorithm digestAlg = DigestAlgorithm.SHA1;
+        final SignatureAlgorithm sigAlg = SignatureAlgorithm.RSA_SHA1;
         try {
-            md = MessageDigest.getInstance("SHA-256");
+            md = MessageDigest.getInstance("SHA-1");
         } catch (Exception e) {
             System.err.println("Failed to instantiate MessageDigest " + digestAlg.getName());
             return;
@@ -300,6 +343,7 @@ public class XAdES {
             final byte[] dataToSignDigest = md.digest();
             
             dtbs      = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
+            
             apTransId = "A" + System.currentTimeMillis();
 
             // Data to be displayed
