@@ -21,6 +21,7 @@ package fi.laverca.util;
 
 import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -49,8 +50,9 @@ public class X509Util {
             ByteArrayInputStream bis = new ByteArrayInputStream(der);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate)cf.generateCertificate(bis);
-        } catch (Exception e) {
+        } catch (CertificateException e) {
             log.error(e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -63,8 +65,9 @@ public class X509Util {
     public static byte[] X509CertificateToDER(final X509Certificate cert) {
         try {
             return cert.getEncoded();
-        } catch (Exception e) {
+        } catch (CertificateException e) {
             log.error(e);
+            e.printStackTrace();
         }
         return null;
     }
