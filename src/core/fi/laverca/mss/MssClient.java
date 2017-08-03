@@ -81,7 +81,7 @@ public class MssClient {
     public static ObjectFactory mssObjFactory = new ObjectFactory();
     
     // AP settings
-    private String apId = null;
+    private String apId  = null;
     private String apPwd = null;
 
     // MSSP AE connection settings
@@ -161,12 +161,12 @@ public class MssClient {
         if (apId != null) {
             this.apId = apId;
         } else {
-            throw new IllegalArgumentException("null apId not allowed.");
+            throw new IllegalArgumentException("Unable to construct MssClient without an AP identifier");
         }
         if (apPwd != null) {
             this.apPwd = apPwd;
         } else {
-            throw new IllegalArgumentException("null apPwd not allowed.");
+            throw new IllegalArgumentException("Unable to construct MssClient without an AP Password");
         }
 
         this.setAeAddress(msspSignatureUrl,
@@ -176,7 +176,7 @@ public class MssClient {
                           msspProfileUrl,
                           msspHandshakeUrl);
 
-        marshallerInit();
+        MssClient.marshallerInit();
     }
     
     /**
@@ -197,6 +197,38 @@ public class MssClient {
                      final String msspReceiptUrl) {
         this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
     }
+    
+    /**
+     * <b>NOTE:</b> 
+     * <br>if any of the URLs require SSL, you must
+     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
+     *
+     * <p>If the configuration contains keystore and/or truststore parameters,
+     * {@link #createSSLFactory(String, String, String, String, String, String)} and {@link #setSSLSocketFactory(SSLSocketFactory)}
+     * are automatically run. Ignores any keystore loading problems.
+     *
+     * @param conf MSS Configuration object
+     */
+    public MssClient(final MssConf conf) {
+        this(conf.getApId(),
+             conf.getApPwd(),
+             conf.getSignatureUrl(),
+             conf.getStatusUrl(),
+             conf.getReceiptUrl(),
+             conf.getRegistrationUrl(),
+             conf.getProfileUrl(),
+             conf.getHandshakeUrl());
+        
+        if (conf.getKeystore() != null) {
+            try {
+                SSLSocketFactory ssf = MssClient.createSSLFactory(conf.getKeystore(),   conf.getKeystorePwd(),   conf.getKeystoreType(), 
+                                                                  conf.getTruststore(), conf.getTruststorePwd(), conf.getTruststoreType());
+                this.setSSLSocketFactory(ssf);
+            } catch (Exception e) {
+                log.error("Failed to load keystore and/or truststore", e);
+            }
+        }
+    }
 
     /**
      * Set this socket factory before calling MSS operations,
@@ -205,7 +237,7 @@ public class MssClient {
      *
      * @param ssf Define a SSL SocketFactory with a client side key
      */
-    public void setSSLSocketFactory(SSLSocketFactory ssf) {
+    public void setSSLSocketFactory(final SSLSocketFactory ssf) {
         this.sslSocketFactory = ssf;
     }
   

@@ -60,9 +60,9 @@ import fi.laverca.etsi.EtsiClient;
 import fi.laverca.etsi.EtsiRequest;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.etsi.EtsiResponseHandler;
-import fi.laverca.examples.ExampleConf;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssClient;
+import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
 
 /**
@@ -271,7 +271,7 @@ public class XAdES {
         final XAdESResponseHandler handler = new XAdESResponseHandler(parameters, service, sigAlg, doc);
         
         // Load config
-        ExampleConf conf = ExampleConf.getInstance();
+        MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
         
         // Setup SSL
         SSLSocketFactory ssf = null;

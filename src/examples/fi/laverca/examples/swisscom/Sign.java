@@ -28,8 +28,8 @@ import org.apache.axis.AxisFault;
 import fi.laverca.MSS_Formats;
 import fi.laverca.ProgressUpdate;
 import fi.laverca.SignatureProfiles;
-import fi.laverca.examples.ExampleConf;
 import fi.laverca.mss.MssClient;
+import fi.laverca.mss.MssConf;
 import fi.laverca.swisscom.SwisscomClient;
 import fi.laverca.swisscom.SwisscomRequest;
 import fi.laverca.swisscom.SwisscomResponse;
@@ -62,7 +62,7 @@ public class Sign {
         }
         
         // Load config
-        ExampleConf conf = ExampleConf.getInstance();
+        MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
         
         // Setup SSL
         SSLSocketFactory ssf = null;

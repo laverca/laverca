@@ -25,7 +25,6 @@ import java.util.Collections;
 import javax.net.ssl.SSLSocketFactory;
 
 import fi.laverca.ProgressUpdate;
-import fi.laverca.examples.ExampleConf;
 import fi.laverca.ficom.FiComAdditionalServices;
 import fi.laverca.ficom.FiComClient;
 import fi.laverca.ficom.FiComRequest;
@@ -34,6 +33,7 @@ import fi.laverca.ficom.FiComResponseHandler;
 import fi.laverca.ficom.PersonIdAttribute;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.mss.MssClient;
+import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
 
 /**
@@ -58,7 +58,7 @@ public class AnonAuthentication {
             msisdn = args[0];
         }
         
-        ExampleConf  conf = ExampleConf.getInstance();
+        MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
                 
         // Setup SSL
         SSLSocketFactory ssf = null;
