@@ -32,6 +32,7 @@ import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.jaxb.mssfi.ObjectFactory;
+import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
 
 /**  
@@ -49,6 +50,10 @@ public class SwisscomClient extends ClientBase<SwisscomRequest, SwisscomResponse
         throws IllegalArgumentException
     {
         super(apId, apPwd,  msspSignatureUrl, msspStatusUrl, msspReceiptUrl);
+    }
+    
+    public SwisscomClient(MssConf conf) {
+        super(conf);
     }
 
     /**

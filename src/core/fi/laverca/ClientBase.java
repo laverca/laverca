@@ -42,6 +42,7 @@ import fi.laverca.jaxb.mss.SignatureType;
 import fi.laverca.jaxb.mss.StatusCodeType;
 import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.mss.MssClient;
+import fi.laverca.mss.MssConf;
 import fi.laverca.mss.MssException;
 import fi.laverca.mss.MssRequest;
 import fi.laverca.mss.MssResponse;
@@ -89,6 +90,12 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                                        msspReceiptUrl);
 
         this.threadExecutor = Executors.newCachedThreadPool();
+    }
+    
+    public ClientBase(MssConf conf) {
+        this.mssClient = new MssClient(conf);
+        this.threadExecutor = Executors.newCachedThreadPool();
+
     }
 
     /**

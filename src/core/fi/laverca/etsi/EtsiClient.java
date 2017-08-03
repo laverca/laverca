@@ -27,6 +27,7 @@ import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
 import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
 
 /**  
@@ -42,6 +43,10 @@ public class EtsiClient extends ClientBase<EtsiRequest, EtsiResponse> {
         throws IllegalArgumentException
     {
         super(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl);
+    }
+    
+    public EtsiClient(MssConf conf) {
+        super(conf);
     }
 
     /**
