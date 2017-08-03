@@ -525,16 +525,19 @@ public class MssClient {
     /**
      * Create a profile query request for given MSISDN
      * @param msisdn MSISDN of the mobile user
+     * @param apTransId AP_TransID 
      * @return Created MSS_ProfileReq
      * @throws IllegalArgumentException if the given MSISDN is null
      */
-    public MSSProfileReq createProfileRequest(final String msisdn) {
+    public MSSProfileReq createProfileRequest(final String msisdn, final String apTransId) {
         
         if (msisdn == null) throw new IllegalArgumentException("Invalid MSISDN (null)");
+        if (apTransId == null) throw new IllegalArgumentException("Invalid AP_TransID (null)");
+
         
         MSSProfileReq req = mssObjFactory.createMSSProfileReq();
         
-        this.initializeRequestMessage(req, null);
+        this.initializeRequestMessage(req, apTransId);
         
         MobileUserType mu = mssObjFactory.createMobileUserType();
         mu.setMSISDN(msisdn);

@@ -280,14 +280,15 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
     /**
      * Sends a profile query.
      * @param msisdn MSISDN of the user whose profile is to be queried 
+     * @param apTransId Value for the AP_TransID element of the request. 
      * @return received receipt response
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if the given MSISDN is null
      */
-    public ProfileQueryResponse sendProfileQuery(final String msisdn) 
+    public ProfileQueryResponse sendProfileQuery(final String msisdn, String apTransId) 
         throws IOException 
     {
-        MSSProfileReq profileReq = this.mssClient.createProfileRequest(msisdn);
+        MSSProfileReq profileReq = this.mssClient.createProfileRequest(msisdn, apTransId);
         return new ProfileQueryResponse(this.mssClient.send(profileReq));
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 import fi.laverca.jaxb.mcs204ext1.ProfileQueryExtension;
 import fi.laverca.jaxb.mss.MSSProfileResp;
 import fi.laverca.jaxb.mss.MssURIType;
-import fi.laverca.jaxb.xmldsigcore.X509Data;
+import fi.laverca.util.X509CertificateChain;
 
 /**
  * Wrapper class for Profile Query Response
@@ -44,9 +44,9 @@ public class ProfileQueryResponse {
      * return the Mobile User's certificates.
      * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
      */
-    public List<X509Data> getCertificates() {
+    public X509CertificateChain getCertificates() {
         
-        List<X509Data> certs = new ArrayList<>();
+        X509CertificateChain certs = new X509CertificateChain();
         
         if (this.resp             == null) return certs;
         if (this.resp.getStatus() == null) return certs;
@@ -55,11 +55,11 @@ public class ProfileQueryResponse {
         for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
             if (o instanceof ProfileQueryExtension) {
                 ProfileQueryExtension ext = (ProfileQueryExtension)o;
-                return ext.getMobileUserCertificates();
+                return new X509CertificateChain(ext.getMobileUserCertificates());
             }
         }
         
         return certs;
     }
-    
+        
 }

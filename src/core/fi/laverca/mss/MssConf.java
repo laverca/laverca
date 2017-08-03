@@ -47,9 +47,9 @@ public class MssConf {
     public static final String SIGNATURE_URL       = "mssp.signature.url";
     public static final String STATUS_URL          = "mssp.status.url";
     public static final String RECEIPT_URL         = "mssp.receipt.url";
-    public static final String PROFILE_URL         = "mssp.receipt.url";
-    public static final String REGISTRATION_URL    = "mssp.receipt.url";
-    public static final String HANDSHAKE_URL       = "mssp.receipt.url";
+    public static final String PROFILE_URL         = "mssp.profile.url";
+    public static final String REGISTRATION_URL    = "mssp.registration.url";
+    public static final String HANDSHAKE_URL       = "mssp.handshake.url";
     
     private String apId;             // AP settings
     private String apPwd; 

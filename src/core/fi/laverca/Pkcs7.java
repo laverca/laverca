@@ -46,7 +46,7 @@ import fi.laverca.util.X509Util;
 
 /** 
  * A CMS PKCS7 signature wrapper
- * @deprecated. Use CmsSignature instead
+ * @deprecated Use CmsSignature instead
  */ 
 @Deprecated
 public class Pkcs7 extends CmsSignature {
