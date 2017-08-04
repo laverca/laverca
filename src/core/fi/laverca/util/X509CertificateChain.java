@@ -29,8 +29,6 @@ public class X509CertificateChain implements Collection<X509Certificate> {
     private List<X509Certificate> certChain = new ArrayList<>();
 
     public X509CertificateChain(List<X509Data> mobileUserCertificates) {
-        System.out.println("Creating CertChain");
-
         CertificateFactory certFactory = null;
         try {
             certFactory = CertificateFactory.getInstance("X.509");
