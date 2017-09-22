@@ -32,6 +32,7 @@ import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.jaxb.mssfi.ObjectFactory;
+import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
 
 /**  
@@ -57,6 +58,10 @@ public class FiComClient extends ClientBase<FiComRequest, FiComResponse> {
         this.initialWait    = 5 * 1000;      // Initial wait 5 s
         this.subsequentWait = 2 * 1000;      // Subsequent wait 2 s
         this.timeout        = 5 * 1000 * 60; // Timeout 5 min
+    }
+    
+    public FiComClient(MssConf conf) {
+        super(conf);
     }
 
     /**

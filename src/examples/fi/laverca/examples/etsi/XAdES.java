@@ -19,15 +19,16 @@
 
 package fi.laverca.examples.etsi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.net.ssl.SSLSocketFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -61,9 +62,10 @@ import fi.laverca.etsi.EtsiRequest;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.etsi.EtsiResponseHandler;
 import fi.laverca.jaxb.mss.MessagingModeType;
-import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssConf;
+import fi.laverca.mss.ProfileQueryResponse;
 import fi.laverca.util.DTBS;
+import fi.laverca.util.X509CertificateChain;
 
 /**
  * XAdES signing example
@@ -78,6 +80,175 @@ import fi.laverca.util.DTBS;
  *
  */
 public class XAdES {
+    
+    // Signature and digest algorithms that this example uses. 
+    // Note that these must match with what the MSS SignatureProfile uses.
+    private static final DigestAlgorithm    DIGEST_ALG = DigestAlgorithm.SHA1;
+    private static final SignatureAlgorithm SIG_ALG    = SignatureAlgorithm.RSA_SHA1;
+    
+    // MSS SignatureProfile
+    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_SIGNATURE;
+            
+    public static void main(final String[] args) {
+
+        String msisdn     = "+35847001001";
+        String fileToSign = null;
+        if (args.length == 1) {
+            fileToSign = args[0];
+        } else if (args.length > 1) {
+            msisdn     = args[0];
+            fileToSign = args[1];
+        } else {
+            System.err.println("Usage: [msisdn] filename");
+            return;
+        }
+
+        final DSSDocument doc = new FileDocument(fileToSign);
+
+        // Init XAdES service, parameters, and handler
+        final XAdESService service = new XAdESService(new CommonCertificateVerifier());
+        final XAdESSignatureParameters parameters = createDefaultParams();
+        final XAdESResponseHandler handler = new XAdESResponseHandler(parameters, service, SIG_ALG, doc);
+        
+        // Load config
+        MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
+        
+        // Create client. This will also create a SSL Socket Factory for the client. 
+        EtsiClient client = new EtsiClient(conf);
+
+        
+        // Create AP_TransID to use. This can be any unique String. 
+        String apTransId = "A" + System.currentTimeMillis();
+      
+        // 1.  Get Signing Certificate.
+        // This could be for example done on service login.
+        // Note: This does not work if the authentication and signature use different key/cert (e.g. FiCom)
+        X509CertificateChain certChain = null;
+        try {
+            certChain = getCertChain(client, msisdn, apTransId, handler);
+        } catch (IOException ioe) {
+            System.out.println("Failed to get certs from MSSP.");
+            ioe.printStackTrace();
+            return;
+        }
+        
+        // 2. Fill certs to XAdESSignatureParameters
+        final X509Certificate signingCert = certChain.getSigningCert();        
+        
+        final List<CertificateToken> certTokenChain = new ArrayList<>();
+        for (final X509Certificate c : certChain) {
+            certTokenChain.add(new CertificateToken(c));
+        }
+        
+        parameters.setCertificateChain(certTokenChain);
+        parameters.setSigningCertificate(new CertificateToken(signingCert));
+        
+        // 3. Send the actual XAdES signature request
+        try {            
+            final ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
+            final byte[] dataToSignBytes = dataToSign.getBytes();
+            final byte[] dataToSignDigest = digest(dataToSignBytes);
+            
+            DTBS dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
+            
+            // Data to be displayed
+            String dtbd = dtbs.toString();
+            
+            EtsiRequest req = client.createRequest(
+                                       apTransId,         // AP Transaction ID
+                                       msisdn,            // MSISDN
+                                       dtbs,              // Data to be signed
+                                       dtbd,              // Data to be displayed
+                                       null,              // Additional services
+                                       MSS_SIG_PROF,      // Signature profile
+                                       MSS_Formats.KIURU_PKCS1, // MSS Format
+                                       MessagingModeType.ASYNCH_CLIENT_SERVER);
+    
+            // Send second SigReq
+            sendEtsiReq(client, req, handler);
+
+        } catch (NoSuchAlgorithmException ae) {
+            ae.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Got an Exception:");
+            e.printStackTrace();
+        }
+        
+        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+        client.shutdown();
+    }
+    
+    
+    private static X509CertificateChain getCertChain(EtsiClient client, String msisdn, String apTransId, XAdESResponseHandler handler) 
+            throws IOException {
+        
+        // Send a ProfileQueryReq. Depending on the MSSP config, the response may contain the needed certs. 
+        ProfileQueryResponse profileResp = client.sendProfileQuery(msisdn, apTransId);
+        X509CertificateChain certChain = profileResp.getCertificates();
+        
+        // If ProfileQueryResponse does not contain certs, get the certs from a Signature. 
+        if (certChain.isEmpty()) {
+            certChain = getCertsWithSign(client, msisdn, apTransId, handler);
+        }
+        
+        return certChain;
+    }
+    
+    private static X509CertificateChain getCertsWithSign(EtsiClient client, String msisdn, String apTransId, XAdESResponseHandler handler) {
+        DTBS        dtbs = new DTBS("XAdES dummy signature to pick certificates.");
+        String      dtbd = dtbs.toString();
+      
+        EtsiRequest req = client.createRequest(apTransId,         // AP Transaction ID
+                                               msisdn,            // MSISDN
+                                               dtbs,              // Data to be signed
+                                               dtbd,              // Data to be displayed
+                                               null,              // Additional services
+                                               MSS_SIG_PROF,      // Signature profile
+                                               MSS_Formats.PKCS7, // MSS Format
+                                               MessagingModeType.ASYNCH_CLIENT_SERVER);
+        
+        EtsiResponse resp = sendEtsiReq(client, req, handler);
+        if (resp != null) {
+            X509CertificateChain certChain = new  X509CertificateChain();
+            for (X509Certificate cert : ((CmsSignature)resp.getSignature()).getCertificates()) {
+                certChain.add(cert);
+            }
+            return certChain;            
+        } 
+        return new X509CertificateChain();
+        
+    }
+    
+    private static EtsiResponse sendEtsiReq(EtsiClient client, EtsiRequest req, XAdESResponseHandler handler) {
+        try {
+            client.call(req, handler);
+            EtsiResponse resp = req.waitForResponse();
+            return resp;
+        } catch (AxisFault af) {
+            System.out.println("Got a SOAP fault:");
+            af.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Got an Exception:");
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private static byte[] digest(byte[] data) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance(DIGEST_ALG.getJavaName());
+        md.reset();
+        md.update(data);
+        return md.digest();
+    }
+
+    private static XAdESSignatureParameters createDefaultParams() {
+        XAdESSignatureParameters parameters = new XAdESSignatureParameters();
+        parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
+        parameters.setDigestAlgorithm(DIGEST_ALG);
+        
+        return parameters;
+    }
     
     protected static class XAdESResponseHandler implements EtsiResponseHandler {
     
@@ -223,155 +394,6 @@ public class XAdES {
             }
         }
         
-        
-    }
-        
-    /**
-     * The main method
-     */
-    public static void main(final String[] args) {
-
-        String msisdn     = "+35847001001";
-        String fileToSign = null;
-        if (args.length == 1) {
-            fileToSign = args[0];
-        } else if (args.length > 1) {
-            msisdn     = args[0];
-            fileToSign = args[1];
-        } else {
-            System.err.println("Usage: [msisdn] filename");
-            return;
-        }
-
-        final MessageDigest md;
-
-        final String mssSigProf = SignatureProfiles.ALAUDA_SIGNATURE;
-        
-        // Setting signature algorithm bits.
-        // Note that these must match with what the MSS SignatureProfile uses.
-        // (It would be folly to claim RSA-SHA256 and sign ECDSA-SHA512..)
-        
-        final DigestAlgorithm digestAlg = DigestAlgorithm.SHA1;
-        final SignatureAlgorithm sigAlg = SignatureAlgorithm.RSA_SHA1;
-        try {
-            md = MessageDigest.getInstance("SHA-1");
-        } catch (Exception e) {
-            System.err.println("Failed to instantiate MessageDigest " + digestAlg.getName());
-            return;
-        }
-
-        final DSSDocument      doc = new FileDocument(fileToSign);
-
-        final XAdESService service = new XAdESService(new CommonCertificateVerifier());
-        
-        final XAdESSignatureParameters parameters = new XAdESSignatureParameters();
-        parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
-        parameters.setDigestAlgorithm(digestAlg);
-        final XAdESResponseHandler handler = new XAdESResponseHandler(parameters, service, sigAlg, doc);
-        
-        // Load config
-        MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
-        
-        // Setup SSL
-        SSLSocketFactory ssf = null;
-        try {
-            System.out.println("Setting up ssl");
-            ssf = MssClient.createSSLFactory(conf.getKeystore(),
-                                             conf.getKeystorePwd(),
-                                             conf.getKeystoreType(),
-                                             conf.getTruststore(),
-                                             conf.getTruststorePwd(),
-                                             conf.getTruststoreType());
-        } catch (Exception e) {
-            System.out.println("TLS initialization problem: " + e.getMessage());
-            return;
-        }
-
-        // Create client
-        EtsiClient client = new EtsiClient(conf.getApId(), 
-                                           conf.getApPwd(), 
-                                           conf.getSignatureUrl(), 
-                                           conf.getStatusUrl(), 
-                                           conf.getReceiptUrl());
-
-        client.setSSLSocketFactory(ssf);
-
-        
-        // 1.  Get Signing Certificate with a simple Signature request.
-        // This could be for example done on service login.
-        // Note: This does not work if the authentication and signature use different key/cert (e.g. FiCom)
-        
-        DTBS        dtbs = new DTBS("XAdES dummy signature to pick certificates.");
-        String      dtbd = dtbs.toString();
-        String apTransId = "A" + System.currentTimeMillis();
-      
-        EtsiRequest req = client.createRequest(apTransId,         // AP Transaction ID
-                                               msisdn,            // MSISDN
-                                               dtbs,              // Data to be signed
-                                               dtbd,              // Data to be displayed
-                                               null,              // Additional services
-                                               mssSigProf,        // Signature profile
-                                               MSS_Formats.PKCS7, // MSS Format
-                                               MessagingModeType.ASYNCH_CLIENT_SERVER);
-        
-        try {
-            // Send first SigReq
-            client.call(req, handler);
-
-            // Get the signing cert from the response
-            EtsiResponse resp = req.waitForResponse();
-            final X509Certificate signingCert = resp.getSignature().getSignerCert();
-            
-            // 2. Send the actual XAdES signature request
-
-            // Fill certs to XAdESSignatureParameters
-            final CertificateToken      signerCert = new CertificateToken(signingCert);
-            final List<CertificateToken> certChain = new ArrayList<>();
-            
-            for (final X509Certificate c : ((CmsSignature)resp.getSignature()).getCertificates()) {
-                certChain.add(new CertificateToken(c));
-            }
-            
-            parameters.setCertificateChain(certChain);
-            parameters.setSigningCertificate(signerCert);
-            
-            final ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
-            final byte[] dataToSignBytes = dataToSign.getBytes();
-            md.reset();
-            md.update(dataToSignBytes);
-            final byte[] dataToSignDigest = md.digest();
-            
-            dtbs      = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
-            
-            apTransId = "A" + System.currentTimeMillis();
-
-            // Data to be displayed
-            dtbd = dtbs.toString();
-            
-            req = client.createRequest(apTransId,         // AP Transaction ID
-                                       msisdn,            // MSISDN
-                                       dtbs,              // Data to be signed
-                                       dtbd,              // Data to be displayed
-                                       null,              // Additional services
-                                       mssSigProf,        // Signature profile
-                                       MSS_Formats.KIURU_PKCS1, // MSS Format
-                                       MessagingModeType.ASYNCH_CLIENT_SERVER);
-    
-            
-            // Send second SigReq
-            client.call(req, handler);
-
-        } catch (AxisFault af) {
-            System.out.println("Got a SOAP fault:");
-            af.printStackTrace();
-        } catch (Exception ioe) {
-            System.out.println("Got an Exception:");
-            ioe.printStackTrace();
-        }
-        
-        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
-        client.shutdown();
     }
 
 }
