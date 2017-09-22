@@ -273,11 +273,12 @@ public class MssClient {
         throws GeneralSecurityException, IOException 
     {
         KeyStore    ks = KeyStore.getInstance(ksType);
-        KeyStore    ts = KeyStore.getInstance(tsType);
+        KeyStore    ts = null;
         InputStream kis = new FileInputStream(ksFile);
         InputStream tis = null;
         
         if (tsFile != null) {
+            ts = KeyStore.getInstance(tsType);
             tis = new FileInputStream(tsFile);
         }
 
