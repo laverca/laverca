@@ -32,6 +32,11 @@ public class SignatureProfiles {
     
     public static final String SWISSCOM_AUTHENTICATION = "http://mid.swisscom.ch/MID/v1/AuthProfile1";
     
+    @Deprecated
     public static final String ALAUDA_SIGNATURE        = "http://alauda.mobi/digitalSignature";
+    
+    // See RFC 5280
+    public static final String ALAUDA_AUTHENTICATION   = "http://alauda.mobi/digitalSignature";
+    public static final String ALAUDA_SIGNING          = "http://alauda.mobi/nonRepudiation";
     
 }
