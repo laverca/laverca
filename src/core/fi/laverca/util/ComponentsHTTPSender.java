@@ -79,7 +79,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
 
 import fi.laverca.ErrorCodes;
-import fi.laverca.mss.MssClient;
+
+
 
 /**
  * A replacement of the default Axis Commons HTTP sender that makes it
@@ -120,7 +121,6 @@ public class ComponentsHTTPSender extends BasicHandler {
         throws AxisFault
     {
         final boolean debug = log.isDebugEnabled();
-        final boolean trace = debug && log.isTraceEnabled();
 
         // Know if the call is to a ONE_WAY end-point
         final boolean oneWay = (msgContext.getProperty("axis.one.way") != null);
@@ -134,8 +134,7 @@ public class ComponentsHTTPSender extends BasicHandler {
         HttpPost     post     = null;
         HttpResponse response = null;
         
-        
-        final LavercaHttpClient httpClient = MssClient.getHttpClient();
+        final LavercaHttpClient httpClient = (LavercaHttpClient) msgContext.getProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE);
         final String remoteURL = msgContext.getStrProp(MessageContext.TRANS_URL);
 
         if (httpClient == null) {
