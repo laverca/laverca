@@ -28,6 +28,7 @@ import java.util.concurrent.FutureTask;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.EngineConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -95,7 +96,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
     public ClientBase(MssConf conf) {
         this.mssClient = new MssClient(conf);
         this.threadExecutor = Executors.newCachedThreadPool();
-
     }
 
     /**
@@ -349,6 +349,22 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
      */
     public void setSSLSocketFactory(final SSLSocketFactory ssf) {
         this.mssClient.setSSLSocketFactory(ssf);
+    }
+    
+    /**
+     * Set a custom Axis EngineConfiguration
+     * @param conf Axis EngineConfiguration
+     */
+    public void setEngineConfiguration(final EngineConfiguration conf) {
+        this.mssClient.setEngineConfiguration(conf);
+    }
+    
+    /**
+     * Get the raw {@link MssClient}
+     * @return {@link MssClient} instance
+     */
+    public MssClient getMssClient() {
+        return this.mssClient;
     }
 
 }

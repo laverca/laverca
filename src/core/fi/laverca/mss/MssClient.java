@@ -36,6 +36,7 @@ import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.EngineConfiguration;
+import org.apache.axis.configuration.FileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -80,12 +81,14 @@ public class MssClient {
 
     public static ObjectFactory mssObjFactory = new ObjectFactory();
     
+    public static final String CLIENT_CONFIG_WSDD_FILENAME = "laverca-client-config.wsdd";
+    
     // AP settings
     private String apId  = null;
     private String apPwd = null;
 
     // MSSP AE connection settings
-    private final MSS_SignatureServiceLocator mssService = new MSS_SignatureServiceLocator();
+    private final MSS_SignatureServiceLocator mssService;
     private URL MSSP_SI_URL = null;
     private URL MSSP_RC_URL = null;
     private URL MSSP_HS_URL = null;
@@ -158,17 +161,18 @@ public class MssClient {
                      final String msspHandshakeUrl)
         throws IllegalArgumentException
     {
-        if (apId != null) {
-            this.apId = apId;
-        } else {
+        if (apId == null) {
             throw new IllegalArgumentException("Unable to construct MssClient without an AP identifier");
         }
-        if (apPwd != null) {
-            this.apPwd = apPwd;
-        } else {
+        if (apPwd == null) {
             throw new IllegalArgumentException("Unable to construct MssClient without an AP Password");
         }
+        
+        this.apId  = apId;
+        this.apPwd = apPwd;
 
+        log.info("Initialized MssClient");
+        
         this.setAeAddress(msspSignatureUrl,
                           msspStatusUrl,
                           msspReceiptUrl,
@@ -177,6 +181,16 @@ public class MssClient {
                           msspHandshakeUrl);
 
         MssClient.marshallerInit();
+
+        // Load laverca-client-config.wsdd
+        InputStream wsdd = Thread.currentThread().getContextClassLoader().getResourceAsStream(CLIENT_CONFIG_WSDD_FILENAME);
+        if (wsdd != null) {
+            this.mssService = new MSS_SignatureServiceLocator(new FileProvider(wsdd));
+        } else {
+            log.warn("Could not find " + CLIENT_CONFIG_WSDD_FILENAME + " in classpath");
+            this.mssService = new MSS_SignatureServiceLocator();
+        }
+        
     }
     
     /**

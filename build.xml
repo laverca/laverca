@@ -136,7 +136,7 @@
         <include name="**" />
       </fileset>
       <fileset dir="${core-src}">
-        <include name="client-config.wsdd" />
+        <include name="laverca-client-config.wsdd" />
       </fileset>
     </jar>
   </target>
