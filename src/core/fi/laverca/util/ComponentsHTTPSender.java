@@ -135,7 +135,7 @@ public class ComponentsHTTPSender extends BasicHandler {
         HttpResponse response = null;
         
         
-        final LavercaHttpClient httpClient = MssClient.httpClient.get();
+        final LavercaHttpClient httpClient = MssClient.getHttpClient();
         final String remoteURL = msgContext.getStrProp(MessageContext.TRANS_URL);
 
         if (httpClient == null) {

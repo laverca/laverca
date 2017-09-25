@@ -358,28 +358,22 @@ public class MssClient {
     
     /**
      * Get a thread specific HTTP Client.
-     * If the client does not exist, initializes a new one.
-     * 
-     * <p>It is recommended to call {@link #setSSLSocketFactory(SSLSocketFactory)} before this.
-     * 
      * @return {@link LavercaHttpClient}
      */
-    public LavercaHttpClient getHttpClient() {
-        if (this.httpClient.get() != null) {
-            this.initializeHttpClient();
-        }
-        return this.httpClient.get();
+    public static LavercaHttpClient getHttpClient() {
+        return httpClient.get();
     }
     
     /**
      * Set a thread specific {@link LavercaHttpClient}
      */
-    public void setHttpClient(final LavercaHttpClient client) {
-        this.httpClient.set(client);
+    public static void setHttpClient(final LavercaHttpClient client) {
+        httpClient.set(client);
     }
 
     /**
      * Initialize a {@link LavercaHttpClient}
+     * <p>It is recommended to call {@link #setSSLSocketFactory(SSLSocketFactory)} before this.
      * 
      */
     private void initializeHttpClient() {
