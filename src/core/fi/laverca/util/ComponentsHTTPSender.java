@@ -45,7 +45,6 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -80,8 +79,6 @@ import org.apache.http.util.EntityUtils;
 
 import fi.laverca.ErrorCodes;
 
-
-
 /**
  * A replacement of the default Axis Commons HTTP sender that makes it
  * possible to share a connection manager among RoamingClient instances.
@@ -95,10 +92,7 @@ public class ComponentsHTTPSender extends BasicHandler {
 
     boolean httpChunkStream = true; // Use HTTP chunking or not.
 
-    public static final String FAULTFACTORY_INSTANCE = "laverca.FaultFactory.instance";
-    public static final String HTTPCLIENT_INSTANCE   = "laverca.HttpClient.instance";
-    public static final String SERVERCERTS           = "laverca.ServerCerts";
-
+    public static final String HTTPCLIENT_INSTANCE             = "laverca.HttpClient.instance";
     public static final String CONTENTTYPE_APPLICATION_SOAPXML = "application/soap+xml"; // SOAP 1.2
     public static final String CONTENTTYPE_TEXT_XML            = "text/xml";             // SOAP 1.1
 
@@ -147,20 +141,14 @@ public class ComponentsHTTPSender extends BasicHandler {
         long deadline = 0L; // when it does time out?
         try {
 
-            final URL targetURL = new URL(remoteURL);
-
-            @SuppressWarnings("unchecked")
-            final List<byte[]> serverCerts =
-                (List<byte[]>)msgContext.getProperty(ComponentsHTTPSender.SERVERCERTS);
-            LavercaSSLTrustManager.getInstance().setExpectedServerCerts(serverCerts);
-
+            final URL     targetURL  = new URL(remoteURL);
             final Message reqMessage = msgContext.getRequestMessage();
+            
             post = httpClient.buildHttpPost(remoteURL);
-
-            // set false as default, addContentInfo can overwrite
 
             final HttpClientContext httpContext = httpClient.buildContext();
             final RequestConfig.Builder rcb = RequestConfig.custom();
+            
             // As default no expectancy on continue..
             rcb.setExpectContinueEnabled(false);
 

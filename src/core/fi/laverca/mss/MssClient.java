@@ -26,12 +26,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.TrustManager;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
@@ -71,6 +75,7 @@ import fi.laverca.util.ComponentsHTTPSender;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JMarshallerFactory;
 import fi.laverca.util.LavercaHttpClient;
+import fi.laverca.util.LavercaSSLTrustManager;
 import fi.laverca.util.ProxySettings;
 
 /**
@@ -290,15 +295,9 @@ public class MssClient {
         KeyStore    ts = null;
         InputStream kis = new FileInputStream(ksFile);
         InputStream tis = null;
-        
-        if (tsFile != null) {
-            ts = KeyStore.getInstance(tsType);
-            tis = new FileInputStream(tsFile);
-        }
 
         try {
             KeyManagerFactory   kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             
             ks.load(kis, ksPwd.toCharArray());
             kmf.init(ks, ksPwd.toCharArray());
@@ -306,12 +305,24 @@ public class MssClient {
             SSLContext ctx = SSLContext.getInstance("TLSv1.2");
             
             if (tsFile != null) {
-                ts.load(tis, tsPwd.toCharArray());
-                tmf.init(ts);
-                ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-            } else {
-                ctx.init(kmf.getKeyManagers(), null, null);
+                ts = KeyStore.getInstance(tsType);
+                ts.load(new FileInputStream(tsFile), tsPwd.toCharArray());
+                
+                List<byte[]> certs = new ArrayList<>();
+                
+                for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
+                    String alias = aliases.nextElement();
+                    if (ts.isKeyEntry(alias)) {
+                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                        if (cert != null) certs.add(cert.getEncoded());
+                    }
+                }
+
+                LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
             }
+            
+            TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
+            ctx.init(kmf.getKeyManagers(), tms, null);
             
             return ctx.getSocketFactory();
         } finally {
