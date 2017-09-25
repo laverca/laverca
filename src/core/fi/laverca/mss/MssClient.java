@@ -80,6 +80,8 @@ public class MssClient {
 
     public static ObjectFactory mssObjFactory = new ObjectFactory();
     
+    private static ThreadLocal<LavercaHttpClient> httpClient = new ThreadLocal<>();
+    
     // AP settings
     private String apId  = null;
     private String apPwd = null;
@@ -104,7 +106,6 @@ public class MssClient {
 
     private ProxySettings     proxySettings;
     private SSLSocketFactory  sslSocketFactory;
-    private LavercaHttpClient httpClient;
 
     private static boolean marshallerInitDone;
     
@@ -354,26 +355,51 @@ public class MssClient {
             throw new IllegalArgumentException(mue.getMessage());
         }
     }
+    
+    /**
+     * Get a thread specific HTTP Client.
+     * If the client does not exist, initializes a new one.
+     * 
+     * <p>It is recommended to call {@link #setSSLSocketFactory(SSLSocketFactory)} before this.
+     * 
+     * @return {@link LavercaHttpClient}
+     */
+    public LavercaHttpClient getHttpClient() {
+        if (this.httpClient.get() != null) {
+            this.initializeHttpClient();
+        }
+        return this.httpClient.get();
+    }
+    
+    /**
+     * Set a thread specific {@link LavercaHttpClient}
+     */
+    public void setHttpClient(final LavercaHttpClient client) {
+        this.httpClient.set(client);
+    }
 
-    private LavercaHttpClient getHttpClient() {
+    /**
+     * Initialize a {@link LavercaHttpClient}
+     * 
+     */
+    private void initializeHttpClient() {
         synchronized (this) {
-            if (this.httpClient == null) {
+            if (this.httpClient.get() == null) {
                 // If SSLSocketFactory is set, use it, otherwise use system default
                 SSLSocketFactory ssf = this.sslSocketFactory;
                 if (ssf == null) {
                     ssf = (SSLSocketFactory)SSLSocketFactory.getDefault();
                 }
-                this.httpClient = new LavercaHttpClient("mssClientPool",
-                                                        this.poolSize,
-                                                        this.newConnTimeout,
-                                                        this.newSoTimeout,
-                                                        this.newUsername,
-                                                        this.newPassword,
-                                                        this.proxySettings,
-                                                        ssf);
+                this.httpClient.set(new LavercaHttpClient("mssClientPool",
+                                                          this.poolSize,
+                                                          this.newConnTimeout,
+                                                          this.newSoTimeout,
+                                                          this.newUsername,
+                                                          this.newPassword,
+                                                          this.proxySettings,
+                                                          ssf));
             }
         }
-        return this.httpClient;
     }
     
     /**
@@ -673,8 +699,7 @@ public class MssClient {
         }
 
         // Set tools for each context.
-        port.setProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
-        // port.setProperty(CommonsHTTPSender.FAULTFACTORY_INSTANCE, MssClientFaultFactory.getInstance());
+        this.initializeHttpClient();
 
         if (port instanceof MSS_SignatureBindingStub) {
             return ((MSS_SignatureBindingStub)port).MSS_Signature((MSSSignatureReq)req);
