@@ -48,6 +48,7 @@ import fi.laverca.mss.MssException;
 import fi.laverca.mss.MssRequest;
 import fi.laverca.mss.MssResponse;
 import fi.laverca.mss.ProfileQueryResponse;
+import fi.laverca.util.LavercaContext;
 
 /**
  * Abstract base class for ETSI TS 102 204 Signature operations
@@ -119,12 +120,14 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
             throw new IllegalArgumentException("Null response handler not allowed.");
         }
 
+        LavercaContext   _context = new LavercaContext();
         MSSSignatureResp _sigResp = null;
         try {
             log.debug("Sending sigReq");
-            _sigResp = this.mssClient.send(req.sigReq);
+            _sigResp = this.mssClient.send(req.sigReq, _context);
             log.debug("Got resp");
             req.sigResp = _sigResp;
+            req.context = _context;
         } catch (AxisFault af) {
             log.error("Got SOAP fault", af);
             handler.onError(req, af);

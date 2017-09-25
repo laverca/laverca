@@ -74,6 +74,7 @@ import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.ComponentsHTTPSender;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.JMarshallerFactory;
+import fi.laverca.util.LavercaContext;
 import fi.laverca.util.LavercaHttpClient;
 import fi.laverca.util.LavercaSSLTrustManager;
 import fi.laverca.util.ProxySettings;
@@ -580,14 +581,7 @@ public class MssClient {
      * @throws IllegalArgumentException if req is null
      */
     public MSSSignatureResp send(final MSSSignatureReq req) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null SignatureReq");
-        
-        if (req.getAdditionalServices() != null) {
-            if (req.getAdditionalServices().getServices().size() == 0) {
-                req.setAdditionalServices(null);
-            }
-        }
-        return (MSSSignatureResp)this.sendMat(req);
+        return this.send(req, null);
     }
 
     /**
@@ -598,56 +592,140 @@ public class MssClient {
      * @throws IllegalArgumentException if req is null
      */
     public MSSReceiptResp send(final MSSReceiptReq req) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
-        return (MSSReceiptResp)this.sendMat(req);
+        return this.send(req, null);
     }
 
     /**
      * Send the MSS_HandshakeRequest to MSS system receiving answer
      * @param req the MSS_HandshakeReq
+     * @param context LavercaContext
      * @return received MSS_HandshakeResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
      */
     public MSSHandshakeResp send(final MSSHandshakeReq req) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
-        return (MSSHandshakeResp)this.sendMat(req);
+        return this.send(req, null);
     }
 
     /**
      * Send the MSS_StatusRequest to MSS system receiving answer
      * @param req the MSS_StatusReq
+     * @param context LavercaContext
      * @return received MSS_StatusResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
      */
     public MSSStatusResp send(final MSSStatusReq req) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null StatusReq");
-        return (MSSStatusResp)this.sendMat(req);
+        return this.send(req, null);
     }
 
     /**
      * Send the MSS_ProfileRequest to MSS system receiving answer
      * @param req the MSS_ProfileReq
+     * @param context LavercaContext
      * @return received MSS_ProfileResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
      */
     public MSSProfileResp send(final MSSProfileReq req) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
-        return (MSSProfileResp)this.sendMat(req);
+        return this.send(req, null);
     }
 
     /**
      * Send the MSS_RegistrationRequest to MSS system receiving answer
      * @param req the MSS_RegistrationReq
+     * @param context LavercaContext
      * @return received MSS_RegistrationResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
      */
     public MSSRegistrationResp send(final MSSRegistrationReq req) throws IOException {
+        return this.send(req, null);
+    }
+
+    
+    /**
+     * Send the MSS_SignatureRequest to MSS system receiving answer
+     * @param req the MSS_SignatureReq
+     * @param context LavercaContext
+     * @return received MSS_SignatureResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSSignatureResp send(final MSSSignatureReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null SignatureReq");
+        
+        if (req.getAdditionalServices() != null) {
+            if (req.getAdditionalServices().getServices().size() == 0) {
+                req.setAdditionalServices(null);
+            }
+        }
+        return (MSSSignatureResp)this.sendMat(req, context);
+    }
+
+    /**
+     * Send the MSS_ReceiptRequest to MSS system receiving answer
+     * @param req the MSS_ReceiptReq
+     * @param context LavercaContext
+     * @return received MSS_ReceiptResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSReceiptResp send(final MSSReceiptReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
+        return (MSSReceiptResp)this.sendMat(req, context);
+    }
+
+    /**
+     * Send the MSS_HandshakeRequest to MSS system receiving answer
+     * @param req the MSS_HandshakeReq
+     * @param context LavercaContext
+     * @return received MSS_HandshakeResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSHandshakeResp send(final MSSHandshakeReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
+        return (MSSHandshakeResp)this.sendMat(req, context);
+    }
+
+    /**
+     * Send the MSS_StatusRequest to MSS system receiving answer
+     * @param req the MSS_StatusReq
+     * @param context LavercaContext
+     * @return received MSS_StatusResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSStatusResp send(final MSSStatusReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null StatusReq");
+        return (MSSStatusResp)this.sendMat(req, context);
+    }
+
+    /**
+     * Send the MSS_ProfileRequest to MSS system receiving answer
+     * @param req the MSS_ProfileReq
+     * @param context LavercaContext
+     * @return received MSS_ProfileResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSProfileResp send(final MSSProfileReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
+        return (MSSProfileResp)this.sendMat(req, context);
+    }
+
+    /**
+     * Send the MSS_RegistrationRequest to MSS system receiving answer
+     * @param req the MSS_RegistrationReq
+     * @param context LavercaContext
+     * @return received MSS_RegistrationResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSRegistrationResp send(final MSSRegistrationReq req, final LavercaContext context) throws IOException {
         if (req == null) throw new IllegalArgumentException ("Unable to send null RegistrationReq");
-        return (MSSRegistrationResp)this.sendMat(req);
+        return (MSSRegistrationResp)this.sendMat(req, context);
     }
 
     /**
@@ -656,7 +734,7 @@ public class MssClient {
      * @param req Abstract request type
      * @throws IOException if a HTTP communication error occurred i.e. a SOAP fault was generated by the <i>local</i> SOAP client stub.
      */
-    private MessageAbstractType sendMat(final MessageAbstractType req)
+    private MessageAbstractType sendMat(final MessageAbstractType req, final LavercaContext context)
         throws AxisFault, IOException
     {
         AbstractSoapBindingStub port = null;
@@ -700,21 +778,33 @@ public class MssClient {
         // Set tools for each context.
         port.setProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
 
+        MessageAbstractType resp = null;
+        
         if (port instanceof MSS_SignatureBindingStub) {
-            return ((MSS_SignatureBindingStub)port).MSS_Signature((MSSSignatureReq)req);
+            resp = ((MSS_SignatureBindingStub)port).MSS_Signature((MSSSignatureReq)req);
         } else if (port instanceof MSS_StatusQueryBindingStub) {
-            return ((MSS_StatusQueryBindingStub)port).MSS_StatusQuery((MSSStatusReq)req);
+            resp = ((MSS_StatusQueryBindingStub)port).MSS_StatusQuery((MSSStatusReq)req);
         } else if (port instanceof MSS_ReceiptBindingStub) {
-            return ((MSS_ReceiptBindingStub)port).MSS_Receipt((MSSReceiptReq)req);
+            resp = ((MSS_ReceiptBindingStub)port).MSS_Receipt((MSSReceiptReq)req);
         } else if (port instanceof MSS_HandshakeBindingStub) {
-            return ((MSS_HandshakeBindingStub)port).MSS_Handshake((MSSHandshakeReq)req);
+            resp = ((MSS_HandshakeBindingStub)port).MSS_Handshake((MSSHandshakeReq)req);
         } else if (port instanceof MSS_ProfileQueryBindingStub) {
-            return ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSSProfileReq)req);
+            resp = ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSSProfileReq)req);
         } else if (port instanceof MSS_RegistrationBindingStub) {
-            return ((MSS_RegistrationBindingStub)port).MSS_Registration((MSSRegistrationReq)req);
+            resp = ((MSS_RegistrationBindingStub)port).MSS_Registration((MSSRegistrationReq)req);
+        } else {
+            throw new IOException("Invalid call parameters");
         }
-
-        throw new IOException("Invalid call parameters");
+        
+        if (context != null) {
+            try {
+                context.setMessageContext(port.getMessageContext());
+            } catch (ServiceException e) {
+                log.warn("Unable to pass context", e);
+            }
+        }
+        
+        return resp;
     }
 
 

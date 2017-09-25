@@ -24,6 +24,7 @@ import java.util.concurrent.FutureTask;
 
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.util.LavercaContext;
 
 /**
  * MSS Signature Request
@@ -35,6 +36,7 @@ public abstract class MssRequest<Resp> {
     public MSSSignatureReq   sigReq;
     public MSSSignatureResp  sigResp;
     public FutureTask<Resp>  ft;
+    public LavercaContext    context;
 
     public MssRequest() {
         // fields are written by the client class during execution
