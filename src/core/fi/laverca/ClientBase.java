@@ -124,7 +124,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         this.threadExecutor = Executors.newCachedThreadPool();
     }
     
-    public ClientBase(MssConf conf) {
+    public ClientBase(final MssConf conf) {
         this.mssClient = new MssClient(conf);
         this.threadExecutor = Executors.newCachedThreadPool();
     }

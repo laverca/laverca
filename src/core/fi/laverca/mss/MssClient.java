@@ -226,7 +226,7 @@ public class MssClient {
      * {@link #createSSLFactory(String, String, String, String, String, String)} and {@link #setSSLSocketFactory(SSLSocketFactory)}
      * are automatically run. Ignores any keystore loading problems.
      *
-     * @param conf MSS Configuration object
+     * @param conf MSS Configuration object (not null)
      */
     public MssClient(final MssConf conf) {
         this(conf.getApId(),

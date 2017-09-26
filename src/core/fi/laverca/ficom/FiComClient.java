@@ -42,26 +42,75 @@ public class FiComClient extends ClientBase<FiComRequest, FiComResponse> {
     
     public static final ObjectFactory ficomFact = new ObjectFactory();
 
+    private static final long INITIAL_WAIT = 5 * 1000;      // Initial wait 5 s
+    private static final long SUBSEQ_WAIT  = 2 * 1000;      // Subsequent wait 2 s
+    private static final long TIMEOUT      = 5 * 1000 * 60; // Timeout 5 min
+    
+    /**
+     * Initialize a FiComClient
+     * 
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     * 
+     * @throws IllegalArgumentException if apId or apPwd is null
+     */
     public FiComClient(final String apId,             // AP settings
                        final String apPwd, 
                        final String msspSignatureUrl, // AE connection settings
                        final String msspStatusUrl,
                        final String msspReceiptUrl)
-    throws IllegalArgumentException
+        throws IllegalArgumentException
+    {
+        this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
+    }
+
+    /**
+     * Initialize a FiComClient
+     * 
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     * @param msspRegistrationUrl Connection URL to the AE for registration requests. 
+     * @param msspProfileUrl      Connection URL to the AE for profile query requests. 
+     * @param msspHandshakeUrl    Connection URL to the AE for handshake requests.
+     * 
+     * @throws IllegalArgumentException if apId or apPwd is null
+     */
+    public FiComClient(final String apId,             // AP settings
+                       final String apPwd, 
+                       final String msspSignatureUrl, // AE connection settings
+                       final String msspStatusUrl,
+                       final String msspReceiptUrl,
+                       final String msspRegistrationUrl,
+                       final String msspProfileUrl,
+                       final String msspHandshakeUrl)
+        throws IllegalArgumentException
     {
         super(apId, 
               apPwd, 
               msspSignatureUrl, 
               msspStatusUrl, 
-              msspReceiptUrl);
-        
-        this.initialWait    = 5 * 1000;      // Initial wait 5 s
-        this.subsequentWait = 2 * 1000;      // Subsequent wait 2 s
-        this.timeout        = 5 * 1000 * 60; // Timeout 5 min
+              msspReceiptUrl,
+              msspReceiptUrl,
+              msspProfileUrl,
+              msspHandshakeUrl);
+
+        this.initialWait    = INITIAL_WAIT;
+        this.subsequentWait = SUBSEQ_WAIT;
+        this.timeout        = TIMEOUT;
     }
     
-    public FiComClient(MssConf conf) {
+    public FiComClient(final MssConf conf) {
         super(conf);
+        
+        this.initialWait    = INITIAL_WAIT;
+        this.subsequentWait = SUBSEQ_WAIT;
+        this.timeout        = TIMEOUT;
     }
 
     /**
