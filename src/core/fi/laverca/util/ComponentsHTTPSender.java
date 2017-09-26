@@ -59,6 +59,7 @@ import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.axis.SocketInputStream;
 import org.apache.axis.handlers.BasicHandler;
+import org.apache.axis.message.SOAPFault;
 import org.apache.axis.utils.JavaUtils;
 import org.apache.axis.utils.NetworkUtils;
 import org.apache.commons.logging.Log;
@@ -96,6 +97,10 @@ public class ComponentsHTTPSender extends BasicHandler {
     public static final String CONTENTTYPE_APPLICATION_SOAPXML = "application/soap+xml"; // SOAP 1.2
     public static final String CONTENTTYPE_TEXT_XML            = "text/xml";             // SOAP 1.1
 
+    public static final String RAW_REQUEST_XML  = "laverca.rawreq";
+    public static final String RAW_RESPONSE_XML = "laverca.rawresp";
+
+    
     public static final String ERROR_IN_HTTPSENDER = "laverca.errorin.httpsender";
 
     public ComponentsHTTPSender() {
@@ -172,18 +177,23 @@ public class ComponentsHTTPSender extends BasicHandler {
                 post.setProtocolVersion(HttpVersion.HTTP_1_0);
             }
 
-            if (debug) {
-                try {
-                    String reqXML = reqMessage.toString();
+            try {
+                String reqXML = reqMessage.toString();
+                if (reqXML != null) {
+                    reqXML = reqXML.replace("FORM_SOAPENVELOPE:", "").trim();
+                }
+                msgContext.setProperty(RAW_REQUEST_XML, reqXML);
+                if (debug) {
                     log.debug("Sending XML to: "+remoteURL);
                     log.debug("-----------------------------------------------\n" +
                               reqXML);
                     log.debug("-----------------------------------------------");
                     log.debug("..executing HTTP POST operation..");
-                } catch (Throwable t) {
-                    log.debug("Got a throwable in trace code dumping request XML:", t);
                 }
+            } catch (Throwable t) {
+                log.debug("Failed to dump request XML:", t);
             }
+            
 
             httpContext.setRequestConfig(rcb.build());
             response = httpClient.execute(post, httpContext);
@@ -282,8 +292,12 @@ public class ComponentsHTTPSender extends BasicHandler {
                 // Our caller needs SOAPEnvelope soon, and right now the mode is INPUTSTREAM.
                 // Read the data now as SOAPEnvelope for our debug printout purposes.
                 outMsg.getSOAPEnvelope();
-                final String receivedXML = outMsg.toString();
-
+                String receivedXML = outMsg.toString();
+                if (receivedXML != null) {
+                    receivedXML = receivedXML.replace("FORM_SOAPENVELOPE:", "").trim();
+                }
+                msgContext.setProperty(RAW_RESPONSE_XML, receivedXML);
+                
                 if (debug) {
                     if (null == contentLength) {
                         log.debug("No Content-Length header in the response");
@@ -466,7 +480,12 @@ public class ComponentsHTTPSender extends BasicHandler {
            // Default maker..
            af = AxisFault.makeFault(e);
         }
-
+        try {
+            SOAPFault fault = new SOAPFault(af);
+            msgContext.setProperty(RAW_RESPONSE_XML, fault.getAsString());
+        } catch (Exception e2) {
+            log.warn("Failed to write response XML.", e2);
+        }
         return af;
     }
 

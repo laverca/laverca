@@ -45,4 +45,12 @@ public class LavercaContext {
         return this.contents.get(key);
     }
     
+    public String getRawXmlRequest() {
+        return (String)this.get(ComponentsHTTPSender.RAW_REQUEST_XML);
+    }
+    
+    public String getRawXmlResponse() {
+        return (String)this.get(ComponentsHTTPSender.RAW_RESPONSE_XML);
+    }
+    
 }
