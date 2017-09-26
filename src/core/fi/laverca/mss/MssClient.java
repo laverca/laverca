@@ -155,7 +155,6 @@ public class MssClient {
      * @param msspHandshakeUrl    Connection URL to the AE for handshake requests.
      * 
      * @throws IllegalArgumentException if AP ID or AP PWD is missing or invalid.
-     * 
      */
     public MssClient(final String apId,             // AP settings
                      final String apPwd, 
@@ -598,7 +597,6 @@ public class MssClient {
     /**
      * Send the MSS_HandshakeRequest to MSS system receiving answer
      * @param req the MSS_HandshakeReq
-     * @param context LavercaContext
      * @return received MSS_HandshakeResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
@@ -610,7 +608,6 @@ public class MssClient {
     /**
      * Send the MSS_StatusRequest to MSS system receiving answer
      * @param req the MSS_StatusReq
-     * @param context LavercaContext
      * @return received MSS_StatusResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
@@ -622,7 +619,6 @@ public class MssClient {
     /**
      * Send the MSS_ProfileRequest to MSS system receiving answer
      * @param req the MSS_ProfileReq
-     * @param context LavercaContext
      * @return received MSS_ProfileResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
@@ -634,7 +630,6 @@ public class MssClient {
     /**
      * Send the MSS_RegistrationRequest to MSS system receiving answer
      * @param req the MSS_RegistrationReq
-     * @param context LavercaContext
      * @return received MSS_RegistrationResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
