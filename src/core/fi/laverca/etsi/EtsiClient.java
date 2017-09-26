@@ -35,6 +35,17 @@ import fi.laverca.util.DTBS;
  */
 public class EtsiClient extends ClientBase<EtsiRequest, EtsiResponse> {
 
+    /**
+     * Initialize an EtsiClient
+     * 
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     * 
+     * @throws IllegalArgumentException if AP ID or AP PWD is missing or invalid.
+     */
     public EtsiClient(final String apId,             // AP settings
                       final String apPwd, 
                       final String msspSignatureUrl, // AE connection settings
@@ -43,6 +54,33 @@ public class EtsiClient extends ClientBase<EtsiRequest, EtsiResponse> {
         throws IllegalArgumentException
     {
         super(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl);
+    }
+    
+    /**
+     * Initialize an EtsiClient
+     *
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     * @param msspRegistrationUrl Connection URL to the AE for registration requests. 
+     * @param msspProfileUrl      Connection URL to the AE for profile query requests. 
+     * @param msspHandshakeUrl    Connection URL to the AE for handshake requests.
+     * 
+     * @throws IllegalArgumentException if AP ID or AP PWD is missing or invalid.
+     */
+    public EtsiClient(final String apId,             // AP settings
+                      final String apPwd, 
+                      final String msspSignatureUrl, // AE connection settings
+                      final String msspStatusUrl,
+                      final String msspReceiptUrl,
+                      final String msspRegistrationUrl,
+                      final String msspProfileUrl,
+                      final String msspHandshakeUrl)
+        throws IllegalArgumentException
+    {
+        super(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, msspRegistrationUrl, msspProfileUrl, msspHandshakeUrl);
     }
     
     public EtsiClient(MssConf conf) {

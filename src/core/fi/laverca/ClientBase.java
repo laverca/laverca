@@ -85,11 +85,41 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                       final String msspReceiptUrl)
         throws IllegalArgumentException
     {
+        this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
+    }
+    
+    /**
+     * 
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     * @param msspRegistrationUrl Connection URL to the AE for registration requests. 
+     * @param msspProfileUrl      Connection URL to the AE for profile query requests. 
+     * @param msspHandshakeUrl    Connection URL to the AE for handshake requests.
+     * 
+     * @throws IllegalArgumentException if apId or apPwd is null
+     */
+    public ClientBase(final String apId,             // AP settings
+                      final String apPwd, 
+                      final String msspSignatureUrl, // AE connection settings
+                      final String msspStatusUrl,
+                      final String msspReceiptUrl,
+                      final String msspRegistrationUrl,
+                      final String msspProfileUrl,
+                      final String msspHandshakeUrl)
+        throws IllegalArgumentException
+    {
         this.mssClient = new MssClient(apId, 
                                        apPwd, 
                                        msspSignatureUrl, 
                                        msspStatusUrl, 
-                                       msspReceiptUrl);
+                                       msspReceiptUrl,
+                                       msspRegistrationUrl,
+                                       msspProfileUrl,
+                                       msspHandshakeUrl
+                                       );
 
         this.threadExecutor = Executors.newCachedThreadPool();
     }
