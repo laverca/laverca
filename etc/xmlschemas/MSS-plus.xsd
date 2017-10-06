@@ -25,8 +25,11 @@
              schemaLocation="MSS-ReceiptExt.xsd" />
   <xs:import namespace="http://www.methics.fi/TS102204/ext/v1.0.0"
              schemaLocation="MSS-ProfileExt.xsd" />
+  <xs:import namespace="http://www.methics.fi/MSSPRegistration/v1.0.0#"
+             schemaLocation="MSS-RegistrationExt.xsd" />
   <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
              schemaLocation="MSS-SubscriberInfo.xsd" />
+
              
   <xs:complexType name="MessageAbstractType" abstract="true"> 
     <xs:sequence> 

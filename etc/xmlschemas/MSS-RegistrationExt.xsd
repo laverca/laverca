@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.methics.fi/MSSPRegistration/v1.0.0#"
+           xmlns:mreg="http://www.methics.fi/MSSPRegistration/v1.0.0#"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"
+           elementFormDefault="qualified">
+  <!-- This file describes the "mreg" schema, which is designed to supplement 
+       mss:MSS_RegistrationReq. This schema introduces a number of useful 
+       operations for MSS mobileuser, sim card, certificate, entity, and 
+       entityuser lifecycle management. 
+  -->
+
+  <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#"
+             schemaLocation="MSS-plus.xsd"/>
+
+  <xs:element name="EncryptionCertificates" type="mreg:CertificatesType"/>
+  <xs:complexType name="CertificatesType"> 
+    <xs:sequence> 
+      <xs:element name="Certificate" type="xs:base64Binary" minOccurs="0" maxOccurs="unbounded"/> 
+    </xs:sequence> 
+  </xs:complexType> 
+
+  <xs:element name="RegistrationInput">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="mreg:CaseId"                                  minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Target"       type="mreg:TargetType" />
+        <xs:element name="MregRequest"  type="mreg:MregRequestType"    minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute name="InputId"          type="xs:ID"     use="optional"/>
+      <xs:attribute name="DefaultNameSpace" type="xs:string" use="optional"/>
+      <xs:anyAttribute namespace="##other" processContents="lax"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="RegistrationOutput">
+    <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="mreg:CaseId"                                      minOccurs="0" maxOccurs="1"/>
+      <xs:element name="MregResponse"    type="mreg:MregResponseType"    minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="InputId"          type="xs:ID"     use="optional"/>
+    <xs:attribute name="DefaultNameSpace" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CaseId"         type="xs:string" />
+
+  <xs:complexType name="RequestBaseType" abstract="true">
+    <xs:attribute name="RequestId" type="xs:ID"      use="optional"/>
+    <xs:attribute name="Step"      type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="OperationBaseType" abstract="true">
+    <xs:sequence>
+      <xs:element name="Parameter" type="mreg:NameValueType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="NameSpace" type="xs:string" use="optional"/>
+    <xs:attribute name="Name"      type="xs:string" use="required"/>
+    <xs:attribute name="ID"        type="xs:ID"     use="optional"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="OperationInputType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationBaseType">
+		<xs:sequence>
+		  <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+        <xs:anyAttribute namespace="##other" processContents="lax"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="OperationOutputType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationBaseType">
+        <xs:sequence>
+          <xs:element name="Status" type="mreg:OperationStatusType" minOccurs="1"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="OperationStatusType">
+    <xs:sequence>
+      <xs:element name="OperationStatusCode"    type="xs:integer"/>
+      <xs:element name="OperationStatusMessage" type="xs:string" minOccurs="0"/>
+      <xs:element name="OperationStatusDetail"  type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CertificationOperationType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationInputType" />
+      </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ProvisioningOperationType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationInputType" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="WirelessOperationType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationInputType" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="EntityOperationType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationInputType" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="EntityUserOperationType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationInputType" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CompoundOperationType">
+    <xs:complexContent>
+      <xs:extension base="mreg:OperationInputType" />
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:complexType name="NameValueType">
+    <xs:attribute name="NameSpace" type="xs:string" use="optional"/>
+    <xs:attribute name="Name"      type="xs:string" use="required"/>
+    <xs:attribute name="Value"     type="xs:string" use="optional"/>
+    <xs:attribute name="MimeType"  type="xs:string" use="optional"/>
+    <xs:attribute name="Encoding"  type="xs:string" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="TargetType">
+    <xs:sequence>
+      <xs:element name="EndPointID" type="xs:string" minOccurs="0" />
+      <xs:choice minOccurs="0">
+        <xs:element name="MobileUser" type="mss:MobileUserType"/>
+        <xs:element name="SimCard"    type="mreg:SimCardType"  />
+        <xs:element name="Entity"     type="mreg:EntityType"  />
+        <xs:element name="EntityUser" type="mreg:EntityUserType"  />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="SimCardType">
+    <xs:sequence>
+      <xs:element name="ICCID"  type="xs:string" minOccurs="0" />
+      <xs:element name="IMSI"   type="xs:string" minOccurs="0" />
+      <xs:element name="MSISDN" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="EntityType">
+    <xs:sequence>
+      <xs:choice minOccurs="0">
+        <xs:element name="ApID"        type="xs:anyURI" />
+        <xs:element name="CustomerID"  type="xs:string" />
+        <xs:element name="MsspID"      type="mss:MeshMemberType"/>
+        <xs:element name="SpID"        type="xs:anyURI" />
+        <xs:element name="NasID"       type="xs:string" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EntityUserType">
+    <xs:complexContent>
+      <xs:extension base="mreg:EntityType">
+        <xs:sequence>
+		  <xs:element name="EntityUserID"  type="xs:string" minOccurs="0" />
+		</xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:element name="WirelessOperation"      type="mreg:WirelessOperationType"/>
+  <xs:element name="CertificationOperation" type="mreg:CertificationOperationType"/>
+  <xs:element name="ProvisioningOperation"  type="mreg:ProvisioningOperationType"/>
+  <xs:element name="EntityOperation"        type="mreg:EntityOperationType"/>
+  <xs:element name="EntityUserOperation"    type="mreg:EntityUserOperationType"/>
+  <xs:element name="CompoundOperation"      type="mreg:CompoundOperationType"/>
+  <xs:element name="OperationOutput"        type="mreg:OperationOutputType"/>
+
+  <xs:complexType name="MregRequestType">
+    <xs:complexContent>
+      <xs:extension base="mreg:RequestBaseType">
+        <xs:choice>
+          <xs:element ref="mreg:WirelessOperation"/>
+          <xs:element ref="mreg:CertificationOperation"/>
+          <xs:element ref="mreg:ProvisioningOperation"/>
+          <xs:element ref="mreg:EntityOperation"/>
+          <xs:element ref="mreg:EntityUserOperation"/>
+          <xs:element ref="mreg:CompoundOperation"/>
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="MregResponseType">
+    <xs:complexContent>
+      <xs:extension base="mreg:RequestBaseType">
+        <xs:choice>
+          <xs:element ref="mreg:OperationOutput"/>
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+</xs:schema>
