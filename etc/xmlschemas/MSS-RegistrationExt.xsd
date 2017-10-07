@@ -13,19 +13,11 @@
   <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#"
              schemaLocation="MSS-plus.xsd"/>
 
-  <xs:element name="EncryptionCertificates" type="mreg:CertificatesType"/>
-  <xs:complexType name="CertificatesType"> 
-    <xs:sequence> 
-      <xs:element name="Certificate" type="xs:base64Binary" minOccurs="0" maxOccurs="unbounded"/> 
-    </xs:sequence> 
-  </xs:complexType> 
-
   <xs:element name="RegistrationInput">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="mreg:CaseId"                                  minOccurs="0" maxOccurs="1"/>
         <xs:element name="Target"       type="mreg:TargetType" />
-        <xs:element name="MregRequest"  type="mreg:MregRequestType"    minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="MregRequest"  type="mreg:MregRequestType" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
       <xs:attribute name="InputId"          type="xs:ID"     use="optional"/>
       <xs:attribute name="DefaultNameSpace" type="xs:string" use="optional"/>
@@ -36,20 +28,12 @@
   <xs:element name="RegistrationOutput">
     <xs:complexType>
     <xs:sequence>
-      <xs:element ref="mreg:CaseId"                                      minOccurs="0" maxOccurs="1"/>
-      <xs:element name="MregResponse"    type="mreg:MregResponseType"    minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="MregResponse"    type="mreg:MregResponseType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
     <xs:attribute name="InputId"          type="xs:ID"     use="optional"/>
     <xs:attribute name="DefaultNameSpace" type="xs:string" use="optional"/>
     </xs:complexType>
   </xs:element>
-
-  <xs:element name="CaseId"         type="xs:string" />
-
-  <xs:complexType name="RequestBaseType" abstract="true">
-    <xs:attribute name="RequestId" type="xs:ID"      use="optional"/>
-    <xs:attribute name="Step"      type="xs:string" use="optional"/>
-  </xs:complexType>
 
   <xs:complexType name="OperationBaseType" abstract="true">
     <xs:sequence>
@@ -187,28 +171,24 @@
   <xs:element name="OperationOutput"        type="mreg:OperationOutputType"/>
 
   <xs:complexType name="MregRequestType">
-    <xs:complexContent>
-      <xs:extension base="mreg:RequestBaseType">
-        <xs:choice>
-          <xs:element ref="mreg:WirelessOperation"/>
-          <xs:element ref="mreg:CertificationOperation"/>
-          <xs:element ref="mreg:ProvisioningOperation"/>
-          <xs:element ref="mreg:EntityOperation"/>
-          <xs:element ref="mreg:EntityUserOperation"/>
-          <xs:element ref="mreg:CompoundOperation"/>
-        </xs:choice>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:sequence>
+      <xs:choice>
+        <xs:element ref="mreg:WirelessOperation"/>
+        <xs:element ref="mreg:CertificationOperation"/>
+        <xs:element ref="mreg:ProvisioningOperation"/>
+        <xs:element ref="mreg:EntityOperation"/>
+        <xs:element ref="mreg:EntityUserOperation"/>
+        <xs:element ref="mreg:CompoundOperation"/>
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="MregResponseType">
-    <xs:complexContent>
-      <xs:extension base="mreg:RequestBaseType">
-        <xs:choice>
-          <xs:element ref="mreg:OperationOutput"/>
-        </xs:choice>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:sequence>
+      <xs:choice>
+        <xs:element ref="mreg:OperationOutput"/>
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
 
 </xs:schema>

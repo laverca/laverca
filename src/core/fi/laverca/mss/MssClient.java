@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -44,6 +45,11 @@ import org.apache.axis.configuration.FileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import fi.laverca.jaxb.mreg.MregRequestType;
+import fi.laverca.jaxb.mreg.NameValueType;
+import fi.laverca.jaxb.mreg.ProvisioningOperation;
+import fi.laverca.jaxb.mreg.RegistrationInput;
+import fi.laverca.jaxb.mreg.TargetType;
 import fi.laverca.jaxb.mss.DataType;
 import fi.laverca.jaxb.mss.MSSHandshakeReq;
 import fi.laverca.jaxb.mss.MSSHandshakeResp;
@@ -520,6 +526,27 @@ public class MssClient {
         
         return req;
     }
+    
+    /**
+     * Create a MSS_RegistrationReq
+     * 
+     * @param apTransId
+     * @param operation
+     * @param namespace
+     * @param target
+     * @param params
+     * @return
+     */
+    public MSSRegistrationReq createRegistrationReq(final String apTransId,
+                                                    final String operation) {
+        
+        MSSRegistrationReq req = mssObjFactory.createMSSRegistrationReq();
+        this.initializeRequestMessage(req, apTransId);
+        req.setMobileUser(mssObjFactory.createMobileUserType());
+
+        return req;
+    }
+    
     /**
      * Create a status request for a signature response.
      * 
