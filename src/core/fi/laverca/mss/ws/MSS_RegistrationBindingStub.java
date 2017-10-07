@@ -61,7 +61,7 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
                               MSSRegistrationReq.class,
                               false, false),
         };
-        params[1].setOmittable(true);
+        params[0].setOmittable(true);
         oper = new OperationDesc("MSS_Registration",
                                  new QName("", "MSS_Registration"), // Element QName
                                  params,

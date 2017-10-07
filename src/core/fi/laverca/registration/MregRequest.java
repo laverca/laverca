@@ -65,8 +65,7 @@ public class MregRequest {
      */
     public MSSRegistrationReq toMSSReq(final MssClient client) {
         
-        MSSRegistrationReq req = client.createRegistrationReq(this.apTransId, 
-                                                                 this.operation);
+        MSSRegistrationReq req = client.createRegistrationReq(this.apTransId);
         RegistrationInput input = new RegistrationInput();
         input.setTarget(this.buildTarget());
         
@@ -75,6 +74,8 @@ public class MregRequest {
         for (MregParam param : this.params) {
             prop.getParameters().add(param.getType());
         }
+        
+        prop.setName(this.operation);
         
         mreq.setProvisioningOperation(prop);
         input.getMregRequests().add(mreq);

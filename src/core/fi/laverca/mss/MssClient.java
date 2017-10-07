@@ -531,14 +531,9 @@ public class MssClient {
      * Create a MSS_RegistrationReq
      * 
      * @param apTransId
-     * @param operation
-     * @param namespace
-     * @param target
-     * @param params
      * @return
      */
-    public MSSRegistrationReq createRegistrationReq(final String apTransId,
-                                                    final String operation) {
+    public MSSRegistrationReq createRegistrationReq(final String apTransId) {
         
         MSSRegistrationReq req = mssObjFactory.createMSSRegistrationReq();
         this.initializeRequestMessage(req, apTransId);
