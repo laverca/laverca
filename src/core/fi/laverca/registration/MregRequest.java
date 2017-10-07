@@ -50,12 +50,14 @@ public class MregRequest {
     protected String imsi;
     protected String iccid;
     protected String apId;
-        
+
     /**
      * Create a new MReg request wrapper
+     * 
+     * @param operation Name of the operation
      */
-    public MregRequest() {
-        // Empty
+    public MregRequest(final String operation) {
+        this.operation = operation;
     }
 
     /**
@@ -74,13 +76,11 @@ public class MregRequest {
         for (MregParam param : this.params) {
             prop.getParameters().add(param.getType());
         }
-        
         prop.setName(this.operation);
-        
+        prop.setNameSpace(this.namespace);
         mreq.setProvisioningOperation(prop);
         input.getMregRequests().add(mreq);
         input.setInputId("_1");
-        input.setDefaultNameSpace(this.namespace);
         
         req.setRegistrationInput(input);
         

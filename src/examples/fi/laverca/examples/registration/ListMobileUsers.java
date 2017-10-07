@@ -29,12 +29,7 @@ public class ListMobileUsers {
 
         // Create client
         RegistrationClient client = new RegistrationClient(conf);
-        
-        String apTransId = "A" + System.currentTimeMillis();
-
-        MregRequest request = new MregRequest();
-        request.setOperation("ListMobileUsers");
-        request.setApTransId(apTransId);
+        MregRequest       request = new MregRequest("ListMobileUsers");
  
         // Send MReg request
         try {
