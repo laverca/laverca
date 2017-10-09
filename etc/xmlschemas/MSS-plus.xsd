@@ -139,7 +139,7 @@
           <xs:element name="CertificateURI"    type="xs:anyURI"              minOccurs="0"/> 
           <xs:element name="X509Certificate"   type="xs:base64Binary"        minOccurs="0"/>
           
-          <xs:element ref="mreg:RegistrationInput" minOccurs="0"/>
+          <xs:element ref="mreg:RegistrationInput" minOccurs="0" maxOccurs="unbounded"/>
           <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>   
         </xs:sequence> 
       </xs:extension> 

@@ -6,10 +6,12 @@ import java.util.List;
 import fi.laverca.jaxb.mreg.EntityType;
 import fi.laverca.jaxb.mreg.MregRequestType;
 import fi.laverca.jaxb.mreg.NameValueType;
+import fi.laverca.jaxb.mreg.OperationInputType;
 import fi.laverca.jaxb.mreg.ProvisioningOperation;
 import fi.laverca.jaxb.mreg.RegistrationInput;
 import fi.laverca.jaxb.mreg.SimCardType;
 import fi.laverca.jaxb.mreg.TargetType;
+import fi.laverca.jaxb.mreg.WirelessOperation;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MobileUserType;
 import fi.laverca.mss.MssClient;
@@ -42,7 +44,8 @@ public class MregRequest {
     protected String         apTransId = "A" + System.currentTimeMillis();
     protected String         operation;
     protected String         namespace;
-    
+    protected boolean        wireless  = false;
+
     protected List<MregParam> params = new ArrayList<>();
     
     // Targets
@@ -71,25 +74,32 @@ public class MregRequest {
         RegistrationInput input = new RegistrationInput();
         input.setTarget(this.buildTarget());
         
-        MregRequestType       mreq = new MregRequestType();
-        ProvisioningOperation prop = new ProvisioningOperation();
+        MregRequestType    mreq = new MregRequestType();
+        OperationInputType prop;
+        if (this.wireless) {
+            prop = new WirelessOperation();
+            mreq.setWirelessOperation((WirelessOperation)prop);
+        } else {
+            prop = new ProvisioningOperation();
+            mreq.setProvisioningOperation((ProvisioningOperation)prop);
+        }
+        
         for (MregParam param : this.params) {
             prop.getParameters().add(param.getType());
         }
         prop.setName(this.operation);
         prop.setNameSpace(this.namespace);
-        mreq.setProvisioningOperation(prop);
         input.getMregRequests().add(mreq);
         input.setInputId("_1");
         
-        req.setRegistrationInput(input);
+        req.getRegistrationInputs().add(input);
         
         return req;
     }    
     
     /**
      * If the target is a Mobile User, set the IMSI identifying it
-     * @param apId
+     * @param msisdn Target MSISDN
      */    
     public void setTargetMsisdn(final String msisdn) {
         this.targetType = Target.MOBILEUSER;
@@ -98,7 +108,7 @@ public class MregRequest {
 
     /**
      * If the target is a SIM Card, set the IMSI identifying it
-     * @param apId
+     * @param imsi Target IMSI
      */
     public void setTargetImsi(final String imsi) {
         this.targetType = Target.SIMCARD;
@@ -107,7 +117,7 @@ public class MregRequest {
     
     /**
      * If the target is a SIM Card, set the ICCID identifying it
-     * @param apId
+     * @param iccid Target ICCID
      */
     public void setTargetIccid(final String iccid) {
         this.targetType = Target.SIMCARD;
@@ -116,7 +126,7 @@ public class MregRequest {
     
     /**
      * If the target is an AP, set the AP_ID identifying it
-     * @param apId
+     * @param apId Target AP_ID
      */
     public void setTargetApId(final String apId) {
         this.targetType = Target.ENTITY;
@@ -164,6 +174,15 @@ public class MregRequest {
      */
     public void setNamespace(final String namespace) {
         this.namespace = namespace;
+    }
+    
+    /**
+     * Mark this request as wireless (going through OTA/etc)
+     * <p>If this flag is set, {@link #toMSSReq(MssClient)} uses {@link WirelessOperation} instead of {@link ProvisioningOperation}
+     * @param wireless
+     */
+    public void setWireless(final boolean wireless) {
+        this.wireless = wireless;
     }
     
     /**
