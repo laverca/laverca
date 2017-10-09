@@ -123,7 +123,6 @@ public class MregParam {
     
     /**
      * Get the group which this param belongs to
-     * @param groupName Name of the group
      */
     public String getGroup() {
         return this.groupName;
@@ -143,6 +142,11 @@ public class MregParam {
      */
     protected boolean isGroupEnd() {
         return GROUP_END.equals(this.getName());
+    }
+    
+    @Override
+    public String toString() {
+        return this.getValue();
     }
 
 }
