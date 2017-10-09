@@ -9,6 +9,7 @@ import fi.laverca.jaxb.mreg.OperationOutput;
 import fi.laverca.jaxb.mreg.OperationStatusType;
 import fi.laverca.jaxb.mreg.RegistrationOutput;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
+import fi.laverca.util.LavercaContext;
 
 /**
  * A wrapper class for an MSS_RegistrationResp with MReg extension
@@ -18,16 +19,20 @@ public class MregResponse {
 
     private static final String GROUP_PREFIX = "GROUP";
     
-    protected MSSRegistrationResp resp;
-    protected RegistrationOutput  output;
-    protected List<MregParam>     params;
+    public LavercaContext context;
+    
+    protected MSSRegistrationResp       resp;
+    protected List<RegistrationOutput>  output = new ArrayList<>();
+    protected List<MregParam>           params = new ArrayList<>();
     
     /**
-     * Default constructor - from a raw {@link MSSRegistrationResp}
+     * Default constructor - from a raw {@link MSSRegistrationResp} and {@link LavercaContext}
      * @param resp {@link MSSRegistrationResp} received from an MSSP
+     * @param context {@link LavercaContext}
      */
-    public MregResponse(final MSSRegistrationResp resp) {
-        this.resp = resp;
+    public MregResponse(final MSSRegistrationResp resp, final LavercaContext context) {
+        this.resp    = resp;
+        this.context = context;
         
         if (this.resp == null) return;
         if (this.resp.getStatus() == null) return;
@@ -35,12 +40,11 @@ public class MregResponse {
         
         for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
             if (o instanceof RegistrationOutput) {
-                this.output = (RegistrationOutput)o;
+                this.output.add((RegistrationOutput)o);
             }
         }
         
         // Parse params
-        this.params = new ArrayList<>();
         if (this.getOperationOutput().getParameters() == null) return;
         
         String groupName  = null;
@@ -59,7 +63,14 @@ public class MregResponse {
                 this.params.add(param);
             }
         }
-        
+    }
+    
+    /**
+     * Constructor - from a raw {@link MSSRegistrationResp}
+     * @param resp {@link MSSRegistrationResp} received from an MSSP
+     */
+    public MregResponse(final MSSRegistrationResp resp) {
+        this(resp, null);
     }
     
     /**
@@ -71,14 +82,37 @@ public class MregResponse {
     }
     
     /**
-     * Get the raw {@link OperationOutput}
+     * Get the (first) raw {@link OperationOutput}
      * @return first {@link OperationOutput}
      */
     public OperationOutput getOperationOutput() {
-        if (this.output == null) return null;
-        if (this.output.getMregResponses().size() <= 0) return null;
-        if (this.output.getMregResponses().get(0) == null) return null;
-        return this.output.getMregResponses().get(0).getOperationOutput();
+        return this.getOperationOutput(0);
+    }
+    
+    /**
+     * Get the raw {@link OperationOutput}
+     * @param index Index of the output (if there are multiple)
+     * @return {@link OperationOutput} corresponding to the given index
+     * @throws IndexOutOfBoundsException if the given index is out of bounds
+     */
+    public OperationOutput getOperationOutput(final int index) {
+        RegistrationOutput output = this.output.get(index);
+        if (output == null) return null;
+        if (output.getMregResponses().size() <= 0) return null;
+        if (output.getMregResponses().get(0) == null) return null;
+        return output.getMregResponses().get(0).getOperationOutput();
+    }
+    
+    /**
+     * Get the raw {@code List<OperationOutput>}
+     * @return {@code List<OperationOutput>}
+     * @throws IndexOutOfBoundsException if the output is malformed
+     */
+    public List<OperationOutput> getOperationOutputs() {
+        return this.output.stream()
+                          .map(o -> o.getMregResponses()
+                          .get(0).getOperationOutput())
+                          .collect(Collectors.toList());
     }
     
     /**
@@ -93,14 +127,14 @@ public class MregResponse {
      * Get a parameter with the given name.
      * <p>If the parameter is not found, returns null
      * @param name Name of the output parameter
-     * @return Output parameter, or null
+     * @return Output parameter, if found, an empty {@link MregParam} if not
      */
     public MregParam getParameter(final String name) {
         if (name == null) return null;
         return this.params.stream()
                           .filter(p -> name.equalsIgnoreCase(p.getName()))
                           .findFirst()
-                          .orElse(null);
+                          .orElse(new MregParam(null));
     }
 
     /**

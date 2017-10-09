@@ -39,7 +39,8 @@ public class MregRequest {
         ENTITY
     }
     
-    protected LavercaContext context;
+    public LavercaContext context;
+    
     protected Target         targetType = Target.MOBILEUSER;
     protected String         apTransId = "A" + System.currentTimeMillis();
     protected String         operation;

@@ -3,12 +3,12 @@ package fi.laverca.registration;
 import java.io.IOException;
 import java.util.List;
 
-import fi.laverca.jaxb.mreg.MregRequestType;
 import fi.laverca.jaxb.mreg.RegistrationInput;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssConf;
+import fi.laverca.util.LavercaContext;
 
 /**
  * Client specifically for handling MSS_Registration operations
@@ -42,9 +42,10 @@ public class RegistrationClient {
      * @throws IOException
      */
     public MregResponse send(final MregRequest req) throws IOException {
+        req.context = new LavercaContext();
         MSSRegistrationReq  _req  = req.toMSSReq(this.client);
         MSSRegistrationResp _resp = this.client.send(_req, req.context);
-        return new MregResponse(_resp);
+        return new MregResponse(_resp, req.context);
     }
     
     /**
@@ -58,6 +59,7 @@ public class RegistrationClient {
     public MregResponse send(final MregRequest req, 
                              final List<MregRequest> multiReq) throws IOException {
         
+        req.context = new LavercaContext();
         MSSRegistrationReq _final = req.toMSSReq(this.client);
         
         int i = 100;
@@ -69,8 +71,8 @@ public class RegistrationClient {
             _final.getRegistrationInputs().add(_input);
         }
         MSSRegistrationResp _resp = this.client.send(_final, req.context);
-
-        return new MregResponse(_resp);
+        
+        return new MregResponse(_resp, req.context);
     }
     
     /**
