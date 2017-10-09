@@ -82,11 +82,25 @@ public class MregResponse {
     }
     
     /**
-     * Get the list of output parameters as {@link List&lt;MregParam&gt;}
+     * Get the list of output parameters as {@code List<MregParam>}
      * @return Output parameters from the MReg response
      */
     public List<MregParam> getParameters() {
         return this.params;
+    }
+    
+    /**
+     * Get a parameter with the given name.
+     * <p>If the parameter is not found, returns null
+     * @param name Name of the output parameter
+     * @return Output parameter, or null
+     */
+    public MregParam getParameter(final String name) {
+        if (name == null) return null;
+        return this.params.stream()
+                          .filter(p -> name.equalsIgnoreCase(p.getName()))
+                          .findFirst()
+                          .orElse(null);
     }
 
     /**
@@ -101,7 +115,7 @@ public class MregResponse {
     }
     
     /**
-     * Get the list of output parameters that belong to the given group as {@link List&lt;MregParam&gt;}
+     * Get the list of output parameters that belong to the given group as {@code List<MregParam>}
      * @param groupName Name of the group
      * @return Output parameters from the MReg response
      */
