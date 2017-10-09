@@ -50,20 +50,20 @@ public class RegistrationClient {
     
     /**
      * Send a multi-operation MSS_RegistrationRequest (with MReg extension)
-     * <p>Reads the target and AP_TransID from the first request in the list.
+     * <p>Reads the target and AP_TransID from {@code req}. Adds a new RegistrationInput for each element in {@code additionalRequests}
      * @param req MReg Request
-     * @param multiReq Additional requests (only operation content is fetched from these - target is ignored
+     * @param additionalRequests Additional requests (only operation content is fetched from these - target is ignored
      * @return parsed MReg response
      * @throws IOException
      */
     public MregResponse send(final MregRequest req, 
-                             final List<MregRequest> multiReq) throws IOException {
+                             final List<MregRequest> additionalRequests) throws IOException {
         
         req.context = new LavercaContext();
         MSSRegistrationReq _final = req.toMSSReq(this.client);
         
         int i = 100;
-        for (MregRequest data : multiReq) {
+        for (MregRequest data : additionalRequests) {
             MSSRegistrationReq _data = data.toMSSReq(this.client);
             RegistrationInput _input = _data.getRegistrationInputs().get(0);
             _input.setInputId("_" + i++);
