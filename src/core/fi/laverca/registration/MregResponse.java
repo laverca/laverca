@@ -126,16 +126,33 @@ public class MregResponse {
     
     /**
      * Get a parameter with the given name.
-     * <p>If the parameter is not found, returns null
+     * <p>If the parameter is not found, returns an empty {@link MregParam}
      * @param name Name of the output parameter
      * @return Output parameter, if found, an empty {@link MregParam} if not
      */
     public MregParam getParameter(final String name) {
-        if (name == null) return null;
+        if (name == null) return new MregParam(null);
         return this.params.stream()
                           .filter(p -> name.equalsIgnoreCase(p.getName()))
                           .findFirst()
                           .orElse(new MregParam(null));
+    }
+    
+    /**
+     * Get a parameter with the given name.
+     * <p>If the parameter is not found, returns an empty {@link MregParam}
+     * @param name Name of the output parameter
+     * @param group Name of the group this parameter belongs to. If null, calls {@link #getParameter(String)}.
+     * @return Output parameter, if found, an empty {@link MregParam} if not
+     */
+    public MregParam getParameter(final String name,
+                                  final String group) {
+        if (name  == null) return new MregParam(null);
+        if (group == null) return this.getParameter(name);
+        return this.getGroup(group).stream()
+                                   .filter(p -> name.equalsIgnoreCase(p.getName()))
+                                   .findFirst()
+                                   .orElse(new MregParam(null));
     }
 
     /**
