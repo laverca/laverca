@@ -8,8 +8,8 @@ import fi.laverca.jaxb.mreg.NameValueType;
  */
 public class MregParam {
 
-    protected static final String GROUP_START = "BEGIN_GROUP";
-    protected static final String GROUP_END   = "END_GROUP";
+    protected static final String GROUP_START = "BeginGroup";
+    protected static final String GROUP_END   = "EndGroup";
     
     protected NameValueType type;
     protected String groupName;

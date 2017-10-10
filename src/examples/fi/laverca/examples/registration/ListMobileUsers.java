@@ -40,7 +40,7 @@ public class ListMobileUsers {
             System.out.println();
             
             for (String group : response.getGroupNames()) {
-                System.out.println("GROUP:" + group);
+                System.out.println("GROUP: " + group);
                 for (MregParam param : response.getGroup(group)) {
                     System.out.println("  " + param.getName() + ": " + param.getValue());
                 }

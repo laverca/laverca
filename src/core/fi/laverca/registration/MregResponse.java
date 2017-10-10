@@ -1,6 +1,7 @@
 package fi.laverca.registration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,7 @@ public class MregResponse {
             MregParam param = new MregParam(type);
             if (param.isGroupStart()) {
                 groupName = param.getValue();
-                if (groupName == null) groupName = GROUP_PREFIX + groupIndex++;
+                if (groupName == null) groupName = GROUP_PREFIX + "_" + groupIndex++;
             } else if (param.isGroupEnd()){
                 groupName = null;
             } else {
@@ -143,6 +144,7 @@ public class MregResponse {
      */
     public List<String> getGroupNames() {        
         return this.getParameters().stream()
+                                   .filter(p -> p.groupName != null)
                                    .map(p -> p.groupName)
                                    .distinct()
                                    .collect(Collectors.toList());
@@ -154,8 +156,9 @@ public class MregResponse {
      * @return Output parameters from the MReg response
      */
     public List<MregParam> getGroup(final String groupName) {
+        if (groupName == null) return Collections.emptyList();
         return this.getParameters().stream()
-                                   .filter(p -> p.groupName.equals(groupName))
+                                   .filter(p -> groupName.equals(p.groupName))
                                    .collect(Collectors.toList());
     }
 
