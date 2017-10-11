@@ -192,8 +192,8 @@ public class MregRequest {
      * @param name  Name of the parameter
      * @param value Value of the parameter
      */
-    public void addParam(final String name, final String value) {
-        this.addParam(name, value, null, null);
+    public void addParameter(final String name, final String value) {
+        this.addParameter(name, value, null, null);
     }
     
     /**
@@ -204,20 +204,59 @@ public class MregRequest {
      * @param mimeType MimeType 
      * @param encoding Encoding (e.g. UTF-8 or BASE64)
      */
-    public void addParam(final String name,
-                         final String value,
-                         final String mimeType,
-                         final String encoding) {
+    public void addParameter(final String name,
+                             final String value,
+                             final String mimeType,
+                             final String encoding) {
         MregParam param = new MregParam(name, value, mimeType, encoding);
-        this.addParam(param);
+        this.addParameter(param);
     }
     
     /**
      * Add a new request parameter
-     * @param param raw {@link NameValueType} object
+     * @param param raw {@link MregParam} object
      */
-    public void addParam(final MregParam param) {
+    public void addParameter(final MregParam param) {
         this.params.add(param);
+    }
+    
+    /**
+     * Add a new request parameter
+     * 
+     * @param name  Name of the parameter
+     * @param value Value of the parameter
+     * @deprecated Use {@link #addParameter(String, String)} instead
+     */
+    @Deprecated
+    public void addParam(final String name, final String value) {
+        this.addParameter(name, value, null, null);
+    }
+    
+    /**
+     * Add a new request parameter
+     * 
+     * @param name     Name of the parameter
+     * @param value    Value of the parameter
+     * @param mimeType MimeType 
+     * @param encoding Encoding (e.g. UTF-8 or BASE64)
+     * @deprecated Use {@link #addParameter(String, String, String, String)} instead
+     */
+    @Deprecated
+    public void addParam(final String name,
+                         final String value,
+                         final String mimeType,
+                         final String encoding) {
+        this.addParameter(name, value, mimeType, encoding);
+    }
+    
+    /**
+     * Add a new request parameter
+     * @param param raw {@link MregParam} object
+     * @deprecated Use {@link #addParameter(MregParam)} instead
+     */
+    @Deprecated
+    public void addParam(final MregParam param) {
+        this.addParameter(param);
     }
     
     /**
