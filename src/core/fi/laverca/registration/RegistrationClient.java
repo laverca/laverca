@@ -16,7 +16,7 @@ import fi.laverca.util.LavercaContext;
  */
 public class RegistrationClient {
 
-    private MssClient client;
+    private final MssClient client;
    
     /**
      * Default constructor with {@link MssConf}
