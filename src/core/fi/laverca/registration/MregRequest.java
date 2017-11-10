@@ -5,7 +5,6 @@ import java.util.List;
 
 import fi.laverca.jaxb.mreg.EntityType;
 import fi.laverca.jaxb.mreg.MregRequestType;
-import fi.laverca.jaxb.mreg.NameValueType;
 import fi.laverca.jaxb.mreg.OperationInputType;
 import fi.laverca.jaxb.mreg.ProvisioningOperation;
 import fi.laverca.jaxb.mreg.RegistrationInput;
@@ -54,7 +53,11 @@ public class MregRequest {
     protected String imsi;
     protected String iccid;
     protected String apId;
-
+    
+    // These override any client specific AP ID and AP PWD when sending this req. 
+    private String senderApId;
+    private String senderApPwd;
+    
     /**
      * Create a new MReg request wrapper
      * 
@@ -94,6 +97,14 @@ public class MregRequest {
         input.setInputId("_1");
         
         req.getRegistrationInputs().add(input);
+        
+        // Override AP ID and AP PWD if they are set for this req. 
+        if (this.senderApId != null) {
+            req.getAPInfo().setAPID(this.senderApId);
+        }
+        if (this.senderApPwd != null) {
+            req.getAPInfo().setAPPWD(this.senderApPwd);            
+        }
         
         return req;
     }    
@@ -290,5 +301,23 @@ public class MregRequest {
 
         return target;
     }
-
+    
+    /**
+     * Set AP_ID for this request. 
+     * This overrides client specific AP_ID. 
+     * @param apId AP ID. 
+     */
+    public void setApId(String apId) {
+        this.senderApId = apId;
+    }
+    
+    /**
+     * Set AP_PWD for this request. 
+     * This overrides client specific AP_ID. 
+     * @param apPwd AP Password. 
+     */
+    public void setApPwd(String apPwd) {
+        this.senderApPwd = apPwd;
+    }
+    
 }
