@@ -6,7 +6,6 @@ import java.util.List;
 import fi.laverca.jaxb.mreg.RegistrationInput;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
-import fi.laverca.jaxb.mss.MessageAbstractType.APInfo;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssConf;
 import fi.laverca.util.LavercaContext;
