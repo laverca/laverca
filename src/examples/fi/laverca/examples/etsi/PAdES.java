@@ -52,7 +52,7 @@ import fi.laverca.util.DTBS;
 import fi.laverca.util.X509CertificateChain;
 
 /**
- * XAdES signing example
+ * PAdES signing example
  * 
  * <p>Performs the following steps
  * <ol>
