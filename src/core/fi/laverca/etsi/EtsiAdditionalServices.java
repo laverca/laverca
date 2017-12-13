@@ -30,14 +30,20 @@ import fi.laverca.mss.MssClient;
  */
 public class EtsiAdditionalServices extends AdditionalServices {
     
+    public static final String URI_VALIDATE  = "http://uri.etsi.org/TS102204/v1.1.2#validate";
+    public static final String URI_TIMESTAMP = "http://uri.etsi.org/TS102204/v1.1.2#timestamp";
+    public static final String URI_ARCHIVE   = "http://uri.etsi.org/TS102204/v1.1.2#archive";
+    
     /**
      * Create a basic ETSI Service element
      * @param uri AdditionalService URI
-     * @return Created Service
+     * @return Created AdditionalService element
+     * @deprecated Use {@link AdditionalServices#createService(String)} instead
      */
+    @Deprecated
     public static AdditionalServiceType createService(final String uri) {
         final AdditionalServiceType s = MssClient.mssObjFactory.createAdditionalServiceType();
-        final MssURIType d = MssClient.mssObjFactory.createMssURIType();
+        final MssURIType            d = MssClient.mssObjFactory.createMssURIType();
         d.setMssURI(uri);
         s.setDescription(d);
         return s;

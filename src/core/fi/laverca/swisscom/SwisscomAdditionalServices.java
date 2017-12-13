@@ -21,11 +21,6 @@ package fi.laverca.swisscom;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import fi.laverca.etsi.EtsiAdditionalServices;
-import fi.laverca.ficom.FiComAdditionalServices;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.mss.AdditionalServices;
 
@@ -34,7 +29,8 @@ import fi.laverca.mss.AdditionalServices;
  */
 public class SwisscomAdditionalServices extends AdditionalServices {
     
-    static final Log log = LogFactory.getLog(SwisscomAdditionalServices.class);
+    public static final String SUBSCRIBER_INFO_URI = "http://mid.swisscom.ch/as#subscriberInfo";
+    public static final String USER_LANG_URI       = "http://mss.ficom.fi/TS102204/v1.0.0#userLang";
 
     /**
      * Create an additional service for selecting the user language
@@ -42,7 +38,7 @@ public class SwisscomAdditionalServices extends AdditionalServices {
      * @return AdditionalService element
      */
     public static AdditionalServiceType createUserLangService(final String language) {
-        final AdditionalServiceType s = EtsiAdditionalServices.createService(FiComAdditionalServices.USER_LANG_URI);
+        final AdditionalServiceType s = createService(USER_LANG_URI);
         final JAXBElement<String>   u = SwisscomClient.factory.createUserLang(language);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(u);
         return s;

@@ -21,11 +21,10 @@ package fi.laverca.mss;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.jaxb.mss.MssURIType;
 import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mssfi.ServiceResponses;
@@ -34,6 +33,24 @@ import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
 public class AdditionalServices {
 
     private static final Log log = LogFactory.getLog(AdditionalServices.class);
+    
+    // MISC AdditionalService URIs
+    public static final String POP_URI          = "http://www.methics.fi/KiuruMSSP/v3.0.0#POP";
+    public static final String ROLE_URI         = "http://www.methics.fi/KiuruMSSP/v5.0.0#role";
+    public static final String SIGNING_CERT_URI = "http://www.methics.fi/KiuruMSSP/v5.0.0#signingCertificate";
+    
+    /**
+     * Create a basic AdditionalService element
+     * @param uri AdditionalService URI
+     * @return Created AdditionalService element
+     */
+    public static AdditionalServiceType createService(final String uri) {
+        final AdditionalServiceType s = MssClient.mssObjFactory.createAdditionalServiceType();
+        final MssURIType            d = MssClient.mssObjFactory.createMssURIType();
+        d.setMssURI(uri);
+        s.setDescription(d);
+        return s;
+    }
     
     /**
      * Read ServiceResponses from a StatusDetail element

@@ -19,12 +19,11 @@
 
 package fi.laverca.ficom;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import fi.laverca.etsi.EtsiAdditionalServices;
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.jaxb.mssfi.NoSpamCode;
 import fi.laverca.jaxb.saml2p.AttributeQuery;
@@ -58,7 +57,6 @@ public class FiComAdditionalServices extends AdditionalServices {
     public static final String PERSON_ID_SURNAME    = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#surName";
     public static final String PERSON_ID_SUBJECT    = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#subject";
     public static final String PERSON_ID_VALIDUNTIL = "http://mss.ficom.fi/TS102204/v1.0.0/PersonID#validUntil";
-    
 
     /** 
      * Creates an AdditionalService for FiCom NoSpam service
@@ -70,7 +68,7 @@ public class FiComAdditionalServices extends AdditionalServices {
     public static AdditionalServiceType createNoSpamService(final String  noSpamCodeValue, 
                                                             final boolean verifyValue) {
         
-        final AdditionalServiceType s = EtsiAdditionalServices.createService(NO_SPAM_URI);
+        final AdditionalServiceType s = createService(NO_SPAM_URI);
 
         final NoSpamCode noSpamObject = new NoSpamCode();
         noSpamObject.setValue(noSpamCodeValue);
@@ -90,7 +88,7 @@ public class FiComAdditionalServices extends AdditionalServices {
      * @return FiCom EventID AdditionalService
      */
     public static AdditionalServiceType createEventIdService(final String eventId) {
-        final AdditionalServiceType s = EtsiAdditionalServices.createService(EVENT_ID_URI);
+        final AdditionalServiceType s = createService(EVENT_ID_URI);
         final JAXBElement<String> e = FiComClient.ficomFact.createEventID(eventId);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(e);
         return s;
@@ -102,7 +100,7 @@ public class FiComAdditionalServices extends AdditionalServices {
      * @return FiCom UserLang AdditionalService
      */
     public static AdditionalServiceType createUserLangService(final String userLang) {
-        final AdditionalServiceType s = EtsiAdditionalServices.createService(USER_LANG_URI);
+        final AdditionalServiceType s = createService(USER_LANG_URI);
         final JAXBElement<String> u = FiComClient.ficomFact.createUserLang(userLang);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(u);
         return s;
@@ -113,7 +111,7 @@ public class FiComAdditionalServices extends AdditionalServices {
      * @return FiCom Validation AdditionalService
      */
     public static AdditionalServiceType createValidateService() {
-        return EtsiAdditionalServices.createService(VALIDATE_URI);
+        return createService(VALIDATE_URI);
     }
 
     /**
@@ -129,19 +127,11 @@ public class FiComAdditionalServices extends AdditionalServices {
 
     /**
      * Creates a new PersonId Service from the given attribute names.
-     * @param attributeName List of attribute names to put in the PersonId Service
+     * @param attributeNames List of attribute names to put in the PersonId Service
      * @return FiCom PersonID AdditionalService
      */    
-    public static AdditionalServiceType createPersonIdService(final String ... attributeName) {
-        final List<String> attrNames = new ArrayList<String>();
-        if (attributeName != null) {
-            for (final String s : attributeName) {
-                if (s != null) {
-                    attrNames.add(s);
-                }
-            }
-        }
-        return createPersonIdService(attrNames);
+    public static AdditionalServiceType createPersonIdService(final String ... attributeNames) {
+        return createPersonIdService(Arrays.asList(attributeNames));
     }
 
     /** 
@@ -152,7 +142,7 @@ public class FiComAdditionalServices extends AdditionalServices {
      */
     public static AdditionalServiceType createAttributeQueryService(final String         uri, 
                                                                     final AttributeQuery attributeQuery) {
-        final AdditionalServiceType s = EtsiAdditionalServices.createService(uri);
+        final AdditionalServiceType s = createService(uri);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(attributeQuery);
         return s;
     }
@@ -164,7 +154,7 @@ public class FiComAdditionalServices extends AdditionalServices {
      * @return FiCom DisplayName AdditionalService
      */
     public static AdditionalServiceType createDisplayNameService(final String displayName) {
-        final AdditionalServiceType s = EtsiAdditionalServices.createService(DISPLAY_NAME_URI);
+        final AdditionalServiceType s = createService(DISPLAY_NAME_URI);
         final JAXBElement<String> u = FiComClient.ficomFact.createDisplayName(displayName);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(u);
         return s;
