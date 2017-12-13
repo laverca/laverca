@@ -70,13 +70,12 @@ import fi.laverca.util.X509CertificateChain;
 /**
  * XAdES signing example
  * 
- * <ul>
- * <li>Uses standard EtsiClient
- * <li>First sends a SignatureRequest with DTBS "XAdES Example Login"
- * <li>Then sends a second SignatureRequest to sign the document
- * <li>Uses asynch-client-server messaging mode
- * <li>No AdditionalServices
- * </ul>
+ * <p>Performs the following steps
+ * <ol>
+ * <li>Gets the Signing Certificate either with a ProfileQuery, or a dummy SignatureRequest
+ * <li>Constructs {@link XAdESSignatureParameters} 
+ * <li>Sends the actual SignatureRequest with {@link DTBS} constructed from the {@link ToBeSigned} digest
+ * </ol>
  *
  */
 public class XAdES {
@@ -87,7 +86,7 @@ public class XAdES {
     private static final SignatureAlgorithm SIG_ALG    = SignatureAlgorithm.RSA_SHA1;
     
     // MSS SignatureProfile
-    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_SIGNATURE;
+    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_AUTHENTICATION;
             
     public static void main(final String[] args) {
 
@@ -106,8 +105,12 @@ public class XAdES {
         final DSSDocument doc = new FileDocument(fileToSign);
 
         // Init XAdES service, parameters, and handler
-        final XAdESService service = new XAdESService(new CommonCertificateVerifier());
-        final XAdESSignatureParameters parameters = createDefaultParams();
+        final XAdESService             service    = new XAdESService(new CommonCertificateVerifier());
+        final XAdESSignatureParameters parameters = new XAdESSignatureParameters();
+        parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
+        parameters.setDigestAlgorithm(DIGEST_ALG);
+        
         final XAdESResponseHandler handler = new XAdESResponseHandler(parameters, service, SIG_ALG, doc);
         
         // Load config
@@ -145,8 +148,8 @@ public class XAdES {
         
         // 3. Send the actual XAdES signature request
         try {            
-            final ToBeSigned dataToSign = service.getDataToSign(doc, parameters);
-            final byte[] dataToSignBytes = dataToSign.getBytes();
+            final ToBeSigned dataToSign   = service.getDataToSign(doc, parameters);
+            final byte[] dataToSignBytes  = dataToSign.getBytes();
             final byte[] dataToSignDigest = digest(dataToSignBytes);
             
             DTBS dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
@@ -195,8 +198,8 @@ public class XAdES {
     }
     
     private static X509CertificateChain getCertsWithSign(EtsiClient client, String msisdn, String apTransId, XAdESResponseHandler handler) {
-        DTBS        dtbs = new DTBS("XAdES dummy signature to pick certificates.");
-        String      dtbd = dtbs.toString();
+        DTBS   dtbs = new DTBS("XAdES dummy signature to pick certificates.");
+        String dtbd = dtbs.toString();
       
         EtsiRequest req = client.createRequest(apTransId,         // AP Transaction ID
                                                msisdn,            // MSISDN
@@ -241,15 +244,6 @@ public class XAdES {
         return md.digest();
     }
 
-    private static XAdESSignatureParameters createDefaultParams() {
-        XAdESSignatureParameters parameters = new XAdESSignatureParameters();
-        parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
-        parameters.setDigestAlgorithm(DIGEST_ALG);
-        
-        return parameters;
-    }
-    
     protected static class XAdESResponseHandler implements EtsiResponseHandler {
     
         private final XAdESSignatureParameters parameters;
