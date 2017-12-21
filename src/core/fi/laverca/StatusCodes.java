@@ -43,7 +43,7 @@ public class StatusCodes {
         }
         
         public int getValue(){
-        	return primaryCode;
+        	return this.primaryCode;
         }
     }
 

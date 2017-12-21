@@ -47,13 +47,13 @@ public class ProgressUpdate {
 	 * @return time elapsed in milliseconds
 	 */
 	public long getElapsedTime() {
-		return System.currentTimeMillis() - initTime;
+		return System.currentTimeMillis() - this.initTime;
 	}
 	
 	/**
 	 * @return time left before time out in milliseconds.
 	 */
 	public long getTimeLeft() {
-		return timeout + initTime - System.currentTimeMillis();
+		return this.timeout + this.initTime - System.currentTimeMillis();
 	}
 }

@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -45,11 +44,6 @@ import org.apache.axis.configuration.FileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import fi.laverca.jaxb.mreg.MregRequestType;
-import fi.laverca.jaxb.mreg.NameValueType;
-import fi.laverca.jaxb.mreg.ProvisioningOperation;
-import fi.laverca.jaxb.mreg.RegistrationInput;
-import fi.laverca.jaxb.mreg.TargetType;
 import fi.laverca.jaxb.mss.DataType;
 import fi.laverca.jaxb.mss.MSSHandshakeReq;
 import fi.laverca.jaxb.mss.MSSHandshakeResp;

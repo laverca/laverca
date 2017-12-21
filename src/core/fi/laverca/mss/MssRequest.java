@@ -50,7 +50,7 @@ public abstract class MssRequest<Resp> {
      * @throws ExecutionException if the wait was aborted
      */
     public Resp waitForResponse() throws InterruptedException, ExecutionException {
-        if (ft == null) return null;
+        if (this.ft == null) return null;
         return this.ft.get();
     }
 
@@ -59,7 +59,7 @@ public abstract class MssRequest<Resp> {
      * This will stop the StatusRequest polling.
      */
     public void cancel() {
-        if (ft == null) return;
+        if (this.ft == null) return;
         this.ft.cancel(true);
     }
     
