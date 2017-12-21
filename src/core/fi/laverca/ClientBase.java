@@ -218,23 +218,16 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                     
                     if (now > deadline) {
                         log.trace("Timed out");
-                        try {
-                            handler.onError(req, new MssException("Timed out"));
-                        } finally {
-                            break;
-                        }
+                        handler.onError(req, new MssException("Timed out"));
+                        break;
                     }
                     MSSStatusReq statReq = null;
                     try {
                         statReq = ClientBase.this.mssClient.createStatusRequest(sigResp, req.sigReq.getAPInfo().getAPTransID());
                     } catch (Throwable t){
                         log.trace("Failed creating status request", t);
-                        try {
-                            handler.onError(req, t);
-                        } 
-                        finally {
-                            break;
-                        }
+                        handler.onError(req, t);
+                        break;
                     }
                     try {
                         log.trace("Sending statReq");
@@ -252,28 +245,19 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                             log.info("Got a final Status Response. Ending the wait.");
                             resp = ClientBase.this.createResp(req.sigReq, sigResp, statResp);
 
-                            try {
-                                handler.onResponse(req, resp);
-                            } finally {
-                                break;                              
-                            }
+                            handler.onResponse(req, resp);
+                            break;                              
                         } else {
                             log.warn("Got an abnormal Status Response. (" + statusCode  + ") Ending the wait.");
                             MssException fe = new MssException("Abnormal status code " + statusCode);
-                            try {
-                                handler.onError(req, fe);
-                            } finally {
-                                break;
-                            }
+                            handler.onError(req, fe);
+                            break;
                         }
 
                     } catch (AxisFault af) {
                         log.trace("Got SOAP fault", af);
-                        try {
-                            handler.onError(req, af);
-                        } finally {
-                            break;
-                        }
+                        handler.onError(req, af);
+                        break;
                     } catch (IOException ioe) {
                         log.trace("Got IOException", ioe);
                         throw ioe;
@@ -333,7 +317,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         final StatusCodeType sc = status.getStatusCode();
         if (sc == null) return NO_STATUS;
         
-        return sc.getValue();
+        return sc.getValue().longValue();
     }
 
     /**
