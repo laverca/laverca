@@ -32,9 +32,9 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.axis.components.logger.LogFactory;
 import org.apache.commons.logging.Log;
 import org.apache.http.ConnectionReuseStrategy;
+import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.AuthScope;
@@ -42,8 +42,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -51,6 +51,8 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.ConnectionRequest;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -137,7 +139,58 @@ public class LavercaHttpClient {
         final HostnameVerifier hnv = org.apache.http.conn.ssl.NoopHostnameVerifier.INSTANCE;
         rb.register("https", new SSLConnectionSocketFactory(ssf, hnv));
 
-        this.connectionManager = new PoolingHttpClientConnectionManager(rb.build(), null, null, null, 30L, TimeUnit.SECONDS);
+        // HttpClient keeps outbound client connections in a pool waiting for re-use.
+        // Lifetime of that pool in seconds is:
+        final int connPoolTTL = 300;
+        
+        this.connectionManager =
+            new PoolingHttpClientConnectionManager(rb.build(), null, null, null, connPoolTTL, TimeUnit.SECONDS) {
+
+            @Override
+            public ConnectionRequest requestConnection(HttpRoute route, Object state) {
+                if (log.isTraceEnabled()) {
+                    log.trace("Requesting connection on pool; route "+route+" state "+state);
+                }
+                
+                // HttpClient 4.x issue until at least 4.5.4:
+                //
+                // HttpClient calls requestConnection() with state = null,
+                // while releaseConnection() had state = client certificate subject value.
+                // Thus requesting did not find pre-existing sessions.
+                // (This issue exists only when client certificate is used.)
+                //
+                // Side-step the bug by forcing state=null.
+                state = null;
+
+                
+                final ConnectionRequest req = super.requestConnection(route, state);
+                
+                return req;
+            }
+            
+            @Override
+            public void releaseConnection( final HttpClientConnection managedConn,
+                                           Object state,
+                                           final long keepalive, final TimeUnit tunit)
+            {
+                if (log.isTraceEnabled()) {
+                    log.trace("Releasing connection to pool; state "+state+" keepalive "+keepalive);
+                }
+
+                // HttpClient 4.x issue until at least 4.5.4:
+                //
+                // HttpClient calls releaseConnection() with client certificate Subject value in state.
+                // Request connection above is called with state = null.
+                // Thus requesting did not find pre-existing sessions.
+                // (This issue exists only when client certificate is used.)
+                //
+                // Side-step the bug by forcing state=null.
+                state = null;
+
+                super.releaseConnection( managedConn, state, keepalive, tunit );
+            }
+
+        };
 
         this.connectionManager.setMaxTotal(newPoolSize);
         this.connectionManager.setDefaultMaxPerRoute(newPoolSize);
@@ -261,11 +314,11 @@ public class LavercaHttpClient {
      * externally supplied HttpContext
      * @param req HttpGet/HttpPost request object with URI inside it
      * @param ctx HttpContext
-     * @return HttpResponse data
+     * @return CloseableHttpResponse data
      * @throws ClientProtocolException if an error in the HTTP protocol occurs.
      * @throws IOException If the execution fails
      */
-    public HttpResponse execute( final HttpUriRequest req, final HttpContext ctx )
+    public CloseableHttpResponse execute( final HttpUriRequest req, final HttpContext ctx )
         throws ClientProtocolException, IOException
     {
         if (req instanceof HttpPost) {
@@ -274,7 +327,7 @@ public class LavercaHttpClient {
         if (req instanceof HttpGet) {
             log.info("Sending GET to " + req.getURI());
         }
-        return this.getClient().execute(req, ctx);
+        return this.client.execute(req, ctx);
     }
 
     /**
@@ -282,24 +335,15 @@ public class LavercaHttpClient {
      * internally constructed HttpContext.
      * 
      * @param req HttpGet/HttpPost request object with URI inside it
-     * @return HttpResponse data
+     * @return CloseableHttpResponse data
      * @throws ClientProtocolException if an error in the HTTP protocol occurs.
      * @throws IOException If the execution fails
      */
-    public HttpResponse execute( final HttpUriRequest req )
+    public CloseableHttpResponse execute( final HttpUriRequest req )
         throws ClientProtocolException, IOException
     {
         final HttpContext ctx = this.buildContext(); 
         return this.execute(req, ctx);
-    }
-
-    /**
-     * Get a configured HttpClient for possible modifying within the client
-     * 
-     * @return Configured HttpClient
-     */
-    public HttpClient getClient() {
-        return this.client;
     }
     
     /**
@@ -321,7 +365,7 @@ public class LavercaHttpClient {
      * @return an InputStream for reading the body
      * @throws IOException Bad input parameters
      */
-    public InputStream getResponseBodyAsStream( final HttpResponse resp )
+    public InputStream getResponseBodyAsStream( final CloseableHttpResponse resp )
         throws IOException
     {
         final HttpEntity ent = resp.getEntity();
@@ -337,7 +381,7 @@ public class LavercaHttpClient {
      * @return A String containing the response body.
      * @throws IOException Bad input parameters
      */
-    public String getResponseBodyAsString( final HttpResponse resp )
+    public String getResponseBodyAsString( final CloseableHttpResponse resp )
         throws IOException
     {
         final HttpEntity ent = resp.getEntity();
@@ -360,7 +404,7 @@ public class LavercaHttpClient {
      * @return A byte[] containing the response
      * @throws IOException Bad input parameters
      */
-    public byte[] getResponseBodyAsBytes( final HttpResponse resp )
+    public byte[] getResponseBodyAsBytes( final CloseableHttpResponse resp )
         throws IOException
     {
         final HttpEntity ent = resp.getEntity();
@@ -461,9 +505,10 @@ public class LavercaHttpClient {
      * @param get  Thing to be closed 
      * @param resp Thing to be closed
      */
-    public void closeQuietly( final HttpGet get, final HttpResponse resp ) {
-        // First closing the response, then the request
+    public void closeQuietly( final HttpGet get, final CloseableHttpResponse resp ) {
+        // Response needs to be closed
         HttpClientUtils.closeQuietly(resp);
+        // Closing the request is not an absolute requirement
         if (get != null)
             get.releaseConnection();
     }
@@ -473,9 +518,10 @@ public class LavercaHttpClient {
      * @param post Thing to be closed 
      * @param resp Thing to be closed
      */
-    public void closeQuietly( final HttpPost post, final HttpResponse resp ) {
-        // First closing the response, then the request
+    public void closeQuietly( final HttpPost post, final CloseableHttpResponse resp ) {
+        // Response needs to be closed
         HttpClientUtils.closeQuietly(resp);
+        // Closing the request is not an absolute requirement
         if (post != null)
             post.releaseConnection();
     }

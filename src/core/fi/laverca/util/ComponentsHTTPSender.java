@@ -66,13 +66,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -131,7 +131,7 @@ public class ComponentsHTTPSender extends BasicHandler {
         msgContext.setProperty(HTTPConstants.MC_HTTP_STATUS_CODE, new Integer(-1));
 
         HttpPost     post     = null;
-        HttpResponse response = null;
+        CloseableHttpResponse response = null;
         
         final LavercaHttpClient httpClient = (LavercaHttpClient) msgContext.getProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE);
         final String remoteURL = msgContext.getStrProp(MessageContext.TRANS_URL);
@@ -623,11 +623,11 @@ public class ComponentsHTTPSender extends BasicHandler {
     /**
      * Get named response header
      *
-     * @param resp HttpResponse
+     * @param resp CloseableHttpResponse
      * @param headerName name of the header to pick
      * @return
      */
-    private String getHeader(final HttpResponse resp, final String headerName) {
+    private String getHeader(final CloseableHttpResponse resp, final String headerName) {
         final Header header = resp.getFirstHeader(headerName);
         return (header == null) ? null : header.getValue().trim();
     }
@@ -643,7 +643,7 @@ public class ComponentsHTTPSender extends BasicHandler {
      */
     private static class ReleasingFilterInputStream extends SocketInputStream {
         private HttpPost        post;
-        private HttpResponse    resp;
+        private CloseableHttpResponse    resp;
         private LavercaHttpClient httpClient;
 
         /**
@@ -655,7 +655,7 @@ public class ComponentsHTTPSender extends BasicHandler {
          */
         public ReleasingFilterInputStream( final LavercaHttpClient httpClient,
                                            final HttpPost post,
-                                           final HttpResponse resp,
+                                           final CloseableHttpResponse resp,
                                            final InputStream is )
         {
             super(is, null);
