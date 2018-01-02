@@ -32,7 +32,7 @@
   <property name="bin"       value="${examples}/bin" />
   <property name="example-libs" location="${examples}/libs"/>	
 
-  <property name="core-lib"      location="${build}/laverca-core.jar" />
+  <property name="core-lib"      location="${build}/laverca-core-${project-version}.jar" />
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
   <property name="examples-lib"  location="${build}/laverca-examples.jar" />
 
