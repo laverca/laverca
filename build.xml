@@ -131,7 +131,7 @@
       </classpath>
       <include name="**/**.java"/>
     </javac>
-    <jar jarfile="${build}/laverca-core.jar">
+    <jar jarfile="${build}/laverca-core-${project-version}.jar">
       <fileset dir="${build}/core">
         <include name="**" />
       </fileset>
