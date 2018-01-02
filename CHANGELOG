@@ -1,6 +1,15 @@
 Laverca Changelog
 =================
 
+    2018-01-02 2.1
+      Added support for MSS_ProfileQuery extension
+      Added support for MSS_RegistrationRequest extension
+      Added a PAdES example
+      Improved support for multiple Axis engine configuration files
+        - Renamed client-config.wsdd to laverca-client-config.wsdd
+      Fixed HttpClient socket reuse issue
+      Fixed truststore initialization
+      
     2017-06-20 2.01
       Added support for XML dsig validation
       Added an example for XAdES signing
