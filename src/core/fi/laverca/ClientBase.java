@@ -21,6 +21,7 @@ package fi.laverca;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -49,6 +50,8 @@ import fi.laverca.mss.MssRequest;
 import fi.laverca.mss.MssResponse;
 import fi.laverca.mss.ProfileQueryResponse;
 import fi.laverca.util.LavercaContext;
+import fi.laverca.util.SynchHandler;
+import fi.laverca.util.SynchHandler.SynchHandlerException;
 
 /**
  * Abstract base class for ETSI TS 102 204 Signature operations
@@ -61,12 +64,21 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
     protected MssClient       mssClient;
     protected ExecutorService threadExecutor; 
 
-    private static final long DEFAULT_INITIAL_WAIT    = 5 * 1000;      // Initial wait 5s   
+    private static final long DEFAULT_INITIAL_WAIT    = 2 * 1000;      // Initial wait 2s   
     private static final long DEFAULT_SUBSEQUENT_WAIT = 2 * 1000;      // Subsequent wait 2s
     private static final long DEFAULT_TIMEOUT         = 3 * 1000 * 60; // Timeout 3 min
 
+    /**
+     * Time to wait before sending the first Status request (in asynch client-server mode)
+     */
     protected long initialWait    = DEFAULT_INITIAL_WAIT;
+    /**
+     * Time to wait between subsequent Status requests (in asynch client-server mode)
+     */
     protected long subsequentWait = DEFAULT_SUBSEQUENT_WAIT;
+    /**
+     * Timeout after which the polling will be stopped (in asynch client-server mode)
+     */
     protected long timeout        = DEFAULT_TIMEOUT;
     
     /**
@@ -133,14 +145,42 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
      * Sends a request and waits for the response.
      * Polls the server with status requests while waiting.
      * 
-     * All responses are delivered to the given response handler.
+     * <p>Response and exceptions are mainly delivered to the given response handler.
+     * May also throw SOAP faults also as IOException, which is why using 
+     * {@link #send(MssRequest, ResponseHandler) or #callSynch(MssRequest)} instead is preferred.
+     * 
+     * <p>Usage example: 
+     * <pre>
+     *   try {
+     *       Req req = client.call(req, new ResponseHandler&#60;Req, Resp&#62;() {
+     *           &#64;Override
+     *           public void onError(Req req, Throwable throwable) {
+     *               // Handle error
+     *           }
+     *           &#64;Override
+     *           public void onResponse(Req req, Resp resp) {
+     *               // Handle response
+     *           }
+     *           &#64;Override
+     *           public void onOutstandingProgress(Req req, ProgressUpdate prgUpdate) {
+     *               // Handle outstanding request
+     *           }
+     *       });
+     *   } catch (IOException e) {
+     *       // Handle error
+     *   }
+     * </pre>
      * 
      * @param req The request object to send
      * @param handler A response handler for receiving asynch responses.
+     * 
      * @return The request object being sent. This can be used to cancel the polling.
+     * 
      * @throws IllegalArgumentException if handler is null 
      * @throws IOException if an IOException was caught when sending the request.
+     * @deprecated Use {@link #send(MssRequest, ResponseHandler) or #callSynch(MssRequest)} instead
      */
+    @Deprecated
     public Req call(final Req req, 
                     final ResponseHandler<Req, Resp> handler) 
         throws IOException
@@ -166,7 +206,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
             log.error("Got IOException ", ioe);
             throw ioe;
         }
-
+        
         // Init the task and add it to the Req object
         req.ft = this.initializeTask(req, _sigResp, handler);
 
@@ -174,6 +214,112 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         this.threadExecutor.execute(req.ft);
         
         return req;
+    }
+    
+    /**
+     * Sends a request without waiting for a response. {@link ResponseHandler} is used to deliver the response and possible errors.
+     * 
+     * <p>Usage example: 
+     * <pre>
+     *     Req req = client.send(req, ResponseHandler&#60;Req, Resp&#62;() {
+     *         &#64;Override
+     *         public void onError(Req req, Throwable throwable) {
+     *             // Handle error
+     *         }
+     *         &#64;Override
+     *         public void onResponse(Req req, Resp resp) {
+     *             // Handle response
+     *         }
+     *         &#64;Override
+     *         public void onOutstandingProgress(Req req, ProgressUpdate prgUpdate) {
+     *             // Handle outstanding request
+     *         }
+     *     });
+     * </pre>
+     * 
+     * @param req The request object to send
+     * @param handler A response handler for receiving asynch responses.
+     * 
+     * @return The request object being sent. This can be used to cancel the polling.
+     */
+    public Req send(final Req req,
+                    final ResponseHandler<Req, Resp> handler) 
+    {
+
+        if (handler == null) {
+            throw new IllegalArgumentException("Null response handler not allowed.");
+        }
+
+        LavercaContext   _context = new LavercaContext();
+        MSSSignatureResp _sigResp = null;
+        try {
+            log.debug("Sending sigReq");
+            _sigResp = this.mssClient.send(req.sigReq, _context);
+            log.debug("Got resp");
+            req.sigResp = _sigResp;
+            req.context = _context;
+
+            // Init the task and add it to the Req object
+            req.ft = this.initializeTask(req, _sigResp, handler);
+            
+        } catch (IOException ioe) {
+            handler.onError(req, ioe);
+            return req;
+        }
+
+        log.debug("Starting calling");
+        this.threadExecutor.execute(req.ft);
+
+        return req;
+    }
+    
+    /**
+     * Sends a request and waits for the response.
+     * 
+     * <p>Usage example: 
+     * <pre>
+     *   try {
+     *       Response resp = client.send(req);
+     *       // Handle response
+     *   } catch (IOException ioe) {
+     *       // Handle error
+     *   }
+     * </pre>
+     * 
+     * @param req The request object to send
+     * @return The request object being sent. This can be used to cancel the polling.
+     * 
+     * @throws IOException if an HTTP communication error occurs or if the service returns a SOAP Fault
+     */
+    public Resp send(final Req req) 
+        throws IOException 
+    {
+        
+        LavercaContext   _context = new LavercaContext();
+        MSSSignatureResp _sigResp = null;
+        
+        log.debug("Sending sigReq");
+        _sigResp = this.mssClient.send(req.sigReq, _context);
+        log.debug("Got resp");
+        req.sigResp = _sigResp;
+        req.context = _context;
+
+        // Init the task and add it to the Req object
+        try {
+            req.ft = this.initializeTask(req, _sigResp, new SynchHandler<Req, Resp>());
+        } catch (SynchHandlerException e) {
+            if (e.getCause() instanceof IOException) throw e;
+            else throw new IOException(e.getCause());
+        }
+
+        log.debug("Starting calling");
+        this.threadExecutor.execute(req.ft);
+        
+        try {
+            return req.waitForResponse();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IOException(e);
+        }
     }
     
     /**
@@ -185,7 +331,8 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
      * @param sigResp A response to the original signature request
      * @param handler A response handler for receiving asynch responses.
      * @return A FutureTask wrapping the StatusRequest poll logic
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * 
+     * @throws IOException if an HTTP communication error occurs or if the service returns a SOAP Fault
      */
     protected FutureTask<Resp> initializeTask(final Req req,
                                               final MSSSignatureResp sigResp,
@@ -193,26 +340,27 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         throws IOException
     {
         Callable<Resp> callable = new Callable<Resp>() {
-            @SuppressWarnings("finally")
             @Override
             public Resp call() throws Exception {
                 
                 long timeout = ClientBase.this.timeout;
-                long currentTimeMillis = System.currentTimeMillis();
+                long now     = System.currentTimeMillis();
+                
                 // Note that the transaction generally times out at the server at 180 s 
-                long deadline = currentTimeMillis + timeout;
+                long deadline = now + timeout;
                 
                 Resp resp = null;
-                ProgressUpdate update = new ProgressUpdate(timeout, currentTimeMillis);
+                ProgressUpdate update = new ProgressUpdate(timeout, now);
 
                 MSSStatusResp statResp = null;
                 long waitPeriod = ClientBase.this.initialWait;
-                long now        = System.currentTimeMillis();
                 
                 while (true) {
 
                     // Sleep for the rest of the interval
-                    Thread.sleep(waitPeriod - (System.currentTimeMillis()-now));
+                    long timeToWait = waitPeriod - (System.currentTimeMillis()-now);
+                    if  (timeToWait > 0) Thread.sleep(timeToWait);
+
                     now        = System.currentTimeMillis();
                     waitPeriod = ClientBase.this.subsequentWait; 
                     
@@ -272,9 +420,11 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
     
     /**
      * Sends a receipt request.
+     * 
      * @param fiResp The receipt request to send
      * @param message Message to display 
      * @return received receipt response
+     * 
      * @throws IOException if the receipt sending fails
      * @throws IllegalArgumentException if the given Response is null
      */
@@ -296,9 +446,11 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
     
     /**
      * Sends a profile query.
+     * 
      * @param msisdn MSISDN of the user whose profile is to be queried 
      * @param apTransId Value for the AP_TransID element of the request. 
      * @return received receipt response
+     * 
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if the given MSISDN is null
      */
