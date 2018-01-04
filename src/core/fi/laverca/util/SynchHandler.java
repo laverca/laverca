@@ -19,12 +19,12 @@
 
 package fi.laverca.util;
 
+import fi.laverca.ClientBase;
 import fi.laverca.ProgressUpdate;
 import fi.laverca.ResponseHandler;
 
 /** 
- * Interface for MSS response handling
- * 
+ * Interface for Synchronous MSS response handling
  */ 
 public class SynchHandler<Req, Resp> implements ResponseHandler<Req, Resp> {
 
@@ -43,6 +43,9 @@ public class SynchHandler<Req, Resp> implements ResponseHandler<Req, Resp> {
         // Ignore
     }
     
+    /**
+     * RuntimeException to pass the errors from {@link SynchHandler#onError(Object, Throwable)} to {@link ClientBase#send(fi.laverca.mss.MssRequest)}
+     */
     public static class SynchHandlerException extends RuntimeException {
         public SynchHandlerException(final Throwable t) {
             super(t);
