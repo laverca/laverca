@@ -40,12 +40,10 @@ import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.x509.CertificateToken;
 import fi.laverca.MSS_Formats;
-import fi.laverca.ProgressUpdate;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.etsi.EtsiClient;
 import fi.laverca.etsi.EtsiRequest;
 import fi.laverca.etsi.EtsiResponse;
-import fi.laverca.etsi.EtsiResponseHandler;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
@@ -64,20 +62,19 @@ import fi.laverca.util.X509CertificateChain;
  */
 public class PAdES {
 
-    // Signature and digest algorithms that this example uses. 
-    // Note that these must match with what the MSS SignatureProfile uses.
-    private static final DigestAlgorithm    DIGEST_ALG = DigestAlgorithm.SHA1;
-    private static final SignatureAlgorithm SIG_ALG    = SignatureAlgorithm.RSA_SHA1;
+    private static final DigestAlgorithm    DIGEST_ALG    = DigestAlgorithm.SHA256;
+    private static final SignatureAlgorithm SIG_ALG       = SignatureAlgorithm.RSA_SHA256;
+    private static final String             DTBS_MIMETYPE = DTBS.MIME_SHA256;
     
     // MSS SignatureProfile
-    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_AUTHENTICATION;
+    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_SIGNING;
     
     private static String fileToSign;
     private static String signedFile;
             
     public static void main(final String[] args) {
 
-        String msisdn     = "+35847001001";
+        String msisdn = "+35847001001";
         if (args.length == 1) {
             fileToSign = args[0];
         } else if (args.length > 1) {
@@ -102,8 +99,6 @@ public class PAdES {
         parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
         parameters.setDigestAlgorithm(DIGEST_ALG);
-
-        final PAdESResponseHandler handler = new PAdESResponseHandler(parameters, service, SIG_ALG, doc);
         
         // Load config
         MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
@@ -153,7 +148,7 @@ public class PAdES {
             digest.reset();
             digest.update(dataToSignBytes);
 
-            DTBS dtbs = new DTBS(digest.digest(), DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
+            DTBS dtbs = new DTBS(digest.digest(), DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
             
             // Data to be displayed
             String dtbd = dtbs.toString();
@@ -167,62 +162,20 @@ public class PAdES {
                                                    MSS_Formats.KIURU_PKCS1, // MSS Format
                                                    MessagingModeType.ASYNCH_CLIENT_SERVER);
     
-            // Send second SigReq
-            client.call(req, handler);
-            req.waitForResponse();
+            // Send SigReq
+            EtsiResponse resp = client.send(req);
 
-        } catch (NoSuchAlgorithmException ae) {
-            ae.printStackTrace();
-        } catch (Exception e) {
-            System.out.println("Got an Exception:");
-            e.printStackTrace();
-        }
-        
-        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
-        client.shutdown();
-    }
-    
-    /**
-     * Response handler that stores the signed PDF document to {@link #signedFile}
-     */
-    protected static class PAdESResponseHandler implements EtsiResponseHandler {
-        
-        private final PAdESSignatureParameters parameters;
-        private final PAdESService             service;
-        private final SignatureAlgorithm       sigAlg;
-        private final DSSDocument              doc;
-        
-        private DSSDocument signedDocument;
-
-        /**
-         * Create an asynchronous response handler that handles both signature responses (#1 and #2)
-         * 
-         * @param parameters PAdES Signature Parameters - only used for PAdES signing
-         * @param service    PAdES Service              - only used for PAdES signing
-         * @param doc        PAdES Document             - only used for PAdES signing
-         */
-        public PAdESResponseHandler(final PAdESSignatureParameters parameters,
-                                    final PAdESService             service,
-                                    final SignatureAlgorithm       sigAlg,
-                                    final DSSDocument              doc) {
-            this.parameters = parameters;
-            this.service    = service;
-            this.sigAlg     = sigAlg;
-            this.doc        = doc;
-        }
-
-        @Override
-        public void onResponse(final EtsiRequest req, final EtsiResponse resp) {
-            
             System.out.println("Got a response");
             System.out.println("  StatusCode   : " + resp.getStatusCode());
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
             System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
             
+            DSSDocument signedDocument = null;
+            
             try {
                 // Sign
-                SignatureValue signatureValue = new SignatureValue(this.sigAlg, resp.getSignature().getRawSignature());
-                this.signedDocument = this.service.signDocument(this.doc, this.parameters, signatureValue);
+                SignatureValue signatureValue = new SignatureValue(SIG_ALG, resp.getSignature().getRawSignature());
+                signedDocument = service.signDocument(doc, parameters, signatureValue);
 
             } catch (Throwable e) {
                 System.out.println("PAdES sign failed:");
@@ -231,24 +184,25 @@ public class PAdES {
             
             try {
                 // 4. Store signed file
-                this.signedDocument.save(signedFile);
-                System.out.println("Saved signed document to " + new File(signedFile).getAbsolutePath());
+                if (signedDocument != null) {
+                    signedDocument.save(signedFile);
+                    System.out.println("Saved signed document to " + new File(signedFile).getAbsolutePath());
+                }
             } catch (IOException e) {
                 System.out.println("Failed to save signed document:");
                 e.printStackTrace();
             }
-        }
+            
 
-        @Override
-        public void onError(final EtsiRequest req, final Throwable t) {
-            System.out.println("Got an error:");
-            t.printStackTrace();
+        } catch (NoSuchAlgorithmException ae) {
+            ae.printStackTrace();
+        } catch (IOException ioe) {
+            System.err.println("Signing failed");
+            ioe.printStackTrace();
         }
-
-        @Override
-        public void onOutstandingProgress(final EtsiRequest req, final ProgressUpdate update) {
-            System.out.println("Got a progress update");
-        }
+        
+        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+        client.shutdown();
     }
     
 }

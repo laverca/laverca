@@ -80,13 +80,12 @@ import fi.laverca.util.X509CertificateChain;
  */
 public class XAdES {
     
-    // Signature and digest algorithms that this example uses. 
-    // Note that these must match with what the MSS SignatureProfile uses.
-    private static final DigestAlgorithm    DIGEST_ALG = DigestAlgorithm.SHA1;
-    private static final SignatureAlgorithm SIG_ALG    = SignatureAlgorithm.RSA_SHA1;
+    private static final DigestAlgorithm    DIGEST_ALG    = DigestAlgorithm.SHA256;
+    private static final SignatureAlgorithm SIG_ALG       = SignatureAlgorithm.RSA_SHA256;
+    private static final String             DTBS_MIMETYPE = DTBS.MIME_SHA256;
     
     // MSS SignatureProfile
-    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_AUTHENTICATION;
+    private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_SIGNING;
             
     public static void main(final String[] args) {
 
@@ -152,7 +151,7 @@ public class XAdES {
             final byte[] dataToSignBytes  = dataToSign.getBytes();
             final byte[] dataToSignDigest = digest(dataToSignBytes);
             
-            DTBS dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS.MIME_STREAM);
+            DTBS dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
             
             // Data to be displayed
             String dtbd = dtbs.toString();
