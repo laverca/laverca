@@ -55,7 +55,6 @@ public abstract class MssResponse {
 
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
     
-    // These will be made private in a future release, so use utility methods if possible.
     /**
      * @deprecated Will be made private in the future.
      */
