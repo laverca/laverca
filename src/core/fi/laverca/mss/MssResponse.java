@@ -199,11 +199,7 @@ public abstract class MssResponse {
      * @return latest status code or null if not available
      */
     public String getStatusMessage() {
-        if (this.status != null) {
-            return this.status.getStatusMessage();
-        }
-        
-        return null;
+        return this.status != null ? this.status.getStatusMessage() : null;
     }
     
     /**
@@ -223,11 +219,8 @@ public abstract class MssResponse {
      * Get the status detail type of the latest response. Works in both synchronous and asynchronous messaging modes. 
      * @return Status detail type of the signature. Can be null. 
      */
-    public StatusDetailType getLatestStatusDetail() {
-        if (this.status != null) {
-            return this.status.getStatusDetail();
-        }
-        return null;
+    public StatusDetailType getStatusDetail() {
+        return this.status != null ? this.status.getStatusDetail() : null;
     }
     
     @Override
