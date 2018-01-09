@@ -30,6 +30,7 @@ import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.jaxb.mss.SignatureType;
 import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mss.StatusType;
@@ -54,12 +55,24 @@ public abstract class MssResponse {
 
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
     
-    // These will be made private in a future release, so use utility methods if possible. 
+    // These will be made private in a future release, so use utility methods if possible.
+    /**
+     * @deprecated Will be made private in the future.
+     */
+    @Deprecated
     public final MSSSignatureReq  originalSigReq;
+    /**
+     * @deprecated WIll be made private in the future. Use {@link MssResponse#getMSS_SignatureResp()} instead.
+     */
+    @Deprecated
     public final MSSSignatureResp originalSigResp;
+    /**
+     * @deprecated WIll be made private in the future. Use {@link MssResponse#getMSS_StatusResp()} instead.
+     */
+    @Deprecated
     public final MSSStatusResp    finalStatusResp;
     
-    private final StatusType status;
+    private final StatusType    status;
     private final SignatureType signature;
     
     public MssResponse(final MSSSignatureReq  originalSigReq,
@@ -137,14 +150,7 @@ public abstract class MssResponse {
     @Deprecated
     public CmsSignature getPkcs7Signature() {
         try {
-            if (this.finalStatusResp == null)
-                throw new RuntimeException("Illegal state. Null statusResp.");
-
-            if (this.finalStatusResp.getMSSSignature() == null)
-                throw new RuntimeException("Illegal state. Null statusResp.MSS_Signature");
-            
-            final CmsSignature p7 = new CmsSignature(this.finalStatusResp.getMSSSignature().getBase64Signature());
-            return p7;
+            return new CmsSignature(this.signature.getBase64Signature());
         } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs7?", iae);
             return null;
@@ -160,22 +166,24 @@ public abstract class MssResponse {
     @Deprecated
     public Pkcs1 getPkcs1Signature() {
         try {
-            if (this.finalStatusResp == null)
-                throw new RuntimeException("illegal state. Null statusResp.");
-
-            if (this.finalStatusResp.getMSSSignature() == null)
-                throw new RuntimeException("illegal state. Null statusResp.MSS_Signature");
-            
-            final Pkcs1 p1 = new Pkcs1(this.finalStatusResp.getMSSSignature().getPKCS1());
-            return p1;
+            return new Pkcs1(this.signature.getPKCS1());
         } catch(IllegalArgumentException iae) {
             log.debug("not a pkcs1?", iae);
             return null;
         }
     }
 
+    /**
+     * Get the raw XML datatype of the MSS_SignatureResp
+     * @return MSS_SignatureResp
+     */
+    public MSSSignatureResp getMSS_SignatureResp() {
+        return this.originalSigResp;
+    }
+    
     /** 
-     * Get the last MSS_StatusResp message. This is null if the request is synchronous. 
+     * Get the raw XML datatype of the last MSS_StatusResp message.
+     * <p>This is null if the request is synchronous. 
      * @return MSS_StatusResp
      */
     public MSSStatusResp getMSS_StatusResp() {
@@ -223,6 +231,15 @@ public abstract class MssResponse {
         return this.status != null ? this.status.getStatusDetail() : null;
     }
     
+    /**
+     * Was this transaction synchronous?
+     * @return true if MessagingMode was "synch"
+     */
+    public boolean isSynchronous() {
+        if (this.originalSigReq == null) return false;
+        return MessagingModeType.SYNCH == this.originalSigReq.getMessagingMode();
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -234,6 +251,5 @@ public abstract class MssResponse {
         sb.append("]");
         return sb.toString();
     }
-
     
 }
