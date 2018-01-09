@@ -30,22 +30,55 @@ import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
+import fi.laverca.jaxb.mss.SignatureType;
+import fi.laverca.jaxb.mss.StatusDetailType;
+import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.jaxb.mssfi.PKCS1;
 
+/**
+ * Represents the final response to a signature request. Signature requests can be either synchronous or asynchronous. 
+ * 
+ * <p>
+ * In synchronous mode, the only response is a signature response, which <b>contains</b> the signature (unless the signature is unsuccessful),
+ * and status details.   
+ * 
+ * <p>
+ * In asynchronous mode, the first response is a signature response that does <b>not</b> contain a signature. After receiving the signature response,
+ * Laverca sends periodical status requests. The final status response will contain a signature (if successful), and status details. 
+ * 
+ * <p>
+ * The signature and status details in synchronous signature response and asynchronous status response are identical. 
+ * 
+ */
 public abstract class MssResponse {
 
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
-
+    
+    // These will be made private in a future release, so use utility methods if possible. 
     public final MSSSignatureReq  originalSigReq;
     public final MSSSignatureResp originalSigResp;
     public final MSSStatusResp    finalStatusResp;
-
+    
+    private final StatusType status;
+    private final SignatureType signature;
+    
     public MssResponse(final MSSSignatureReq  originalSigReq,
                        final MSSSignatureResp originalSigResp,
                        final MSSStatusResp    finalStatusResp) { 
         this.originalSigReq  = originalSigReq;
         this.originalSigResp = originalSigResp;
         this.finalStatusResp = finalStatusResp;
+        
+        this.originalSigResp.getMSSSignature();
+        
+        if (this.finalStatusResp != null) {
+            this.status    = this.finalStatusResp.getStatus();
+            this.signature = this.finalStatusResp.getMSSSignature();
+        } else {
+            this.status    = this.originalSigResp.getStatus();
+            this.signature = this.originalSigResp.getMSSSignature();
+        }
+        
     }
     
     /** 
@@ -56,15 +89,15 @@ public abstract class MssResponse {
      */
     public Signature getSignature() throws IllegalStateException {
         
-        if (this.finalStatusResp == null) return null;
-        if (this.finalStatusResp.getMSSSignature() == null) return null;
+        if (this.signature == null) {
+            return null;
+        }
         
         Signature signature = null;
 
         try {
-        
-            PKCS1  p1  = this.finalStatusResp.getMSSSignature().getPKCS1();
-            byte[] sig = this.finalStatusResp.getMSSSignature().getBase64Signature();
+            PKCS1  p1  = this.signature.getPKCS1();
+            byte[] sig = this.signature.getBase64Signature();
             
             if (p1 != null) {
                 signature = new Pkcs1(p1);
@@ -142,7 +175,7 @@ public abstract class MssResponse {
     }
 
     /** 
-     * Get the last MSS_StatusResp message
+     * Get the last MSS_StatusResp message. This is null if the request is synchronous. 
      * @return MSS_StatusResp
      */
     public MSSStatusResp getMSS_StatusResp() {
@@ -154,19 +187,10 @@ public abstract class MssResponse {
      * @return latest status code or -1 if not available
      */
     public long getStatusCode() {
-        
-        try {
-            // Asynch
-            if (this.finalStatusResp != null) {
-                return this.finalStatusResp.getStatus().getStatusCode().getValue().longValue();
-            }
-            // Synch
-            if (this.originalSigResp != null) {
-                return this.originalSigResp.getStatus().getStatusCode().getValue().longValue();
-            }
-        } catch (NullPointerException npe) {
-            // Got a faulty response... ignore
+        if (this.status != null && this.status.getStatusCode() != null && this.status.getStatusCode().getValue() != null) {
+            this.status.getStatusCode().getValue().longValue();
         }
+        
         return -1;
     }
     
@@ -175,16 +199,10 @@ public abstract class MssResponse {
      * @return latest status code or null if not available
      */
     public String getStatusMessage() {
-        try {
-            if (this.finalStatusResp != null) {
-                return this.finalStatusResp.getStatus().getStatusMessage();
-            }
-            if (this.originalSigResp != null) {
-                return this.originalSigResp.getStatus().getStatusMessage();
-            }
-        } catch (NullPointerException npe) {
-            // Got a faulty response... ignore
+        if (this.status != null) {
+            return this.status.getStatusMessage();
         }
+        
         return null;
     }
     
@@ -201,6 +219,17 @@ public abstract class MssResponse {
         return null;
     }
     
+    /**
+     * Get the status detail type of the latest response. Works in both synchronous and asynchronous messaging modes. 
+     * @return Status detail type of the signature. Can be null. 
+     */
+    public StatusDetailType getLatestStatusDetail() {
+        if (this.status != null) {
+            return this.status.getStatusDetail();
+        }
+        return null;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -212,5 +241,6 @@ public abstract class MssResponse {
         sb.append("]");
         return sb.toString();
     }
+
     
 }
