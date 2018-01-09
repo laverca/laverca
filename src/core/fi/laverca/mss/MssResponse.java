@@ -239,6 +239,14 @@ public abstract class MssResponse {
         return MessagingModeType.SYNCH == this.originalSigReq.getMessagingMode();
     }
     
+    /**
+     * Is this a successful MSS response (500 SIGNATURE or 502 VALID_SIGNATURE)
+     * @return true for successful response
+     */
+    public boolean isSuccess() {
+        return this.getStatusCode() == 500 || this.getStatusCode() == 502;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
