@@ -19,6 +19,9 @@
 
 package fi.laverca.mss;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,6 +38,8 @@ import fi.laverca.jaxb.mss.SignatureType;
 import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.jaxb.mssfi.PKCS1;
+import fi.laverca.jaxb.mssfi.ServiceResponses;
+import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
 
 /**
  * Represents the final response to a signature request. Signature requests can be either synchronous or asynchronous. 
@@ -71,8 +76,8 @@ public abstract class MssResponse {
     @Deprecated
     public final MSSStatusResp    finalStatusResp;
     
-    private final StatusType    status;
-    private final SignatureType signature;
+    protected final StatusType    status;
+    protected final SignatureType signature;
     
     public MssResponse(final MSSSignatureReq  originalSigReq,
                        final MSSSignatureResp originalSigResp,
@@ -174,7 +179,7 @@ public abstract class MssResponse {
 
     /**
      * Get the raw XML datatype of the MSS_SignatureResp
-     * @return MSS_SignatureResp
+     * @return {@link MSSSignatureResp}
      */
     public MSSSignatureResp getMSS_SignatureResp() {
         return this.originalSigResp;
@@ -182,8 +187,8 @@ public abstract class MssResponse {
     
     /** 
      * Get the raw XML datatype of the last MSS_StatusResp message.
-     * <p>This is null if the request is synchronous. 
-     * @return MSS_StatusResp
+     * <p>This is null if the request is synchronous.
+     * @return {@link MSSStatusResp}
      */
     public MSSStatusResp getMSS_StatusResp() {
         return this.finalStatusResp;
@@ -223,7 +228,24 @@ public abstract class MssResponse {
     }
     
     /**
-     * Get the status detail type of the latest response. Works in both synchronous and asynchronous messaging modes. 
+     * Get a list of AdditionalService responses.
+     * @return List (may be empty) containing all {@link AdditionalServiceResponse}s found in the response
+     */
+    public List<AdditionalServiceResponse> getAdditionalServiceResponses() {
+        List<AdditionalServiceResponse> resps = new ArrayList<>();
+        
+        if (this.getStatusDetail() != null) {
+            ServiceResponses sresps = AdditionalServices.readServiceResponses(this.getStatusDetail());
+            for (ServiceResponse sr : sresps.getServiceResponses()) {
+                resps.add(new AdditionalServiceResponse(sr));
+            }
+        }
+        
+        return resps;
+    }
+    
+    /**
+     * Get the raw XML datatype {@link StatusDetailType} of the latest response. Works in both synchronous and asynchronous messaging modes. 
      * @return Status detail type of the signature. Can be null. 
      */
     public StatusDetailType getStatusDetail() {

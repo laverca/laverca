@@ -60,7 +60,7 @@ public class FiComResponse extends MssResponse {
      */
     public List<PersonIdAttribute> getPersonIdAttributes() {
         try {
-            final StatusDetailType   sd = this.finalStatusResp.getStatus().getStatusDetail();
+            final StatusDetailType   sd = this.getStatusDetail();
             final ServiceResponse sResp = FiComAdditionalServices.readServiceResponse(sd, FiComAdditionalServices.PERSON_ID_URI);
 
             final Response      samlpResp = sResp.getResponse();
@@ -92,7 +92,7 @@ public class FiComResponse extends MssResponse {
     public StatusType getAeValidationStatus() {
         try {
             StatusType validationStatus = null;
-            for (final Object o1 : this.finalStatusResp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
+            for (final Object o1 : this.getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
                 if (!(o1 instanceof StatusType)) {
                     // Not interesting
                     continue;
@@ -130,7 +130,7 @@ public class FiComResponse extends MssResponse {
      */
     public boolean isValid() {
         try {
-            long    statusCode = this.finalStatusResp.getStatus().getStatusCode().getValue();
+            long    statusCode = this.getStatusCode();
             boolean aeStatusOk; 
     
             try {
