@@ -200,10 +200,10 @@ public abstract class MssResponse {
      */
     public long getStatusCode() {
         if (this.status != null && this.status.getStatusCode() != null && this.status.getStatusCode().getValue() != null) {
-            this.status.getStatusCode().getValue().longValue();
+            return this.status.getStatusCode().getValue().longValue();
         }
         
-        return -1;
+        return -1L;
     }
     
     /**
