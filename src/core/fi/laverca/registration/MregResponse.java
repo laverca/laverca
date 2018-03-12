@@ -1,3 +1,22 @@
+/* ==========================================
+ * Laverca Project
+ * https://sourceforge.net/projects/laverca/
+ * ==========================================
+ * Copyright 2015 Laverca Project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fi.laverca.registration;
 
 import java.util.ArrayList;
@@ -23,8 +42,9 @@ public class MregResponse {
     public LavercaContext context;
     
     protected MSSRegistrationResp       resp;
-    protected List<RegistrationOutput>  output = new ArrayList<>();
-    protected List<MregParam>           params = new ArrayList<>();
+    protected List<RegistrationOutput>  output  = new ArrayList<>();
+    protected List<MregParam>           params  = new ArrayList<>();
+    protected List<String>              opNames = new ArrayList<>();
     
     /**
      * Default constructor - from a raw {@link MSSRegistrationResp} and {@link LavercaContext}
@@ -43,6 +63,12 @@ public class MregResponse {
             if (o instanceof RegistrationOutput) {
                 this.output.add((RegistrationOutput)o);
             }
+        }
+        
+        // Parse operation name
+        for (OperationOutput o : this.getOperationOutputs()) {
+            if (o == null) continue;
+            this.opNames.add(o.getName());
         }
         
         // Parse params
@@ -80,6 +106,23 @@ public class MregResponse {
      */
     public MSSRegistrationResp getResp() {
         return this.resp;
+    }
+    
+    /**
+     * Get the (first) operation name
+     * @return first operation name (may be null)
+     */
+    public String getName() {
+        if (this.opNames.size() == 0) return null;
+        return this.opNames.get(0);
+    }
+    
+    /**
+     * Get the names of the operations this response contains. (normally only 1)
+     * @return operation names
+     */
+    public List<String> getNames() {
+        return this.opNames;
     }
     
     /**
