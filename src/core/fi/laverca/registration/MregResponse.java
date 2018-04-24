@@ -260,6 +260,16 @@ public class MregResponse {
     }
     
     /**
+     * Get the Operation status detail.
+     * @return Status detail String providing additional details
+     * on the operation result 
+     */
+    public String getStatusDetail() {
+        if (this.getStatus() == null) return null;
+        return this.getStatus().getOperationStatusDetail();
+    }
+    
+    /**
      * Was the request successful?
      * @return true if operation status code is 100
      */
