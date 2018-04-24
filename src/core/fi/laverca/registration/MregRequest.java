@@ -1,9 +1,29 @@
+/* ==========================================
+ * Laverca Project
+ * https://sourceforge.net/projects/laverca/
+ * ==========================================
+ * Copyright 2015 Laverca Project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fi.laverca.registration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import fi.laverca.jaxb.mreg.EntityType;
+import fi.laverca.jaxb.mreg.EntityUserType;
 import fi.laverca.jaxb.mreg.MregRequestType;
 import fi.laverca.jaxb.mreg.OperationInputType;
 import fi.laverca.jaxb.mreg.ProvisioningOperation;
@@ -12,6 +32,7 @@ import fi.laverca.jaxb.mreg.SimCardType;
 import fi.laverca.jaxb.mreg.TargetType;
 import fi.laverca.jaxb.mreg.WirelessOperation;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
+import fi.laverca.jaxb.mss.MeshMemberType;
 import fi.laverca.jaxb.mss.MobileUserType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.util.LavercaContext;
@@ -32,19 +53,32 @@ import fi.laverca.util.LavercaContext;
  */
 public class MregRequest {
 
-    public enum Target {
+    public static enum Target {
         MOBILEUSER,
         SIMCARD,
-        ENTITY
+        ENTITY,
+        ENTITYUSER
+    }
+    
+    public static enum TargetName {
+        MSISDN,
+        IMSI,
+        ICCID,
+        APID,
+        EUID,
+        CUSTOMERID,
+        SPID,
+        NASID,
+        MSSPURI
     }
     
     public LavercaContext context;
     
-    protected Target         targetType = Target.MOBILEUSER;
-    protected String         apTransId = "A" + System.currentTimeMillis();
-    protected String         operation;
-    protected String         namespace;
-    protected boolean        wireless  = false;
+    protected Target  targetType = Target.MOBILEUSER;
+    protected String  apTransId = "A" + System.currentTimeMillis();
+    protected String  operation;
+    protected String  namespace;
+    protected boolean wireless  = false;
 
     protected List<MregParam> params = new ArrayList<>();
     
@@ -54,6 +88,12 @@ public class MregRequest {
     protected String iccid;
     protected String apId;
     
+    protected String entityUserId;
+    protected String customerId;
+    protected String spId;
+    protected String nasId;
+    protected String msspUri;
+
     // These override any client specific AP ID and AP PWD when sending this req. 
     private String senderApId;
     private String senderApPwd;
@@ -99,23 +139,68 @@ public class MregRequest {
         req.getRegistrationInputs().add(input);
         
         // Override AP ID and AP PWD if they are set for this req. 
-        if (this.senderApId != null) {
-            req.getAPInfo().setAPID(this.senderApId);
-        }
-        if (this.senderApPwd != null) {
-            req.getAPInfo().setAPPWD(this.senderApPwd);            
-        }
-        
+        if (this.senderApId  != null) req.getAPInfo().setAPID(this.senderApId);
+        if (this.senderApPwd != null) req.getAPInfo().setAPPWD(this.senderApPwd);            
+
         return req;
-    }    
+    }
     
     /**
-     * If the target is a Mobile User, set the IMSI identifying it
+     * Set a target for the request
+     * @param name {@link TargetName} specifying target name
+     * @param value String value of target
+     * @throws IllegalArgumentException
+     */
+    public void setTarget(final TargetName name, final String value) 
+        throws IllegalArgumentException
+    {
+        if (name == null) throw new IllegalArgumentException("Target must have a name");
+        switch (name) {
+            case APID:
+                this.apId       = value;
+                this.targetType = Target.ENTITY;
+                break;
+            case CUSTOMERID:
+                this.customerId = value;
+                this.targetType = Target.ENTITY;
+                break;
+            case EUID:
+                this.entityUserId = value;
+                this.targetType   = Target.ENTITYUSER;
+                break;
+            case ICCID:
+                this.iccid      = value;
+                this.targetType = Target.SIMCARD;
+                break;
+            case IMSI:
+                this.imsi       = value;
+                this.targetType = Target.SIMCARD;
+                break;
+            case MSISDN: 
+                this.msisdn     = value;
+                this.targetType = Target.MOBILEUSER;
+              break;
+            case MSSPURI:
+                this.msspUri    = value;
+                this.targetType = Target.ENTITY;
+                break;
+            case NASID:
+                this.nasId      = value;
+                this.targetType = Target.ENTITY;
+                break;
+            case SPID:
+                this.spId       = value;
+                this.targetType = Target.ENTITY;
+                break;
+        }
+    }
+
+    /**
+     * If the target is a Mobile User, set the MSISDN identifying it
      * @param msisdn Target MSISDN
      */    
     public void setTargetMsisdn(final String msisdn) {
-        this.targetType = Target.MOBILEUSER;
-        this.msisdn = msisdn;
+        this.setTarget(TargetName.MSISDN, msisdn);
     }
 
     /**
@@ -123,8 +208,8 @@ public class MregRequest {
      * @param imsi Target IMSI
      */
     public void setTargetImsi(final String imsi) {
-        this.targetType = Target.SIMCARD;
-        this.imsi = imsi;
+        this.setTarget(TargetName.IMSI, imsi);
+
     }
     
     /**
@@ -132,8 +217,8 @@ public class MregRequest {
      * @param iccid Target ICCID
      */
     public void setTargetIccid(final String iccid) {
-        this.targetType = Target.SIMCARD;
-        this.iccid = iccid;
+        this.setTarget(TargetName.ICCID, iccid);
+
     }
     
     /**
@@ -141,13 +226,21 @@ public class MregRequest {
      * @param apId Target AP_ID
      */
     public void setTargetApId(final String apId) {
-        this.targetType = Target.ENTITY;
-        this.apId = apId;
+        this.setTarget(TargetName.APID, apId);
+
+    }
+    
+    /**
+     * If the target is an EntityUser, set the EntityUserID identifying it
+     * @param euId Target EntityUserID
+     */
+    public void setTargetEuId(final String euId) {
+        this.setTarget(TargetName.EUID, euId);
     }
     
     /**
      * Force the target type to a specific value.
-     * <p>Not recommended, as the {@link #setTargetMsisdn(String)}, etc methods already set this.
+     * <p>Not recommended, as the {@link #setTarget(TargetName, String)}, method already sets this.
      * @param targetType {@link Target} specifying what kind of a target this operation is modifying/querying.
      *                   null values ignored.
      */
@@ -293,7 +386,20 @@ public class MregRequest {
             case ENTITY:
                 EntityType ent = new EntityType();
                 ent.setApID(this.apId);
+                ent.setCustomerID(this.customerId);
+                if (this.msspUri != null) {
+                    MeshMemberType mm = new MeshMemberType();
+                    mm.setURI(this.msspUri);
+                    ent.setMsspID(mm);
+                }
+                ent.setNasID(this.nasId);
+                ent.setSpID(this.spId);
                 target.setEntity(ent);
+                break;
+            case ENTITYUSER:
+                EntityUserType eu = new EntityUserType();
+                eu.setEntityUserID(this.entityUserId);
+                target.setEntityUser(eu);
                 break;
             default:
                 break;
