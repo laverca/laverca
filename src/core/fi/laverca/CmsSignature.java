@@ -48,6 +48,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.util.encoders.Base64;
 
 import fi.laverca.mss.MssException;
+import fi.laverca.util.X509CertificateChain;
 import fi.laverca.util.X509Util;
 
 /** 
@@ -167,6 +168,18 @@ public class CmsSignature implements Signature {
      */
     public List<X509Certificate> getCertificates() {
         return readCerts(this._sd);
+    }
+    
+    /**
+     * Get the certificate chain as {@link X509CertificateChain}
+     * @return certificate chain
+     */
+    public X509CertificateChain getCertificateChain() {
+        X509CertificateChain certChain = new  X509CertificateChain();
+        for (X509Certificate cert : this.getCertificates()) {
+            certChain.add(cert);
+        }
+        return certChain;
     }
     
     /**
