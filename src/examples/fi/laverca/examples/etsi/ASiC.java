@@ -151,7 +151,7 @@ public class ASiC {
         
         // 3. Send the actual ASiC signature request
         try {            
-            final ToBeSigned dataToSign   = service.getDataToSign(docs, parameters);
+            final ToBeSigned dataToSign   = this.service.getDataToSign(this.docs, this.parameters);
             final byte[] dataToSignBytes  = dataToSign.getBytes();
             final byte[] dataToSignDigest = digest(dataToSignBytes);
             
@@ -160,12 +160,12 @@ public class ASiC {
             // Data to be displayed
             String dtbd = dtbs.toString();
             
-            EtsiRequest req = this.client.createRequest(apTransId,         // AP Transaction ID
-                                                        this.msisdn,       // MSISDN
-                                                        dtbs,              // Data to be signed
-                                                        dtbd,              // Data to be displayed
-                                                        null,              // Additional services
-                                                        MSS_SIG_PROF,      // Signature profile
+            EtsiRequest req = this.client.createRequest(apTransId,               // AP Transaction ID
+                                                        this.msisdn,             // MSISDN
+                                                        dtbs,                    // Data to be signed
+                                                        dtbd,                    // Data to be displayed
+                                                        null,                    // Additional services
+                                                        MSS_SIG_PROF,            // Signature profile
                                                         MSS_Formats.KIURU_PKCS1, // MSS Format
                                                         MessagingModeType.ASYNCH_CLIENT_SERVER);
     
