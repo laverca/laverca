@@ -129,7 +129,7 @@ public class ASiC {
         // Create AP_TransID to use. This can be any unique String. 
         String apTransId = "A" + System.currentTimeMillis();
       
-        // 1.  Get Signing Certificate.
+        // 1. Get Signing Certificate
         X509CertificateChain chain = null;
         try {
             chain = this.getCertChain(this.msisdn, apTransId);
@@ -149,7 +149,7 @@ public class ASiC {
         this.parameters.setCertificateChain(tokenChain);
         this.parameters.setSigningCertificate(new CertificateToken(signingCert));
         
-        // 3. Send the actual ASiC signature request
+        // 3. Send the ASiC signature request
         try {            
             final ToBeSigned dataToSign   = this.service.getDataToSign(this.docs, this.parameters);
             final byte[] dataToSignBytes  = dataToSign.getBytes();
@@ -179,8 +179,9 @@ public class ASiC {
 
             DSSDocument signedDocument = null;
             try {
-                // 5. Sign ASiC package
-                signedDocument = this.signAsic(resp.getSignature().getRawSignature());
+                // 5. Attach signature to ASiC package
+                SignatureValue signatureValue = new SignatureValue(SIG_ALG, resp.getSignature().getRawSignature());
+                signedDocument = this.service.signDocument(this.docs, this.parameters, signatureValue);
             } catch (Throwable e) {
                 System.out.println("ASiC sign failed:");
                 e.printStackTrace();
@@ -271,18 +272,6 @@ public class ASiC {
         md.reset();
         md.update(data);
         return md.digest();
-    }
-
-    /**
-     * Run ASiC sign on the given document.
-     * Prints the output to stdout.
-     * 
-     * @param signature  SignatureValue as byte[]
-     * @return result ASiC file
-     */
-    private DSSDocument signAsic(final byte[] signature) {
-        final SignatureValue signatureValue = new SignatureValue(SIG_ALG, signature);
-        return this.service.signDocument(this.docs, this.parameters, signatureValue);
     }
 
 }

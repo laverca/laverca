@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -39,6 +39,7 @@ import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.x509.CertificateToken;
+import fi.laverca.CmsSignature;
 import fi.laverca.MSS_Formats;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.etsi.EtsiClient;
@@ -46,6 +47,7 @@ import fi.laverca.etsi.EtsiRequest;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssConf;
+import fi.laverca.mss.ProfileQueryResponse;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.X509CertificateChain;
 
@@ -54,9 +56,10 @@ import fi.laverca.util.X509CertificateChain;
  * 
  * <p>Performs the following steps
  * <ol>
- * <li>Gets the Signing Certificate with a ProfileQuery
- * <li>Constructs {@link PAdESSignatureParameters} 
- * <li>Sends the actual SignatureRequest with {@link DTBS} constructed from the {@link ToBeSigned} digest
+ * <li>Gets the Signing Certificate either with a ProfileQuery, or a dummy SignatureRequest
+ * <li>Constructs {@link DTBS} from the input documents
+ * <li>Sends a SignatureRequest to the MSSP
+ * <li>Constructs a signed PDF file
  * <li>Stores the signed PDF with "signed" appended to its name (e.g. foo.pdf -> foo.signed.pdf)
  * </ol>
  */
@@ -69,101 +72,107 @@ public class PAdES {
     // MSS SignatureProfile
     private static final String MSS_SIG_PROF = SignatureProfiles.ALAUDA_SIGNING;
     
-    private static String fileToSign;
-    private static String signedFile;
+    private String msisdn;
+    
+    private String fileToSign;
+    private String signedFile;
+    private DSSDocument doc;
             
+    private PAdESService             service;
+    private PAdESSignatureParameters parameters;
+    
+    private MssConf    conf;
+    private EtsiClient client;
+    
     public static void main(final String[] args) {
-
-        String msisdn = "+35847001001";
+        new PAdES(args).run();
+    }
+    
+    /**
+     * Create a PAdES example instance.
+     * @param args command arguments to parse
+     */
+    public PAdES(final String[] args) {
+        
+        this.msisdn = "+35847001001";
         if (args.length == 1) {
-            fileToSign = args[0];
+            this.fileToSign = args[0];
         } else if (args.length > 1) {
-            msisdn     = args[0];
-            fileToSign = args[1];
+            this.msisdn     = args[0];
+            this.fileToSign = args[1];
         } else {
             System.err.println("Usage: [msisdn] filename");
             return;
         }
         
         // Check at least that the file extension is PDF
-        if (!fileToSign.endsWith(".pdf")) {
+        if (!this.fileToSign.endsWith(".pdf")) {
             System.err.println("Supplied file is not a PDF");
             return;
         }
-        signedFile = fileToSign.replace(".pdf", ".signed.pdf");
+        this.signedFile = fileToSign.replace(".pdf", ".signed.pdf");
+        this.doc        = new FileDocument(this.fileToSign);
         
-        final DSSDocument doc = new FileDocument(fileToSign);
+        this.service    = new PAdESService(new CommonCertificateVerifier());
+        this.parameters = new PAdESSignatureParameters();
+        this.parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+        this.parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+        this.parameters.setDigestAlgorithm(DIGEST_ALG);
         
-        final PAdESService             service    = new PAdESService(new CommonCertificateVerifier());
-        final PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-        parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-        parameters.setDigestAlgorithm(DIGEST_ALG);
+        this.conf   = MssConf.fromPropertyFile("conf/examples.conf");
+        this.client = new EtsiClient(conf);
+    }
+    
+    /**
+     * Run the example
+     */
+    public void run() {
         
-        // Load config
-        MssConf conf = MssConf.fromPropertyFile("conf/examples.conf");
-        
-        // Create client. This will also create a SSL Socket Factory for the client. 
-        EtsiClient client = new EtsiClient(conf);
-
         // Create AP_TransID to use. This can be any unique String. 
         String apTransId = "A" + System.currentTimeMillis();
       
-        // 1.  Get Signing Certificate.
-        // This could be for example done on service login.
-        // Note: This does not work if the authentication and signature use different key/cert (e.g. FiCom)
-        X509CertificateChain certChain = null;
+        // 1. Get Signing Certificate
+        X509CertificateChain chain = null;
         try {
-            certChain = client.sendProfileQuery(msisdn, apTransId).getCertificates();
-            if (certChain == null) {
-                System.out.println("Got no client certificates from MSSP");
-                return;
-            }
+            chain = this.getCertChain(this.msisdn, apTransId);
         } catch (IOException ioe) {
-            System.out.println("Failed to get client certificates from MSSP");
+            System.out.println("Failed to get certs from MSSP.");
             ioe.printStackTrace();
+            this.client.shutdown();
             return;
         }
         
-        // 2. Fill certs to PAdESSignatureParameters
-        final X509Certificate signingCert = certChain.getSigningCert();        
-        
-        final List<CertificateToken> certTokenChain = new ArrayList<>();
-        for (final X509Certificate c : certChain) {
-            certTokenChain.add(new CertificateToken(c));
-        }
-        
-        parameters.setCertificateChain(certTokenChain);
-        parameters.setSigningCertificate(new CertificateToken(signingCert));
-        
-        // 3. Send the actual PAdES signature request
-        try {
-            
-            // Construct DTBS
-            final ToBeSigned dataToSign   = service.getDataToSign(doc, parameters);
-            final byte[] dataToSignBytes  = dataToSign.getBytes();
-            
-            // Get digest of dataToSignBytes
-            MessageDigest digest = MessageDigest.getInstance(DIGEST_ALG.getJavaName());
-            digest.reset();
-            digest.update(dataToSignBytes);
+        // 2. Fill certs to SignatureParameters
+        final X509Certificate       signingCert = chain.getSigningCert();        
+        final List<CertificateToken> tokenChain = chain.stream()
+                                                       .map(CertificateToken::new)
+                                                       .collect(Collectors.toList());
 
-            DTBS dtbs = new DTBS(digest.digest(), DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
+        this.parameters.setCertificateChain(tokenChain);
+        this.parameters.setSigningCertificate(new CertificateToken(signingCert));
+        
+        // 3. Send the PAdES signature request
+        try {            
+            final ToBeSigned dataToSign   = this.service.getDataToSign(this.doc, this.parameters);
+            final byte[] dataToSignBytes  = dataToSign.getBytes();
+            final byte[] dataToSignDigest = digest(dataToSignBytes);
+            
+            DTBS dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
             
             // Data to be displayed
             String dtbd = dtbs.toString();
             
-            EtsiRequest req = client.createRequest(apTransId,         // AP Transaction ID
-                                                   msisdn,            // MSISDN
-                                                   dtbs,              // Data to be signed
-                                                   dtbd,              // Data to be displayed
-                                                   null,              // Additional services
-                                                   MSS_SIG_PROF,      // Signature profile
-                                                   MSS_Formats.KIURU_PKCS1, // MSS Format
-                                                   MessagingModeType.ASYNCH_CLIENT_SERVER);
+            EtsiRequest req = this.client.createRequest(apTransId,               // AP Transaction ID
+                                                        this.msisdn,             // MSISDN
+                                                        dtbs,                    // Data to be signed
+                                                        dtbd,                    // Data to be displayed
+                                                        null,                    // Additional services
+                                                        MSS_SIG_PROF,            // Signature profile
+                                                        MSS_Formats.KIURU_PKCS1, // MSS Format
+                                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
     
-            // Send SigReq
-            EtsiResponse resp = client.send(req);
+            // 4. Send Signature request
+            EtsiResponse resp = this.client.send(req);
 
             System.out.println("Got a response");
             System.out.println("  StatusCode   : " + resp.getStatusCode());
@@ -171,38 +180,100 @@ public class PAdES {
             System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
             
             DSSDocument signedDocument = null;
-            
             try {
-                // Sign
+                // 5. Attach signature to PDF
                 SignatureValue signatureValue = new SignatureValue(SIG_ALG, resp.getSignature().getRawSignature());
-                signedDocument = service.signDocument(doc, parameters, signatureValue);
-
+                signedDocument = this.service.signDocument(this.doc, this.parameters, signatureValue);
             } catch (Throwable e) {
                 System.out.println("PAdES sign failed:");
                 e.printStackTrace();
             }
             
             try {
-                // 4. Store signed file
+                // 6. Save signed file
                 if (signedDocument != null) {
                     signedDocument.save(signedFile);
-                    System.out.println("Saved signed document to " + new File(signedFile).getAbsolutePath());
+                    System.out.println("Saved signed document to " + new File(this.signedFile).getAbsolutePath());
                 }
+                
             } catch (IOException e) {
                 System.out.println("Failed to save signed document:");
                 e.printStackTrace();
             }
             
-
-        } catch (NoSuchAlgorithmException ae) {
-            ae.printStackTrace();
-        } catch (IOException ioe) {
-            System.err.println("Signing failed");
-            ioe.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Got an Exception:");
+            e.printStackTrace();
+        }
+        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+        this.client.shutdown();
+    }
+    
+    /**
+     * Get the certificate chain.
+     * <p>First tries to get the chain with ProfileQuery extension.
+     * If unsuccessful, results to sending a dummy signature requestto the MSSP to get the chain.
+     * 
+     * @param msisdn    Target MSISDN
+     * @param apTransId AP transaction ID
+     * @return Certificate chain (may be empty in which case the signing will fail)
+     * @throws IOException
+     */
+    private X509CertificateChain getCertChain(final String msisdn, final String apTransId) 
+        throws IOException 
+    {
+        
+        // Send a ProfileQueryReq. Depending on the MSSP configuration, the response may contain the needed certs. 
+        ProfileQueryResponse profileResp = this.client.sendProfileQuery(msisdn, apTransId);
+        X509CertificateChain certChain   = profileResp.getCertificates();
+        
+        // If ProfileQueryResponse does not contain certs, get the certs from a Signature. 
+        if (certChain.isEmpty()) {
+            certChain = getCertsWithSign(msisdn, apTransId);
         }
         
-        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
-        client.shutdown();
+        return certChain;
+    }
+    
+    /**
+     * Get the certificate chain by sending a dummy signature request to the MSSP for the user to sign.
+     * 
+     * @param msisdn    Target MSISDN
+     * @param apTransId AP transaction ID
+     * @return Certificate chain (may be empty in which case the signing will fail)
+     * @throws IOException
+     */
+    private X509CertificateChain getCertsWithSign(final String msisdn, final String apTransId) 
+        throws IOException
+    {
+        DTBS   dtbs = new DTBS("CAdES dummy signature to pick certificates.");
+        String dtbd = dtbs.toString();
+      
+        EtsiRequest req = this.client.createRequest(apTransId,         // AP Transaction ID
+                                                    this.msisdn,       // MSISDN
+                                                    dtbs,              // Data to be signed
+                                                    dtbd,              // Data to be displayed
+                                                    null,              // Additional services
+                                                    MSS_SIG_PROF,      // Signature profile
+                                                    MSS_Formats.PKCS7, // MSS Format
+                                                    MessagingModeType.ASYNCH_CLIENT_SERVER);
+        
+        EtsiResponse resp = this.client.send(req);
+        return ((CmsSignature)resp.getSignature()).getCertificateChain();
+    }
+    
+    /**
+     * Digest the given data with {@code DIGEST_ALG}
+     * 
+     * @param data Data to digest
+     * @return digest
+     * @throws NoSuchAlgorithmException
+     */
+    private byte[] digest(final byte[] data) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance(DIGEST_ALG.getJavaName());
+        md.reset();
+        md.update(data);
+        return md.digest();
     }
     
 }

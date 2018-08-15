@@ -26,12 +26,10 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.axis.AxisFault;
 
 import fi.laverca.MSS_Formats;
-import fi.laverca.ProgressUpdate;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.etsi.EtsiClient;
 import fi.laverca.etsi.EtsiRequest;
 import fi.laverca.etsi.EtsiResponse;
-import fi.laverca.etsi.EtsiResponseHandler;
 import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssConf;
@@ -101,36 +99,19 @@ public class Sign {
                                                SignatureProfiles.ALAUDA_SIGNATURE, // Signature profile
                                                MSS_Formats.PKCS7,                  // MSS Format
                                                MessagingModeType.ASYNCH_CLIENT_SERVER);
-                                                                            
-        // Initialize response handler
-        EtsiResponseHandler handler = new EtsiResponseHandler() {
-            
-            @Override
-            public void onResponse(final EtsiRequest req, final EtsiResponse resp) {
-                System.out.println("Got a response");
-                System.out.println("  StatusCode   : " + resp.getStatusCode());
-                System.out.println("  StatusMessage: " + resp.getStatusMessage());
-                if (resp.hasSignature()) {
-                    System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
-                } else {
-                    System.out.println("  Signature    :");
-                }
-            }
-
-            @Override
-            public void onError(final EtsiRequest req, final Throwable t) {
-                System.out.println("Got an error:");
-                t.printStackTrace();
-            }
-
-            @Override
-            public void onOutstandingProgress(final EtsiRequest req, final ProgressUpdate update) {
-                System.out.println("Got a progress update");
-            }
-        };
         
         try {
-            client.call(req, handler);
+            EtsiResponse resp = client.send(req);
+            
+            System.out.println("Got a response");
+            System.out.println("  StatusCode   : " + resp.getStatusCode());
+            System.out.println("  StatusMessage: " + resp.getStatusMessage());
+            if (resp.hasSignature()) {
+                System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
+            } else {
+                System.out.println("  Signature    :");
+            }
+            
         } catch(AxisFault af) {
             System.out.println("Got a SOAP fault:");
             af.printStackTrace();
