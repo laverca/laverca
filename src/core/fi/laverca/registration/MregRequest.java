@@ -53,6 +53,9 @@ import fi.laverca.util.LavercaContext;
  */
 public class MregRequest {
 
+    private static final String SIMCARD_OP    = "simcard";
+    private static final String MOBILEUSER_OP = "mobileuser";
+    
     public static enum Target {
         MOBILEUSER,
         SIMCARD,
@@ -173,12 +176,20 @@ public class MregRequest {
                 this.targetType = Target.SIMCARD;
                 break;
             case IMSI:
-                this.imsi       = value;
-                this.targetType = Target.SIMCARD;
+                this.imsi = value;
+                if (this.operation.toLowerCase().endsWith(MOBILEUSER_OP)) {
+                    this.targetType = Target.MOBILEUSER;
+                } else {
+                    this.targetType = Target.SIMCARD;
+                }
                 break;
             case MSISDN: 
-                this.msisdn     = value;
-                this.targetType = Target.MOBILEUSER;
+                this.msisdn = value;
+                if (this.operation.toLowerCase().endsWith(SIMCARD_OP)) {
+                    this.targetType = Target.SIMCARD;
+                } else {
+                    this.targetType = Target.MOBILEUSER;
+                }
               break;
             case MSSPURI:
                 this.msspUri    = value;
@@ -209,7 +220,6 @@ public class MregRequest {
      */
     public void setTargetImsi(final String imsi) {
         this.setTarget(TargetName.IMSI, imsi);
-
     }
     
     /**
@@ -218,7 +228,6 @@ public class MregRequest {
      */
     public void setTargetIccid(final String iccid) {
         this.setTarget(TargetName.ICCID, iccid);
-
     }
     
     /**
