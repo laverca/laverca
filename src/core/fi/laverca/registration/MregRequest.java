@@ -54,7 +54,6 @@ import fi.laverca.util.LavercaContext;
 public class MregRequest {
 
     private static final String SIMCARD_OP    = "simcard";
-    private static final String MOBILEUSER_OP = "mobileuser";
     
     public static enum Target {
         MOBILEUSER,
@@ -176,12 +175,8 @@ public class MregRequest {
                 this.targetType = Target.SIMCARD;
                 break;
             case IMSI:
-                this.imsi = value;
-                if (this.operation.toLowerCase().endsWith(MOBILEUSER_OP)) {
-                    this.targetType = Target.MOBILEUSER;
-                } else {
-                    this.targetType = Target.SIMCARD;
-                }
+                this.imsi       = value;
+                this.targetType = Target.SIMCARD;
                 break;
             case MSISDN: 
                 this.msisdn = value;
