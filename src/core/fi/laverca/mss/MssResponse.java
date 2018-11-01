@@ -27,8 +27,10 @@ import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.CmsSignature;
 import fi.laverca.MSS_Formats;
+import fi.laverca.MobileConnectSignature;
 import fi.laverca.Pkcs1;
 import fi.laverca.Signature;
+import fi.laverca.SignatureProfiles;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
@@ -121,13 +123,36 @@ public abstract class MssResponse {
             }
             
             if (sig != null) {
-                if (MSS_Formats.KIURU_PKCS1.equals(this.getMssFormat())) {
-                    p1 = new PKCS1();
-                    p1.setSignatureValue(sig);
-                    signature = new Pkcs1(p1);
+                if (this.getMssFormat() == null) {
+                    if (this.getSignatureProfile() != null) {
+                        switch (this.getSignatureProfile()) {
+                            case SignatureProfiles.MOBILECONNECT_LOA2:
+                            case SignatureProfiles.MOBILECONNECT_LOA3:
+                                signature = new MobileConnectSignature(sig);
+                                break;
+                            default:
+                                try {
+                                    signature = new CmsSignature(sig);
+                                } catch (IllegalArgumentException e) {
+                                    // Not CMS - assume it's MobileConnect
+                                    signature = new MobileConnectSignature(sig);
+                                }
+                                break;
+                        }
+                    }
                 } else {
-                    signature = new CmsSignature(sig);
-                } 
+                    switch (this.getMssFormat()) {
+                        case MSS_Formats.KIURU_PKCS1:
+                            p1 = new PKCS1();
+                            p1.setSignatureValue(sig);
+                            signature = new Pkcs1(p1);
+                            break;
+                        case MSS_Formats.PKCS7:
+                        default:
+                            signature = new CmsSignature(sig);
+                            break;
+                    }
+                }
             }
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -223,6 +248,19 @@ public abstract class MssResponse {
             this.originalSigReq.getMSSFormat() != null) {
             
             return this.originalSigReq.getMSSFormat().getMssURI();
+        }
+        return null;
+    }
+    
+    /**
+     * Get the requested SignatureProfile as String
+     * @return requested SignatureProfile as String. May be null.
+     */
+    public String getSignatureProfile() {
+        if (this.originalSigReq != null &&
+            this.originalSigReq.getSignatureProfile() != null) {
+            
+            return this.originalSigReq.getSignatureProfile().getMssURI();
         }
         return null;
     }

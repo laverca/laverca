@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2018 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,5 +38,8 @@ public class SignatureProfiles {
     // See RFC 5280
     public static final String ALAUDA_AUTHENTICATION   = "http://alauda.mobi/digitalSignature";
     public static final String ALAUDA_SIGNING          = "http://alauda.mobi/nonRepudiation";
+    
+    public static final String MOBILECONNECT_LOA2      = "http://uri.gsma.com/mobileconnect/LoA2";
+    public static final String MOBILECONNECT_LOA3      = "http://uri.gsma.com/mobileconnect/LoA3";
     
 }

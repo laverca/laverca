@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2018 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,30 @@ public class EtsiAdditionalServices extends AdditionalServices {
     public static final String URI_VALIDATE  = "http://uri.etsi.org/TS102204/v1.1.2#validate";
     public static final String URI_TIMESTAMP = "http://uri.etsi.org/TS102204/v1.1.2#timestamp";
     public static final String URI_ARCHIVE   = "http://uri.etsi.org/TS102204/v1.1.2#archive";
+    
+    /**
+     * Creates an AdditionalService for validation service
+     * @return ETSI Validation AdditionalService
+     */
+    public static AdditionalServiceType createValidateService() {
+        return AdditionalServices.createService(URI_VALIDATE);
+    }
+    
+    /**
+     * Creates an AdditionalService for timestamp service
+     * @return ETSI Timestamp AdditionalService
+     */
+    public static AdditionalServiceType createTimestampService() {
+        return AdditionalServices.createService(URI_TIMESTAMP);
+    }
+    
+    /**
+     * Creates an AdditionalService for archive service
+     * @return ETSI Archive AdditionalService
+     */
+    public static AdditionalServiceType createArchiveService() {
+        return AdditionalServices.createService(URI_ARCHIVE);
+    }
     
     /**
      * Create a basic ETSI Service element
