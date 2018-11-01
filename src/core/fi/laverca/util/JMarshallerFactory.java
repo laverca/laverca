@@ -69,9 +69,9 @@ public class JMarshallerFactory {
         }
 
         @Override
-        public String getPreferredPrefix( final String nsUri,
-                                          final String suggestion,
-                                          final boolean requirePrefix )
+        public String getPreferredPrefix(final String nsUri,
+                                         final String suggestion,
+                                         final boolean requirePrefix)
         {
             if (nsUri == null || "".equals(nsUri)) {
                 return null;
@@ -95,8 +95,7 @@ public class JMarshallerFactory {
                 }
             }
             if (suggestion == null && requirePrefix) {
-                // Must generate something!
-                log.debug("FIXME: Must generate something!");
+                log.debug("Unknown NS " + nsUri + " - cannot suggest prefix");
             }
             return suggestion;
         }
@@ -113,7 +112,8 @@ public class JMarshallerFactory {
          * @param prefix Prefix to register
          * @param additionals Additional prefixes
          */
-        public void setInclusion(String prefix, String...additionals) {
+        public void setInclusion(final String prefix,
+                                 final String...additionals) {
             final String keyuri = this.pfx2uri.get(prefix);
             final String[] adds = new String[additionals.length];
             for (int i = 0; i < additionals.length; ++i) {
@@ -139,6 +139,7 @@ public class JMarshallerFactory {
         nsp.setNamespaceMapping("mmd",  "http://www.methics.fi/MSSPMetadata/v1.0.0#");
         nsp.setNamespaceMapping("mreg", "http://www.methics.fi/MSSPRegistration/v1.0.0#");
         nsp.setNamespaceMapping("mcs",  "http://www.methics.fi/TS102204/ext/v1.0.0");
+        nsp.setNamespaceMapping("sco",  "http://www.swisscom.ch/TS102204/ext/v1.0.0");
         nsp.setNamespaceMapping("msrs", "http://uri.etsi.org/TS102207/v1.1.2#");
         nsp.setNamespaceMapping("mss",  "http://uri.etsi.org/TS102204/v1.1.2#");
         nsp.setNamespaceMapping("saml", "urn:oasis:names:tc:SAML:2.0:assertion");
@@ -151,6 +152,8 @@ public class JMarshallerFactory {
         nsp.setNamespaceMapping("xenc", "http://www.w3.org/2001/04/xmlenc#");
         nsp.setNamespaceMapping("xs",   "http://www.w3.org/2001/XMLSchema");
         nsp.setNamespaceMapping("xsi",  "http://www.w3.org/2001/XMLSchema-instance");
+        nsp.setNamespaceMapping("env",  "http://www.w3.org/2003/05/soap-envelope");
+        nsp.setNamespaceMapping("xmlns","http://www.w3.org/XML/1998/namespace");
     }
 
     /** 
