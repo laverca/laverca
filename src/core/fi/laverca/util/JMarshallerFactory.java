@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -63,6 +64,8 @@ public class JMarshallerFactory {
         private HashMap<String,String> uri2pfx = new HashMap<>();
         private HashMap<String,String> pfx2uri = new HashMap<>();
         private HashMap<String,String[]> uriInclusions = new HashMap<>();
+        
+        private AtomicInteger counter = new AtomicInteger(1);
 
         public NSPfxMapper() {
             // Nothing to do.
@@ -77,7 +80,7 @@ public class JMarshallerFactory {
                 return null;
             }
 
-            final String pfx;
+            String pfx = null;
             synchronized (this) {
                 pfx = this.uri2pfx.get(nsUri);
             }
@@ -89,18 +92,22 @@ public class JMarshallerFactory {
                 }
             }
             if (pfx != null) return pfx;
-            if (suggestion != null) {
+            pfx = suggestion;
+            
+            if (pfx == null && requirePrefix) {
+                pfx = "ns" + counter.getAndIncrement();
+            }
+            if (pfx != null) {
                 synchronized (this) {
-                    this.uri2pfx.put(nsUri, suggestion);
+                    this.uri2pfx.put(nsUri, pfx);
                 }
             }
-            if (suggestion == null && requirePrefix) {
-                log.debug("Unknown NS " + nsUri + " - cannot suggest prefix");
-            }
-            return suggestion;
+
+            return pfx;
         }
 
-        public void setNamespaceMapping(String prefix, String uri) {
+        public void setNamespaceMapping(final String prefix,
+                                        final String uri) {
             this.uri2pfx.put(uri, prefix);
             this.pfx2uri.put(prefix, uri);
         }
