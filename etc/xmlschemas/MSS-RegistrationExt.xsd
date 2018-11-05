@@ -148,6 +148,7 @@
         <xs:element name="MsspID"      type="mss:MeshMemberType"/>
         <xs:element name="SpID"        type="xs:anyURI" />
         <xs:element name="NasID"       type="xs:string" />
+        <xs:element name="CA_URI"      type="xs:string" />
       </xs:choice>
     </xs:sequence>
   </xs:complexType>

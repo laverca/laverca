@@ -71,7 +71,8 @@ public class MregRequest {
         CUSTOMERID,
         SPID,
         NASID,
-        MSSPURI
+        MSSPURI,
+        CAURI
     }
     
     public LavercaContext context;
@@ -95,6 +96,7 @@ public class MregRequest {
     protected String spId;
     protected String nasId;
     protected String msspUri;
+    protected String caUri;
 
     // These override any client specific AP ID and AP PWD when sending this req. 
     private String senderApId;
@@ -198,6 +200,10 @@ public class MregRequest {
                 this.spId       = value;
                 this.targetType = Target.ENTITY;
                 break;
+            case CAURI:
+                this.caUri      = value;
+                this.targetType = Target.ENTITY;
+                break;
         }
     }
 
@@ -240,6 +246,14 @@ public class MregRequest {
      */
     public void setTargetEuId(final String euId) {
         this.setTarget(TargetName.EUID, euId);
+    }
+    
+    /**
+     * If the target is a CA, set the CA_URI identifying it
+     * @param caUri Target CA URI
+     */
+    public void setTargetCaUri(final String caUri) {
+        this.setTarget(TargetName.CAURI, caUri);
     }
     
     /**
@@ -398,6 +412,7 @@ public class MregRequest {
                 }
                 ent.setNasID(this.nasId);
                 ent.setSpID(this.spId);
+                ent.setCA_URI(this.caUri);
                 target.setEntity(ent);
                 break;
             case ENTITYUSER:
