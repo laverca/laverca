@@ -412,7 +412,7 @@ public class MregRequest {
                 }
                 ent.setNasID(this.nasId);
                 ent.setSpID(this.spId);
-                ent.setCA_URI(this.caUri);
+                ent.setCAURI(this.caUri);
                 target.setEntity(ent);
                 break;
             case ENTITYUSER:
