@@ -75,8 +75,8 @@ public class MregResponse {
         if (this.getOperationOutput().getParameters() == null) return;
         
         String groupName  = null;
-        int    groupIndex = 0;
-        
+        int    groupIndex = 1;
+                
         List<String> groupNames = new ArrayList<>();
         
         for (NameValueType type : this.getOperationOutput().getParameters()) {
