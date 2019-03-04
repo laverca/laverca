@@ -89,10 +89,11 @@ public class MssClient {
     
     public static final String CLIENT_CONFIG_WSDD_FILENAME = "laverca-client-config.wsdd";
     
+    private static boolean marshallerInitDone;
     // AP settings
     private String apId  = null;
     private String apPwd = null;
-
+    
     // MSSP AE connection settings
     private final MSS_SignatureServiceLocator mssService;
     private URL MSSP_SI_URL = null;
@@ -100,46 +101,73 @@ public class MssClient {
     private URL MSSP_HS_URL = null;
     private URL MSSP_ST_URL = null;
     private URL MSSP_PR_URL = null;
+
     private URL MSSP_RG_URL = null;
 
-    private int poolSize = 16;
-    /** New connection timeout: milliseconds, 0 &leq; not set */
+    private int poolSize = 50;
+    
     private int newConnTimeout;
-    /** New SO read timeout: milliseconds, 0 &leq; not set */
     private int newSoTimeout;
-
+    
     private String newUsername;
     private String newPassword;
-
+    
     private ProxySettings     proxySettings;
     private SSLSocketFactory  sslSocketFactory;
+
     private LavercaHttpClient httpClient;
-
-    private static boolean marshallerInitDone;
     
-    private static void marshallerInit() {
+    /**
+     * <b>NOTE:</b> 
+     * <br>if any of the URLs require SSL, you must
+     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
+     *
+     * <p>If the configuration contains keystore and/or truststore parameters,
+     * {@link #createSSLFactory(String, String, String, String, String, String)} and {@link #setSSLSocketFactory(SSLSocketFactory)}
+     * are automatically run. Ignores any keystore loading problems.
+     *
+     * @param conf MSS Configuration object (not null)
+     */
+    public MssClient(final MssConf conf) {
+        this(conf.getApId(),
+             conf.getApPwd(),
+             conf.getSignatureUrl(),
+             conf.getStatusUrl(),
+             conf.getReceiptUrl(),
+             conf.getRegistrationUrl(),
+             conf.getProfileUrl(),
+             conf.getHandshakeUrl());
         
-        if (marshallerInitDone) return;
-
-        // Record global package names of generated JAXB classes
-        for (final Class<?> c : new Class[] {
-                fi.laverca.jaxb.mss.ObjectFactory.class,
-                fi.laverca.jaxb.mssfi.ObjectFactory.class,
-                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
-                fi.laverca.jaxb.saml2a.ObjectFactory.class,
-                fi.laverca.jaxb.saml2p.ObjectFactory.class,
-                fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
-                fi.laverca.jaxb.soap12env.ObjectFactory.class,
-                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class }) {
-
-            final String p = c.getPackage().getName();
-            JMarshallerFactory.addJAXBPath(p);
-
+        if (conf.getKeystore() != null) {
+            try {
+                SSLSocketFactory ssf = MssClient.createSSLFactory(conf.getKeystore(),   conf.getKeystorePwd(),   conf.getKeystoreType(), 
+                                                                  conf.getTruststore(), conf.getTruststorePwd(), conf.getTruststoreType());
+                this.setSSLSocketFactory(ssf);
+            } catch (Exception e) {
+                log.error("Failed to load keystore and/or truststore", e);
+            }
         }
-
-        marshallerInitDone = true;
     }
 
+    /**
+     * <b>NOTE:</b> 
+     * <br>if any of the URLs require SSL, you must
+     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
+     *
+     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
+     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     */
+    public MssClient(final String apId,
+                     final String apPwd,
+                     final String msspSignatureUrl,
+                     final String msspStatusUrl,
+                     final String msspReceiptUrl) {
+        this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
+    }
+    
     /** 
      * <b>NOTE:</b> 
      * <br>if any of the URLs require SSL, you must
@@ -199,68 +227,6 @@ public class MssClient {
     }
     
     /**
-     * <b>NOTE:</b> 
-     * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
-     *
-     * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
-     * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
-     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
-     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
-     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
-     */
-    public MssClient(final String apId,
-                     final String apPwd,
-                     final String msspSignatureUrl,
-                     final String msspStatusUrl,
-                     final String msspReceiptUrl) {
-        this(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, null, null, null);
-    }
-    
-    /**
-     * <b>NOTE:</b> 
-     * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
-     *
-     * <p>If the configuration contains keystore and/or truststore parameters,
-     * {@link #createSSLFactory(String, String, String, String, String, String)} and {@link #setSSLSocketFactory(SSLSocketFactory)}
-     * are automatically run. Ignores any keystore loading problems.
-     *
-     * @param conf MSS Configuration object (not null)
-     */
-    public MssClient(final MssConf conf) {
-        this(conf.getApId(),
-             conf.getApPwd(),
-             conf.getSignatureUrl(),
-             conf.getStatusUrl(),
-             conf.getReceiptUrl(),
-             conf.getRegistrationUrl(),
-             conf.getProfileUrl(),
-             conf.getHandshakeUrl());
-        
-        if (conf.getKeystore() != null) {
-            try {
-                SSLSocketFactory ssf = MssClient.createSSLFactory(conf.getKeystore(),   conf.getKeystorePwd(),   conf.getKeystoreType(), 
-                                                                  conf.getTruststore(), conf.getTruststorePwd(), conf.getTruststoreType());
-                this.setSSLSocketFactory(ssf);
-            } catch (Exception e) {
-                log.error("Failed to load keystore and/or truststore", e);
-            }
-        }
-    }
-
-    /**
-     * Set this socket factory before calling MSS operations,
-     * if you want to e.g. inclusion of your client certificate
-     * on the outgoing calls.
-     *
-     * @param ssf Define a SSL SocketFactory with a client side key
-     */
-    public void setSSLSocketFactory(final SSLSocketFactory ssf) {
-        this.sslSocketFactory = ssf;
-    }
-  
-    /**
      * Create an SSLSocketFactory
      * @param ksFile Keystore filename
      * @param ksPwd  Keystore password
@@ -274,7 +240,7 @@ public class MssClient {
     {
         return createSSLFactory(ksFile, ksPwd, ksType, null, null, null);
     }
-    
+
     /**
      * Create an SSLSocketFactory
      * @param ksFile Keystore filename
@@ -330,106 +296,115 @@ public class MssClient {
             kis.close();
         }
     }
-    
+  
     /**
-     * Set a custom Axis EngineConfiguration
-     * @param conf Axis EngineConfiguration
+     * Return whether s is a valid xs:NCName String.
+     * 
+     * @param s String to test
+     * @return true if s is a valid xs:NCName
      */
-    public void setEngineConfiguration(final EngineConfiguration conf) {
-        this.mssService.setEngineConfiguration(conf);
+    public static boolean isNCName(final String s) {
+        if (s == null) {
+            return false;
+        } else {
+            return org.apache.axis.types.NCName.isValid(s);
+        }
+    }
+    
+    private static void marshallerInit() {
+        
+        if (marshallerInitDone) return;
+
+        // Record global package names of generated JAXB classes
+        for (final Class<?> c : new Class[] {
+                fi.laverca.jaxb.mss.ObjectFactory.class,
+                fi.laverca.jaxb.mssfi.ObjectFactory.class,
+                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
+                fi.laverca.jaxb.saml2a.ObjectFactory.class,
+                fi.laverca.jaxb.saml2p.ObjectFactory.class,
+                fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
+                fi.laverca.jaxb.soap12env.ObjectFactory.class,
+                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class }) {
+
+            final String p = c.getPackage().getName();
+            JMarshallerFactory.addJAXBPath(p);
+
+        }
+
+        marshallerInitDone = true;
     }
     
     /**
-     * Sets the AE connection URLs.
-     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
-     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
-     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
-     * @param msspRegistrationUrl Connection URL to the AE for registration requests. 
-     * @param msspProfileUrl      Connection URL to the AE for profile query requests. 
-     * @param msspHandshakeUrl    Connection URL to the AE for handshake requests.
+     * Create a profile query request for given MSISDN
+     * @param msisdn MSISDN of the mobile user
+     * @param apTransId AP_TransID 
+     * @return Created MSS_ProfileReq
+     * @throws IllegalArgumentException if the given MSISDN is null
      */
-    public void setAeAddress( String msspSignatureUrl,
-                              String msspStatusUrl,
-                              String msspReceiptUrl,
-                              String msspRegistrationUrl,
-                              String msspProfileUrl,
-                              String msspHandshakeUrl )
-    throws IllegalArgumentException
+    public MSSProfileReq createProfileRequest(final String msisdn, final String apTransId) {
+        
+        if (msisdn == null) throw new IllegalArgumentException("Invalid MSISDN (null)");
+        if (apTransId == null) throw new IllegalArgumentException("Invalid AP_TransID (null)");
+
+        
+        MSSProfileReq req = mssObjFactory.createMSSProfileReq();
+        
+        this.initializeRequestMessage(req, apTransId);
+        
+        MobileUserType mu = mssObjFactory.createMobileUserType();
+        mu.setMSISDN(msisdn);
+        req.setMobileUser(mu);        
+        
+        return req;
+    }
+    
+    /**
+     * Create a MSS_ReceiptRequest based on received MSS_SignatureResponse
+     * 
+     * @param sigResp MSS_SignatureResponse on which the receipt request is constructed
+     * @param apTransId each new MSS request needs a new apTransID
+     * @param message Message to display
+     * @return Created MSS_ReceiptReq
+     */
+    public MSSReceiptReq createReceiptRequest(final MSSSignatureResp sigResp, 
+                                              final String apTransId,
+                                              final String message) 
     {
-        try {
-            if (msspSignatureUrl != null) {
-                this.MSSP_SI_URL = new URL (msspSignatureUrl);
-            }
-            if (msspStatusUrl != null) {
-                this.MSSP_ST_URL = new URL (msspStatusUrl);
-            }
-            if (msspReceiptUrl != null) {
-                this.MSSP_RC_URL = new URL (msspReceiptUrl);
-            }
-            if (msspRegistrationUrl != null) {
-                this.MSSP_RG_URL = new URL (msspRegistrationUrl);
-            }
-            if (msspProfileUrl != null) {
-                this.MSSP_PR_URL = new URL (msspProfileUrl);
-            }
-            if (msspHandshakeUrl != null) {
-                this.MSSP_HS_URL = new URL (msspHandshakeUrl);
-            }
-        } catch (MalformedURLException mue) {
-            throw new IllegalArgumentException(mue.getMessage());
-        }
-    }
+        if (sigResp               == null) throw new IllegalArgumentException("Invalid Signature Response (null)");
+        if (sigResp.getMSSPInfo() == null) throw new IllegalArgumentException("Invalid Signature Response MSSP Info (null)");
+        
+        final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
+        if (msspId == null) throw new IllegalArgumentException("Invalid Signature Response MSSP ID");
+        
+        final MSSReceiptReq req = mssObjFactory.createMSSReceiptReq();
+        this.initializeRequestMessage(req, apTransId);
 
-    private LavercaHttpClient getHttpClient() {
-        synchronized (this) {
-            if (this.httpClient == null) {
-                // If SSLSocketFactory is set, use it, otherwise use system default
-                SSLSocketFactory ssf = this.sslSocketFactory;
-                if (ssf == null) {
-                    ssf = (SSLSocketFactory)SSLSocketFactory.getDefault();
-                }
-                this.httpClient = new LavercaHttpClient("mssClientPool",
-                                                        this.poolSize,
-                                                        this.newConnTimeout,
-                                                        this.newSoTimeout,
-                                                        this.newUsername,
-                                                        this.newPassword,
-                                                        this.proxySettings,
-                                                        ssf);
-            }
+        req.getMSSPInfo().setMSSPID(msspId);
+        req.setMSSPTransID(sigResp.getMSSPTransID());
+        
+        if (message != null) {
+            final DataType meObject = mssObjFactory.createDataType();
+            meObject.setValue(message);
+            req.setMessage(meObject);
         }
-        return this.httpClient;
+        
+        return req;
     }
     
     /**
-     * Fills Minorversion, Majorversion, AP_Info and MSS_Info to the given message.
-     * @param mat Message to fill
-     * @param apTransId AP Transaction ID
+     * Create a MSS_RegistrationReq
+     * 
+     * @param apTransId
+     * @return
      */
-    private void initializeRequestMessage(final MessageAbstractType mat, final String apTransId) {
+    public MSSRegistrationReq createRegistrationReq(final String apTransId) {
         
-        if (mat == null) throw new IllegalArgumentException("Invalid request (null)");
-    
-        // Set the interface versions. 1 for both, as per ETSI TS 102 204.
-        mat.setMajorVersion(Long.valueOf(1));
-        mat.setMinorVersion(Long.valueOf(1));
+        MSSRegistrationReq req = mssObjFactory.createMSSRegistrationReq();
+        this.initializeRequestMessage(req, apTransId);
+        req.setMobileUser(mssObjFactory.createMobileUserType());
 
-        if (apTransId != null) {
-            // Create the AP_Info.
-            final MessageAbstractType.APInfo aiObject = mssObjFactory.createMessageAbstractTypeAPInfo();
-            aiObject.setAPID(this.apId);
-            aiObject.setAPPWD(this.apPwd);
-            aiObject.setAPTransID(apTransId);
-            aiObject.setInstant(new GregorianCalendar());
-            mat.setAPInfo(aiObject);
-        }
-        
-        final MessageAbstractType.MSSPInfo miObject = mssObjFactory.createMessageAbstractTypeMSSPInfo();
-        miObject.setMSSPID(mssObjFactory.createMeshMemberType()); 
-
-        mat.setMSSPInfo(miObject);
+        return req;
     }
-    
     
     /**
      * Creates a signature request. 
@@ -487,54 +462,6 @@ public class MssClient {
         
         return req;
     }
-
-    /**
-     * Create a MSS_ReceiptRequest based on received MSS_SignatureResponse
-     * 
-     * @param sigResp MSS_SignatureResponse on which the receipt request is constructed
-     * @param apTransId each new MSS request needs a new apTransID
-     * @param message Message to display
-     * @return Created MSS_ReceiptReq
-     */
-    public MSSReceiptReq createReceiptRequest(final MSSSignatureResp sigResp, 
-                                              final String apTransId,
-                                              final String message) 
-    {
-        if (sigResp               == null) throw new IllegalArgumentException("Invalid Signature Response (null)");
-        if (sigResp.getMSSPInfo() == null) throw new IllegalArgumentException("Invalid Signature Response MSSP Info (null)");
-        
-        final MeshMemberType msspId = sigResp.getMSSPInfo().getMSSPID();
-        if (msspId == null) throw new IllegalArgumentException("Invalid Signature Response MSSP ID");
-        
-        final MSSReceiptReq req = mssObjFactory.createMSSReceiptReq();
-        this.initializeRequestMessage(req, apTransId);
-
-        req.getMSSPInfo().setMSSPID(msspId);
-        req.setMSSPTransID(sigResp.getMSSPTransID());
-        
-        if (message != null) {
-            final DataType meObject = mssObjFactory.createDataType();
-            meObject.setValue(message);
-            req.setMessage(meObject);
-        }
-        
-        return req;
-    }
-    
-    /**
-     * Create a MSS_RegistrationReq
-     * 
-     * @param apTransId
-     * @return
-     */
-    public MSSRegistrationReq createRegistrationReq(final String apTransId) {
-        
-        MSSRegistrationReq req = mssObjFactory.createMSSRegistrationReq();
-        this.initializeRequestMessage(req, apTransId);
-        req.setMobileUser(mssObjFactory.createMobileUserType());
-
-        return req;
-    }
     
     /**
      * Create a status request for a signature response.
@@ -562,30 +489,103 @@ public class MssClient {
         
         return req;
     }
+
+    /**
+     * Send the MSS_HandshakeRequest to MSS system receiving answer
+     * @param req the MSS_HandshakeReq
+     * @return received MSS_HandshakeResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSHandshakeResp send(final MSSHandshakeReq req) throws IOException {
+        return this.send(req, null);
+    }
+    
+    /**
+     * Send the MSS_HandshakeRequest to MSS system receiving answer
+     * @param req the MSS_HandshakeReq
+     * @param context LavercaContext
+     * @return received MSS_HandshakeResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSHandshakeResp send(final MSSHandshakeReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
+        return (MSSHandshakeResp)this.sendMat(req, context);
+    }
+    
+    
+    /**
+     * Send the MSS_ProfileRequest to MSS system receiving answer
+     * @param req the MSS_ProfileReq
+     * @return received MSS_ProfileResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSProfileResp send(final MSSProfileReq req) throws IOException {
+        return this.send(req, null);
+    }
+
+    /**
+     * Send the MSS_ProfileRequest to MSS system receiving answer
+     * @param req the MSS_ProfileReq
+     * @param context LavercaContext
+     * @return received MSS_ProfileResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSProfileResp send(final MSSProfileReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
+        return (MSSProfileResp)this.sendMat(req, context);
+    }
+    
+    /**
+     * Send the MSS_ReceiptRequest to MSS system receiving answer
+     * @param req the MSS_ReceiptReq
+     * @return received MSS_ReceiptResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSReceiptResp send(final MSSReceiptReq req) throws IOException {
+        return this.send(req, null);
+    }
+    
+    /**
+     * Send the MSS_ReceiptRequest to MSS system receiving answer
+     * @param req the MSS_ReceiptReq
+     * @param context LavercaContext
+     * @return received MSS_ReceiptResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSReceiptResp send(final MSSReceiptReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
+        return (MSSReceiptResp)this.sendMat(req, context);
+    }
     
 
     /**
-     * Create a profile query request for given MSISDN
-     * @param msisdn MSISDN of the mobile user
-     * @param apTransId AP_TransID 
-     * @return Created MSS_ProfileReq
-     * @throws IllegalArgumentException if the given MSISDN is null
+     * Send the MSS_RegistrationRequest to MSS system receiving answer
+     * @param req the MSS_RegistrationReq
+     * @return received MSS_RegistrationResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
      */
-    public MSSProfileReq createProfileRequest(final String msisdn, final String apTransId) {
-        
-        if (msisdn == null) throw new IllegalArgumentException("Invalid MSISDN (null)");
-        if (apTransId == null) throw new IllegalArgumentException("Invalid AP_TransID (null)");
+    public MSSRegistrationResp send(final MSSRegistrationReq req) throws IOException {
+        return this.send(req, null);
+    }
 
-        
-        MSSProfileReq req = mssObjFactory.createMSSProfileReq();
-        
-        this.initializeRequestMessage(req, apTransId);
-        
-        MobileUserType mu = mssObjFactory.createMobileUserType();
-        mu.setMSISDN(msisdn);
-        req.setMobileUser(mu);        
-        
-        return req;
+    /**
+     * Send the MSS_RegistrationRequest to MSS system receiving answer
+     * @param req the MSS_RegistrationReq
+     * @param context LavercaContext
+     * @return received MSS_RegistrationResp
+     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
+     * @throws IllegalArgumentException if req is null
+     */
+    public MSSRegistrationResp send(final MSSRegistrationReq req, final LavercaContext context) throws IOException {
+        if (req == null) throw new IllegalArgumentException ("Unable to send null RegistrationReq");
+        return (MSSRegistrationResp)this.sendMat(req, context);
     }
 
     /**
@@ -599,62 +599,6 @@ public class MssClient {
         return this.send(req, null);
     }
 
-    /**
-     * Send the MSS_ReceiptRequest to MSS system receiving answer
-     * @param req the MSS_ReceiptReq
-     * @return received MSS_ReceiptResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
-     */
-    public MSSReceiptResp send(final MSSReceiptReq req) throws IOException {
-        return this.send(req, null);
-    }
-
-    /**
-     * Send the MSS_HandshakeRequest to MSS system receiving answer
-     * @param req the MSS_HandshakeReq
-     * @return received MSS_HandshakeResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
-     */
-    public MSSHandshakeResp send(final MSSHandshakeReq req) throws IOException {
-        return this.send(req, null);
-    }
-
-    /**
-     * Send the MSS_StatusRequest to MSS system receiving answer
-     * @param req the MSS_StatusReq
-     * @return received MSS_StatusResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
-     */
-    public MSSStatusResp send(final MSSStatusReq req) throws IOException {
-        return this.send(req, null);
-    }
-
-    /**
-     * Send the MSS_ProfileRequest to MSS system receiving answer
-     * @param req the MSS_ProfileReq
-     * @return received MSS_ProfileResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
-     */
-    public MSSProfileResp send(final MSSProfileReq req) throws IOException {
-        return this.send(req, null);
-    }
-
-    /**
-     * Send the MSS_RegistrationRequest to MSS system receiving answer
-     * @param req the MSS_RegistrationReq
-     * @return received MSS_RegistrationResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
-     */
-    public MSSRegistrationResp send(final MSSRegistrationReq req) throws IOException {
-        return this.send(req, null);
-    }
-
-    
     /**
      * Send the MSS_SignatureRequest to MSS system receiving answer
      * @param req the MSS_SignatureReq
@@ -675,29 +619,14 @@ public class MssClient {
     }
 
     /**
-     * Send the MSS_ReceiptRequest to MSS system receiving answer
-     * @param req the MSS_ReceiptReq
-     * @param context LavercaContext
-     * @return received MSS_ReceiptResp
+     * Send the MSS_StatusRequest to MSS system receiving answer
+     * @param req the MSS_StatusReq
+     * @return received MSS_StatusResp
      * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
      * @throws IllegalArgumentException if req is null
      */
-    public MSSReceiptResp send(final MSSReceiptReq req, final LavercaContext context) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null ReceiptReq");
-        return (MSSReceiptResp)this.sendMat(req, context);
-    }
-
-    /**
-     * Send the MSS_HandshakeRequest to MSS system receiving answer
-     * @param req the MSS_HandshakeReq
-     * @param context LavercaContext
-     * @return received MSS_HandshakeResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
-     */
-    public MSSHandshakeResp send(final MSSHandshakeReq req, final LavercaContext context) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null HandshakeReq");
-        return (MSSHandshakeResp)this.sendMat(req, context);
+    public MSSStatusResp send(final MSSStatusReq req) throws IOException {
+        return this.send(req, null);
     }
 
     /**
@@ -714,30 +643,140 @@ public class MssClient {
     }
 
     /**
-     * Send the MSS_ProfileRequest to MSS system receiving answer
-     * @param req the MSS_ProfileReq
-     * @param context LavercaContext
-     * @return received MSS_ProfileResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
+     * Sets the AE connection URLs.
+     * @param msspSignatureUrl    Connection URL to the AE for signature requests. 
+     * @param msspStatusUrl       Connection URL to the AE for status query requests. 
+     * @param msspReceiptUrl      Connection URL to the AE for receipt requests. 
+     * @param msspRegistrationUrl Connection URL to the AE for registration requests. 
+     * @param msspProfileUrl      Connection URL to the AE for profile query requests. 
+     * @param msspHandshakeUrl    Connection URL to the AE for handshake requests.
      */
-    public MSSProfileResp send(final MSSProfileReq req, final LavercaContext context) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null ProfileReq");
-        return (MSSProfileResp)this.sendMat(req, context);
+    public void setAeAddress(final String msspSignatureUrl,
+                             final String msspStatusUrl,
+                             final String msspReceiptUrl,
+                             final String msspRegistrationUrl,
+                             final String msspProfileUrl,
+                             final String msspHandshakeUrl)
+    throws IllegalArgumentException
+    {
+        try {
+            if (msspSignatureUrl != null) {
+                this.MSSP_SI_URL = new URL (msspSignatureUrl);
+            }
+            if (msspStatusUrl != null) {
+                this.MSSP_ST_URL = new URL (msspStatusUrl);
+            }
+            if (msspReceiptUrl != null) {
+                this.MSSP_RC_URL = new URL (msspReceiptUrl);
+            }
+            if (msspRegistrationUrl != null) {
+                this.MSSP_RG_URL = new URL (msspRegistrationUrl);
+            }
+            if (msspProfileUrl != null) {
+                this.MSSP_PR_URL = new URL (msspProfileUrl);
+            }
+            if (msspHandshakeUrl != null) {
+                this.MSSP_HS_URL = new URL (msspHandshakeUrl);
+            }
+        } catch (MalformedURLException mue) {
+            throw new IllegalArgumentException(mue.getMessage());
+        }
+    }
+
+    
+    /**
+     * Set connection timeout for HTTP Client
+     * @param connTimeout Timeout in milliseconds
+     */
+    public void setConnectionTimeout(final int connTimeout) {
+        this.newConnTimeout = connTimeout;
     }
 
     /**
-     * Send the MSS_RegistrationRequest to MSS system receiving answer
-     * @param req the MSS_RegistrationReq
-     * @param context LavercaContext
-     * @return received MSS_RegistrationResp
-     * @throws IOException if a HTTP communication error occurs or if the service returns a SOAP Fault
-     * @throws IllegalArgumentException if req is null
+     * Set a custom Axis EngineConfiguration
+     * @param conf Axis EngineConfiguration
      */
-    public MSSRegistrationResp send(final MSSRegistrationReq req, final LavercaContext context) throws IOException {
-        if (req == null) throw new IllegalArgumentException ("Unable to send null RegistrationReq");
-        return (MSSRegistrationResp)this.sendMat(req, context);
+    public void setEngineConfiguration(final EngineConfiguration conf) {
+        this.mssService.setEngineConfiguration(conf);
     }
+
+    /**
+     * Set HTTP Client pool size
+     * @param poolSize pool size
+     */
+    public void setPoolSize(final int poolSize) {
+        this.poolSize = poolSize;
+    }
+
+    /**
+     * Set socket timeout for HTTP Client
+     * @param socketTimeout Timeout in milliseconds
+     */
+    public void setSocketTimeout(final int socketTimeout) {
+        this.newSoTimeout = socketTimeout;
+    }
+
+    /**
+     * Set this socket factory before calling MSS operations,
+     * if you want to e.g. inclusion of your client certificate
+     * on the outgoing calls.
+     *
+     * @param ssf Define a SSL SocketFactory with a client side key
+     */
+    public void setSSLSocketFactory(final SSLSocketFactory ssf) {
+        this.sslSocketFactory = ssf;
+    }
+
+    private LavercaHttpClient getHttpClient() {
+        synchronized (this) {
+            if (this.httpClient == null) {
+                // If SSLSocketFactory is set, use it, otherwise use system default
+                SSLSocketFactory ssf = this.sslSocketFactory;
+                if (ssf == null) {
+                    ssf = (SSLSocketFactory)SSLSocketFactory.getDefault();
+                }
+                this.httpClient = new LavercaHttpClient("mssClientPool",
+                                                        this.poolSize,
+                                                        this.newConnTimeout,
+                                                        this.newSoTimeout,
+                                                        this.newUsername,
+                                                        this.newPassword,
+                                                        this.proxySettings,
+                                                        ssf);
+            }
+        }
+        return this.httpClient;
+    }
+
+    /**
+     * Fills Minorversion, Majorversion, AP_Info and MSS_Info to the given message.
+     * @param mat Message to fill
+     * @param apTransId AP Transaction ID
+     */
+    private void initializeRequestMessage(final MessageAbstractType mat, final String apTransId) {
+        
+        if (mat == null) throw new IllegalArgumentException("Invalid request (null)");
+    
+        // Set the interface versions. 1 for both, as per ETSI TS 102 204.
+        mat.setMajorVersion(Long.valueOf(1));
+        mat.setMinorVersion(Long.valueOf(1));
+
+        if (apTransId != null) {
+            // Create the AP_Info.
+            final MessageAbstractType.APInfo aiObject = mssObjFactory.createMessageAbstractTypeAPInfo();
+            aiObject.setAPID(this.apId);
+            aiObject.setAPPWD(this.apPwd);
+            aiObject.setAPTransID(apTransId);
+            aiObject.setInstant(new GregorianCalendar());
+            mat.setAPInfo(aiObject);
+        }
+        
+        final MessageAbstractType.MSSPInfo miObject = mssObjFactory.createMessageAbstractTypeMSSPInfo();
+        miObject.setMSSPID(mssObjFactory.createMeshMemberType()); 
+
+        mat.setMSSPInfo(miObject);
+    }
+
 
     /**
      * Sends an MSS request.
@@ -816,21 +855,6 @@ public class MssClient {
         }
         
         return resp;
-    }
-
-
-    /**
-     * Return whether s is a valid xs:NCName String.
-     * 
-     * @param s String to test
-     * @return true if s is a valid xs:NCName
-     */
-    public static boolean isNCName(final String s) {
-        if (s == null) {
-            return false;
-        } else {
-            return org.apache.axis.types.NCName.isValid(s);
-        }
     }
 
 }
