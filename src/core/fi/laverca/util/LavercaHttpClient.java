@@ -93,6 +93,7 @@ public class LavercaHttpClient {
     private final CredentialsProvider                 credentialsProvider;
     private final AuthCache                           authCache;
     private final RequestConfig.Builder               requestConfigBuilder;
+    private final HttpClientContext                   httpClientContext;
 
     private final String    poolUrl;
     private final String    username;
@@ -143,55 +144,7 @@ public class LavercaHttpClient {
         // Lifetime of that pool in seconds is:
         final int connPoolTTL = 300;
         
-        this.connectionManager =
-            new PoolingHttpClientConnectionManager(rb.build(), null, null, null, connPoolTTL, TimeUnit.SECONDS) {
-
-            @Override
-            public ConnectionRequest requestConnection(HttpRoute route, Object state) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Requesting connection on pool; route "+route+" state "+state);
-                }
-                
-                // HttpClient 4.x issue until at least 4.5.4:
-                //
-                // HttpClient calls requestConnection() with state = null,
-                // while releaseConnection() had state = client certificate subject value.
-                // Thus requesting did not find pre-existing sessions.
-                // (This issue exists only when client certificate is used.)
-                //
-                // Side-step the bug by forcing state=null.
-                state = null;
-
-                
-                final ConnectionRequest req = super.requestConnection(route, state);
-                
-                return req;
-            }
-            
-            @Override
-            public void releaseConnection( final HttpClientConnection managedConn,
-                                           Object state,
-                                           final long keepalive, final TimeUnit tunit)
-            {
-                if (log.isTraceEnabled()) {
-                    log.trace("Releasing connection to pool; state "+state+" keepalive "+keepalive);
-                }
-
-                // HttpClient 4.x issue until at least 4.5.4:
-                //
-                // HttpClient calls releaseConnection() with client certificate Subject value in state.
-                // Request connection above is called with state = null.
-                // Thus requesting did not find pre-existing sessions.
-                // (This issue exists only when client certificate is used.)
-                //
-                // Side-step the bug by forcing state=null.
-                state = null;
-
-                super.releaseConnection( managedConn, state, keepalive, tunit );
-            }
-
-        };
-
+        this.connectionManager = new PoolingHttpClientConnectionManager(rb.build(), null, null, null, connPoolTTL, TimeUnit.SECONDS);
         this.connectionManager.setMaxTotal(newPoolSize);
         this.connectionManager.setDefaultMaxPerRoute(newPoolSize);
 
@@ -294,6 +247,20 @@ public class LavercaHttpClient {
         // Construct the HttpClient
         this.client = hcb.build();
 
+        // Note: Examples in HttpComponents tutorials (at least until 4.5.4) let
+        //       it be understood that HttpClientContext is per request basis.
+        //       Documentation does not say anything either way, but what really
+        //       needs to be done is to use single shared context in between all
+        //       call sessions wanting to use a shared pool.
+        //
+        //       This means that e.g. AUTH_CACHE is same among all calls.
+        //       It works in this case, but is not an universal thing.
+        
+        this.httpClientContext = HttpClientContext.create();
+        if (this.credentialsProvider  != null) this.httpClientContext.setCredentialsProvider(this.credentialsProvider);
+        if (this.requestConfigBuilder != null) this.httpClientContext.setRequestConfig(this.requestConfigBuilder.build());
+        this.httpClientContext.setAttribute(HttpClientContext.AUTH_CACHE, this.authCache);
+
         log.trace("done creating.");
     }
 
@@ -347,17 +314,15 @@ public class LavercaHttpClient {
     }
     
     /**
-     * Get initialized HttpContext
+     * Get initialized HttpContext.
+     * This is shared in between all call invocations of the 
+     * 
      * @return initialized HttpContext
      */
     public HttpClientContext buildContext() {
-        final HttpClientContext hc = HttpClientContext.create();
-        if (this.credentialsProvider  != null) hc.setCredentialsProvider(this.credentialsProvider);
-        if (this.requestConfigBuilder != null) hc.setRequestConfig(this.requestConfigBuilder.build());
-        hc.setAttribute(HttpClientContext.AUTH_CACHE, this.authCache);
-        return hc;
+        return this.httpClientContext;
     }
-
+    
     /**
      * Get Response body as InputStream
      * 
