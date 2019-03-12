@@ -317,14 +317,18 @@ public class MssClient {
 
         // Record global package names of generated JAXB classes
         for (final Class<?> c : new Class[] {
+                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class,
+                fi.laverca.jaxb.mcs204ext1.ObjectFactory.class,
+                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
+                fi.laverca.jaxb.mreg.ObjectFactory.class,
                 fi.laverca.jaxb.mss.ObjectFactory.class,
                 fi.laverca.jaxb.mssfi.ObjectFactory.class,
-                fi.laverca.jaxb.mid204as1.ObjectFactory.class,
                 fi.laverca.jaxb.saml2a.ObjectFactory.class,
                 fi.laverca.jaxb.saml2p.ObjectFactory.class,
                 fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
                 fi.laverca.jaxb.soap12env.ObjectFactory.class,
-                fi.laverca.jaxb.kiurumssp5.ObjectFactory.class }) {
+                fi.laverca.jaxb.xmldsigcore.ObjectFactory.class,
+                fi.laverca.jaxb.xmlenc.ObjectFactory.class }) {
 
             final String p = c.getPackage().getName();
             JMarshallerFactory.addJAXBPath(p);
