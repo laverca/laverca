@@ -311,7 +311,7 @@ public class MssClient {
         }
     }
     
-    private static void marshallerInit() {
+    private static synchronized void marshallerInit() {
         
         if (marshallerInitDone) return;
 
