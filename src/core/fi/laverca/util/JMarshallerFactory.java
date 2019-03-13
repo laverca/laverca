@@ -217,15 +217,8 @@ public class JMarshallerFactory {
             // Fast part: Return the context value if it already exists
             if (globalJAXBContext != null) return globalJAXBContext;
             try {
-                StringBuilder sb = new StringBuilder();
-                String colon = "";
-                for (String s: globalJAXBPaths) {
-                    sb.append(colon);
-                    colon = ":";
-                    sb.append(s);
-                }
                 // Slow part under synchronization: create the JAXBContext.
-                globalJAXBContext = JAXBContext.newInstance(sb.toString());
+                globalJAXBContext = JAXBContext.newInstance(String.join(":", globalJAXBPaths));
                 return globalJAXBContext;
             } catch (JAXBException e) {
                 log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
