@@ -166,7 +166,14 @@
     <xs:complexContent> 
       <xs:extension base="mss:MessageAbstractType"> 
         <xs:sequence> 
-          <xs:element name="MobileUser" type="mss:MobileUserType"/> 
+          <xs:element name="MobileUser" type="mss:MobileUserType"/>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="GetAutoActivation"      type="xs:boolean" /> <!-- Not originally in ETSI'204 --> 
+            <xs:element name="GetServerSideSignature" type="xs:boolean" /> <!-- Not originally in ETSI'204 --> 
+            <xs:element name="GetRecoveryCodeCreated" type="xs:boolean" /> <!-- Not originally in ETSI'204 --> 
+            <xs:element name="GetCertificates"        type="xs:boolean" /> <!-- Not originally in ETSI'204 --> 
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> <!-- Not originally in ETSI'204 -->
+	      </xs:choice>
         </xs:sequence> 
       </xs:extension> 
     </xs:complexContent> 

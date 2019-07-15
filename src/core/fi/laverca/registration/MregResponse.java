@@ -75,14 +75,22 @@ public class MregResponse {
         if (this.getOperationOutput().getParameters() == null) return;
         
         String groupName  = null;
-        int    groupIndex = 0;
+        int    groupIndex = 1;
+                
+        List<String> groupNames = new ArrayList<>();
         
         for (NameValueType type : this.getOperationOutput().getParameters()) {
             
             MregParam param = new MregParam(type);
             if (param.isGroupStart()) {
                 groupName = param.getValue();
-                if (groupName == null) groupName = GROUP_PREFIX + "_" + groupIndex++;
+                if (groupName == null || groupName.isEmpty()) {
+                    groupName = GROUP_PREFIX + "_" + groupIndex++;
+                } else if (groupNames.contains(groupName)) {
+                    // Make sure that each groupname is unique
+                    groupName = groupName + "_" + groupIndex++;
+                }
+                groupNames.add(groupName);
             } else if (param.isGroupEnd()){
                 groupName = null;
             } else {
@@ -193,7 +201,7 @@ public class MregResponse {
         if (name  == null) return new MregParam(null);
         if (group == null) return this.getParameter(name);
         return this.getGroup(group).stream()
-                                   .filter(p -> name.equalsIgnoreCase(p.getName()))
+                                   .filter(param -> name.equalsIgnoreCase(param.getName()))
                                    .findFirst()
                                    .orElse(new MregParam(null));
     }
@@ -202,10 +210,24 @@ public class MregResponse {
      * Get parameter group names
      * @return names of output param groups (may be empty)
      */
-    public List<String> getGroupNames() {        
+    public List<String> getGroupNames() {
         return this.getParameters().stream()
-                                   .filter(p -> p.groupName != null)
-                                   .map(p -> p.groupName)
+                                   .filter(param -> param.groupName != null)
+                                   .map(param -> param.groupName)
+                                   .distinct()
+                                   .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get parameter group names
+     * @param prefix Group name prefix (for example "AP")
+     * @return names of output param groups (may be empty)
+     */
+    public List<String> getGroupNames(final String prefix) {
+        return this.getParameters().stream()
+                                   .filter(param -> param.groupName != null)
+                                   .map(param -> param.groupName)
+                                   .filter(name -> name.startsWith(prefix))
                                    .distinct()
                                    .collect(Collectors.toList());
     }

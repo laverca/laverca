@@ -23,10 +23,10 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -198,10 +198,17 @@ public class JMarshallerFactory {
     private static Map<Class<?>,JAXBContextDelayedLoad> jaxbCache = new ConcurrentHashMap<>();
     
     private static JAXBContext globalJAXBContext;
-    private static List<String> globalJAXBPaths = new ArrayList<>();
+    private static Set<String> globalJAXBPaths = new HashSet<>();
 
+    /**
+     * Register a path to a known JAXB package
+     * @param p JAXB package
+     */
     public static void addJAXBPath(String p) {
-        globalJAXBPaths.add(p);
+        if (p == null) return;
+        synchronized (JAXBContextDelayedLoad.class) {
+            globalJAXBPaths.add(p);
+        }
     }
 
     private static class JAXBContextDelayedLoad {
@@ -217,15 +224,8 @@ public class JMarshallerFactory {
             // Fast part: Return the context value if it already exists
             if (globalJAXBContext != null) return globalJAXBContext;
             try {
-                StringBuilder sb = new StringBuilder();
-                String colon = "";
-                for (String s: globalJAXBPaths) {
-                    sb.append(colon);
-                    colon = ":";
-                    sb.append(s);
-                }
                 // Slow part under synchronization: create the JAXBContext.
-                globalJAXBContext = JAXBContext.newInstance(sb.toString());
+                globalJAXBContext = JAXBContext.newInstance(String.join(":", globalJAXBPaths));
                 return globalJAXBContext;
             } catch (JAXBException e) {
                 log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
