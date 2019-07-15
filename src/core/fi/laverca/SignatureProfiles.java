@@ -31,6 +31,9 @@ public class SignatureProfiles {
     public static final String FICOM_CONSENT           = "http://mss.ficom.fi/TS102206/v1.0.0/consent-profile.xml";
     
     public static final String SWISSCOM_AUTHENTICATION = "http://mid.swisscom.ch/MID/v1/AuthProfile1";
+    public static final String SWISSCOM_APP_LOA4       = "http://mid.swisscom.ch/Device-LoA4";
+    public static final String SWISSCOM_SIM_LOA4       = "http://mid.swisscom.ch/STK-LoA4";
+    public static final String SWISSCOM_ANY_LOA4       = "http://mid.swisscom.ch/Any-LoA4";
     
     @Deprecated
     public static final String ALAUDA_SIGNATURE        = "http://alauda.mobi/digitalSignature";
