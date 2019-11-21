@@ -30,7 +30,7 @@
   <property name="conf"      value="${examples}/conf"/>
   <property name="etc"       value="${examples}/etc"/>
   <property name="bin"       value="${examples}/bin" />
-  <property name="example-libs" location="${examples}/libs"/>	
+  <property name="example-libs" location="${examples}/libs"/>
 
   <property name="core-lib"      location="${build}/laverca-core-${project-version}.jar" />
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
@@ -42,16 +42,7 @@
 
 
   <path id="anttasks.classpath">
-    <pathelement location="${build-lib}/ant.jar" />
-
-    <pathelement location="${autotester-lib}" />
-    <pathelement location="${logkit-lib}" />
-
-    <pathelement location="${commons-discovery-lib}" />
-    <pathelement location="${commons-logging-lib}" />
-    <pathelement location="${commons-lang-lib}" />
-    <pathelement location="${jdepend-lib}" />
-    <pathelement location="${ant-optional-lib}" />
+    <fileset dir="${libs}"><include name="*.jar" /></fileset>
   </path>
 
 
