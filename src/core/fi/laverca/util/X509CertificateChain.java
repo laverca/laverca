@@ -77,6 +77,15 @@ public class X509CertificateChain implements Collection<X509Certificate> {
     public boolean isEmpty() {
         return this.certChain.isEmpty();
     }
+    
+    /**
+     * Does the signing certificate have KeyUsage nonRepudiaiton?
+     * @return true if the signing certificate have KeyUsage nonRepudiaiton
+     */
+    public boolean isNonRepudiation() {
+        if (this.isEmpty()) return false;
+        return this.certChain.get(0).getKeyUsage()[1];
+    }
 
     @Override
     public boolean contains(Object arg0) {

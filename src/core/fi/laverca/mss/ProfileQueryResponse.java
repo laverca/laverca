@@ -70,7 +70,11 @@ public class ProfileQueryResponse {
         for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
             if (o instanceof ProfileQueryExtension) {
                 ProfileQueryExtension ext = (ProfileQueryExtension)o;
-                return new X509CertificateChain(ext.getMobileUserCertificates());
+                certs = new X509CertificateChain(ext.getMobileUserCertificates());
+                if (certs.isNonRepudiation()) {
+                    // Found nonRepudiation
+                    return certs;
+                }
             }
         }
         
