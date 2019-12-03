@@ -94,10 +94,10 @@ public class Sign {
         EtsiRequest req = client.createRequest(apTransId, // AP Transaction ID
                                                msisdn,    // MSISDN
                                                dtbs,      // Data to be signed
-                                               dtbs.toString(),                    // Data to be displayed
-                                               null,                               // Additional services
-                                               SignatureProfiles.ALAUDA_SIGNATURE, // Signature profile
-                                               MSS_Formats.PKCS7,                  // MSS Format
+                                               dtbs.toString(),                         // Data to be displayed
+                                               null,                                    // Additional services
+                                               SignatureProfiles.ALAUDA_AUTHENTICATION, // Signature profile
+                                               MSS_Formats.PKCS7,                       // MSS Format
                                                MessagingModeType.ASYNCH_CLIENT_SERVER);
         
         try {

@@ -225,11 +225,11 @@ public class PAdES {
         
         // Send a ProfileQueryReq. Depending on the MSSP configuration, the response may contain the needed certs. 
         ProfileQueryResponse profileResp = this.client.sendProfileQuery(msisdn, apTransId);
-        X509CertificateChain certChain   = profileResp.getCertificates();
+        X509CertificateChain certChain   = profileResp.getCertificate(MSS_SIG_PROF);
         
         // If ProfileQueryResponse does not contain certs, get the certs from a Signature. 
         if (certChain.isEmpty()) {
-            certChain = getCertsWithSign(msisdn, apTransId);
+            certChain = this.getCertsWithSign(msisdn, apTransId);
         }
         
         return certChain;

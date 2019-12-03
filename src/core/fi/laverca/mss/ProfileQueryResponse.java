@@ -58,7 +58,9 @@ public class ProfileQueryResponse {
      * If the MSSP supports ProfileQueryExtension,
      * return the Mobile User's certificates.
      * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
+     * @deprecated Use {@link #getCertificate(String)} instead
      */
+    @Deprecated
     public X509CertificateChain getCertificates() {
         
         X509CertificateChain certs = new X509CertificateChain();
@@ -79,6 +81,30 @@ public class ProfileQueryResponse {
         }
         
         return certs;
+    }
+    
+    /**
+     * If the MSSP supports ProfileQueryExtension,
+     * return the Mobile User's certificates.
+     * @param mssSigProf SignatureProfile the certificate is related to
+     * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
+     */
+    public X509CertificateChain getCertificate(String mssSigProf) {
+
+        if (this.resp             == null) return new X509CertificateChain();
+        if (this.resp.getStatus() == null) return new X509CertificateChain();
+        if (this.resp.getStatus().getStatusDetail() == null) return new X509CertificateChain();
+
+        for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
+            if (o instanceof ProfileQueryExtension) {
+                ProfileQueryExtension ext = (ProfileQueryExtension)o;
+                X509CertificateChain cert = new X509CertificateChain(ext.getMobileUserCertificates());
+                if (cert.getSignatureProfiles() != null && cert.getSignatureProfiles().contains(mssSigProf)) {
+                    return cert;
+                }
+            }
+        }
+        return new X509CertificateChain();
     }
         
 }

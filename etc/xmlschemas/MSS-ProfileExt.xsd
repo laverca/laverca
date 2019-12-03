@@ -16,12 +16,26 @@
   <xs:element name="ProfileQueryExtension">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="MobileUserCertificate"
-                    type="ds:X509DataType"
-                    minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="MobileUserCertificate" type="mcs:CertificateType" minOccurs="0" maxOccurs="unbounded"/>
         <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
+  <!-- Certificate element that should contain 1 X509Certificate and 1 X509SubjectName -->
+  <xs:complexType name="CertificateType">
+    <xs:complexContent>
+      <xs:extension base="ds:X509DataType">
+        <xs:attribute name="State"             type="xs:string" use="optional" />
+        <xs:attribute name="Algorithm"         type="xs:string" use="optional" />
+        <xs:attribute name="SignatureProfiles" type="mcs:SignatureProfileType" use="optional" />
+        <xs:anyAttribute namespace="##other" processContents="lax"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:simpleType name="SignatureProfileType">
+    <xs:list itemType="xs:string" />
+  </xs:simpleType>
 
 </xs:schema>

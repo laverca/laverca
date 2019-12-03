@@ -16,7 +16,7 @@ import javax.xml.bind.JAXBElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import fi.laverca.jaxb.xmldsigcore.X509Data;
+import fi.laverca.jaxb.mcs204ext1.CertificateType;
 
 /**
  * Wrapper for a list of certificates that represents a certificate chain. 
@@ -27,8 +27,9 @@ public class X509CertificateChain implements Collection<X509Certificate> {
     private static final Log log = LogFactory.getLog(X509CertificateChain.class);
 
     private List<X509Certificate> certChain = new ArrayList<>();
-
-    public X509CertificateChain(List<X509Data> mobileUserCertificates) {
+    private List<String>          sigProfs  = new ArrayList<>();
+    
+    public X509CertificateChain(List<CertificateType> mobileUserCertificates) {
         CertificateFactory certFactory = null;
         try {
             certFactory = CertificateFactory.getInstance("X.509");
@@ -37,7 +38,8 @@ public class X509CertificateChain implements Collection<X509Certificate> {
             return;
         }
 
-        for (X509Data certData: mobileUserCertificates) {
+        for (CertificateType certData: mobileUserCertificates) {
+            this.sigProfs.addAll(certData.getSignatureProfiles());
             for (Object o: certData.getX509IssuerSerialsAndX509SKISAndX509SubjectNames()) {
 
                 if (o instanceof JAXBElement<?>) {
@@ -58,6 +60,14 @@ public class X509CertificateChain implements Collection<X509Certificate> {
             }
 
         }
+    }
+    
+    /**
+     * Get SignatureProfiles for this certificate chain
+     * @return SignatureProfiles (String list)
+     */
+    public List<String> getSignatureProfiles() {
+        return this.sigProfs;
     }
 
     public X509Certificate get(int i) {
