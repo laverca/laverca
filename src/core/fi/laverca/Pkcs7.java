@@ -31,8 +31,8 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.pkcs.ContentInfo;
 import org.bouncycastle.asn1.pkcs.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -175,7 +175,7 @@ public class Pkcs7 extends CmsSignature {
         while(en.hasMoreElements()) {
             Object o = en.nextElement();
             try {
-                byte[] certDer = ((DERSequence)o).getEncoded();
+                byte[] certDer = ((ASN1Sequence)o).getEncoded();
                 X509Certificate cert = X509Util.DERtoX509Certificate(certDer);
                 certs.add(cert);
             } catch (IOException e) {
