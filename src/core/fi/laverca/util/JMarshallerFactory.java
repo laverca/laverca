@@ -186,9 +186,13 @@ public class JMarshallerFactory {
         throws JAXBException
     {
         try {
-            m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",nsp);
+            m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", nsp);
         } catch (PropertyException e) {
-            throw new JAXBException(e);
+            try {
+                m.setProperty("com.sun.xml.bind.namespacePrefixMapper",nsp);
+            } catch (PropertyException e2) {
+                log.trace("Failed to set jaxb PrefixMapper");
+            }
         }
     }
 
