@@ -22,6 +22,7 @@ package fi.laverca.mss;
 import java.util.ArrayList;
 import java.util.List;
 
+import fi.laverca.jaxb.mcs204ext1.CertificateType;
 import fi.laverca.jaxb.mcs204ext1.ProfileQueryExtension;
 import fi.laverca.jaxb.mss.MSSProfileResp;
 import fi.laverca.jaxb.mss.MssURIType;
@@ -72,10 +73,12 @@ public class ProfileQueryResponse {
         for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
             if (o instanceof ProfileQueryExtension) {
                 ProfileQueryExtension ext = (ProfileQueryExtension)o;
-                certs = new X509CertificateChain(ext.getMobileUserCertificates());
-                if (certs.isNonRepudiation()) {
-                    // Found nonRepudiation
-                    return certs;
+                for (CertificateType certType : ext.getMobileUserCertificates()) {
+                    certs = new X509CertificateChain(certType);
+                    if (certs.isNonRepudiation()) {
+                        // Found nonRepudiation
+                        return certs;
+                    }
                 }
             }
         }
@@ -98,9 +101,11 @@ public class ProfileQueryResponse {
         for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
             if (o instanceof ProfileQueryExtension) {
                 ProfileQueryExtension ext = (ProfileQueryExtension)o;
-                X509CertificateChain cert = new X509CertificateChain(ext.getMobileUserCertificates());
-                if (cert.getSignatureProfiles() != null && cert.getSignatureProfiles().contains(mssSigProf)) {
-                    return cert;
+                for (CertificateType certType : ext.getMobileUserCertificates()) {
+                    X509CertificateChain cert = new X509CertificateChain(certType);
+                    if (cert.getSignatureProfiles() != null && cert.getSignatureProfiles().contains(mssSigProf)) {
+                        return cert;
+                    }
                 }
             }
         }

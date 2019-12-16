@@ -29,7 +29,7 @@ public class X509CertificateChain implements Collection<X509Certificate> {
     private List<X509Certificate> certChain = new ArrayList<>();
     private List<String>          sigProfs  = new ArrayList<>();
     
-    public X509CertificateChain(List<CertificateType> mobileUserCertificates) {
+    public X509CertificateChain(CertificateType certData) {
         CertificateFactory certFactory = null;
         try {
             certFactory = CertificateFactory.getInstance("X.509");
@@ -38,27 +38,24 @@ public class X509CertificateChain implements Collection<X509Certificate> {
             return;
         }
 
-        for (CertificateType certData: mobileUserCertificates) {
-            this.sigProfs.addAll(certData.getSignatureProfiles());
-            for (Object o: certData.getX509IssuerSerialsAndX509SKISAndX509SubjectNames()) {
+        this.sigProfs.addAll(certData.getSignatureProfiles());
+        for (Object o: certData.getX509IssuerSerialsAndX509SKISAndX509SubjectNames()) {
 
-                if (o instanceof JAXBElement<?>) {
-                    JAXBElement<?> element = (JAXBElement<?>) o;
-                    Object val = element.getValue();
-                    
-                    if (val instanceof byte[]) {
-                        try (InputStream in = new ByteArrayInputStream((byte[]) val)) {
-                            final X509Certificate x509cert = (X509Certificate) certFactory.generateCertificate(in);
-                            this.add(x509cert);                                
-                        } catch (CertificateException e) {
-                            log.error(e.getMessage(), e);
-                        } catch (IOException ioe) {
-                            log.error(ioe.getMessage(), ioe);
-                        }
+            if (o instanceof JAXBElement<?>) {
+                JAXBElement<?> element = (JAXBElement<?>) o;
+                Object val = element.getValue();
+                
+                if (val instanceof byte[]) {
+                    try (InputStream in = new ByteArrayInputStream((byte[]) val)) {
+                        final X509Certificate x509cert = (X509Certificate) certFactory.generateCertificate(in);
+                        this.add(x509cert);                                
+                    } catch (CertificateException e) {
+                        log.error(e.getMessage(), e);
+                    } catch (IOException ioe) {
+                        log.error(ioe.getMessage(), ioe);
                     }
                 }
             }
-
         }
     }
     
