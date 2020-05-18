@@ -68,10 +68,10 @@ public class LavercaPAdESService extends PAdESService {
     }
     
     
-    // This method is protected. Make it accessible in this package with a sleight of hand..
-    @Override
-    protected byte[] computeDocumentDigest(final DSSDocument toSignDocument, final PAdESSignatureParameters parameters) {
-        return super.computeDocumentDigest(toSignDocument, parameters);
+    // This method is protected in original implementation.
+    public byte[] computeDocumentDigest(final DSSDocument toSignDocument, final PAdESSignatureParameters parameters) {
+        final PDFSignatureService pdfSignatureService = PdfObjFactory.newPAdESSignatureService();
+        return pdfSignatureService.digest(toSignDocument, parameters, parameters.getDigestAlgorithm());
     }
 
     /**
@@ -129,7 +129,10 @@ public class LavercaPAdESService extends PAdESService {
         
         final PDFSignatureService pdfSignatureService = PdfObjFactory.newPAdESSignatureService();
         DSSDocument signature = pdfSignatureService.sign(toSignDocument, encodedData, parameters, parameters.getDigestAlgorithm());
+
         
+        // Note: Following code, and all depencies on it can be removed if the caller
+        //       will always use PAdES_BASELINE_B ...
         if ((signatureLevel != SignatureLevel.PAdES_BASELINE_B) &&
             (signatureLevel != SignatureLevel.PAdES_BASELINE_T)) {
             final SignatureExtension<PAdESSignatureParameters> extension = getExtensionProfile(signatureLevel);
