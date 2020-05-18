@@ -112,7 +112,7 @@ public class PAdES {
             this.fileToSign = args[1];
         } else {
             System.err.println("Usage: [msisdn] filename");
-            return;
+            System.exit(64);
         }
         
         // Check at least that the file extension is PDF
