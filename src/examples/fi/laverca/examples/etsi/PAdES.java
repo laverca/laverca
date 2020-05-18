@@ -24,8 +24,19 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
+import org.bouncycastle.util.Selector;
+import org.bouncycastle.util.Store;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
@@ -37,7 +48,6 @@ import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
-import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import fi.laverca.CmsSignature;
 import fi.laverca.MSS_Formats;
@@ -78,11 +88,20 @@ public class PAdES {
     private String signedFile;
     private DSSDocument doc;
             
-    private PAdESService                service;
-    private PAdESSignatureParameters parameters;
-    
     private MssConf    conf;
     private EtsiClient client;
+
+    // Select the operation mode.
+    // - true: Makes a CMS external hash signature, and merges the CMS signature
+    //         Does require that MSSP making the signature does produce a PAdES_BASELINE_B
+    //         (CAdES-BES) profile conformant SignedAttributes collection.
+    // - false: Does query the remote MSSP server for end-user certificates, prepares
+    //          the signature material, and then digests it for final signing device
+    //          processing ("PKCS1" signature).
+    // 
+
+    private static boolean useCMSmode = true;
+
     
     public static void main(final String[] args) {
         new PAdES(args).run();
@@ -113,13 +132,6 @@ public class PAdES {
         this.signedFile = fileToSign.replace(".pdf", ".signed.pdf");
         this.doc        = new FileDocument(this.fileToSign);
         
-        this.service    = new PAdESService(new CommonCertificateVerifier());
-        this.parameters = new PAdESSignatureParameters();
-        this.parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
-        this.parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-        this.parameters.setDigestAlgorithm(DIGEST_ALG);
-        // this.parameters.setLocation(locationString);
-        
         this.conf   = MssConf.fromPropertyFile("conf/examples.conf");
         this.client = new EtsiClient(conf);
     }
@@ -132,36 +144,66 @@ public class PAdES {
         // Create AP_TransID to use. This can be any String unique within this AP.
         String apTransId = "A" + System.currentTimeMillis();
       
-        // 1. Get Signing Certificate
-        X509CertificateChain chain = null;
         try {
-            chain = this.getCertChain(this.msisdn, apTransId);
-        } catch (IOException ioe) {
-            System.out.println("Failed to get certs from MSSP.");
-            ioe.printStackTrace();
-            this.client.shutdown();
-            return;
-        }
-        
-        // 2. Fill certs to SignatureParameters
-        final X509Certificate       signingCert = chain.getSigningCert();        
-        final List<CertificateToken> tokenChain = chain.stream()
-                                                       .map(CertificateToken::new)
-                                                       .collect(Collectors.toList());
-
-        this.parameters.setCertificateChain(tokenChain);
-        this.parameters.setSigningCertificate(new CertificateToken(signingCert));
-        
-        // 3. Send the PAdES signature request
-        try {            
-            final ToBeSigned dataToSign   = this.service.getDataToSign(this.doc, this.parameters);
-            final byte[] dataToSignBytes  = dataToSign.getBytes();
-            final byte[] dataToSignDigest = digest(dataToSignBytes);
             
-            DTBS dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
+            // 1. Prepare the PAdES signature request
+
+            final LavercaPAdESService service    = new LavercaPAdESService(new CommonCertificateVerifier());
+            
+            final DigestAlgorithm digAlg = DIGEST_ALG;
+
+            final PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+            parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+            parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+            parameters.setDigestAlgorithm(digAlg);
+            // this.parameters.setLocation(locationString);
+
+
+            if (!useCMSmode) {
+                // 2. Get Signing Certificate
+                X509CertificateChain chain = null;
+                try {
+                    chain = this.getCertChain(this.msisdn, apTransId);
+                } catch (IOException ioe) {
+                    System.out.println("Failed to get certs from MSSP.");
+                    ioe.printStackTrace();
+                    this.client.shutdown();
+                    return;
+                }
+    
+                // 3. Fill certs to SignatureParameters
+                final X509Certificate       signingCert = chain.getSigningCert();        
+                final List<CertificateToken> tokenChain = chain.stream()
+                                                               .map(CertificateToken::new)
+                                                               .collect(Collectors.toList());
+                
+                parameters.setCertificateChain(tokenChain);
+                parameters.setSigningCertificate(new CertificateToken(signingCert));
+            }
+
+            // 4. Prepare signature request
+            
+            DTBS dtbs;
+            
+            String mssFormat;
+            
+            if (useCMSmode) {
+                final byte[] messageDigest = service.computeDocumentDigest(this.doc, parameters);
+                dtbs = new DTBS(messageDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
+                mssFormat = MSS_Formats.CMS;
+            } else {
+                final ToBeSigned dataToSign   = service.getDataToSign(this.doc, parameters);
+                final byte[] dataToSignBytes  = dataToSign.getBytes();
+                final byte[] dataToSignDigest = digest(dataToSignBytes);
+                
+                dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
+                mssFormat = MSS_Formats.FICOM_PKCS1;
+            }
             
             // Data to be displayed
             String dtbd = dtbs.toString();
+
+            // 5. Send signature request
             
             EtsiRequest req = this.client.createRequest(apTransId,               // AP Transaction ID
                                                         this.msisdn,             // MSISDN
@@ -169,7 +211,7 @@ public class PAdES {
                                                         dtbd,                    // Data to be displayed
                                                         null,                    // Additional services
                                                         MSS_SIG_PROF,            // Signature profile
-                                                        MSS_Formats.KIURU_PKCS1, // MSS Format
+                                                        mssFormat,               // MSS Format
                                                         MessagingModeType.ASYNCH_CLIENT_SERVER);
     
             // 4. Send Signature request
@@ -179,19 +221,52 @@ public class PAdES {
             System.out.println("  StatusCode   : " + resp.getStatusCode());
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
             System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
-            
+
+            final JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
+
             DSSDocument signedDocument = null;
             try {
-                // Pick raw PKCS#1 signature
-                final byte[] sigBytes = resp.getSignature().getRawSignature();
-                // Pick CMS signature part, the WPKI signer produces CMS signature
-                // final byte[] cmsSigBytes = resp.getSignature().getRawSignature();
-                // CmsSignature cs = new CmsSignature(cmsSigBytes);
-                // final byte[] sigBytes = cs.getSignatureValue();
+                
+                if (useCMSmode) {
+                    // Pick CMS signature part, the WPKI signer produces CMS signature
+                    final byte[] cmsSigBytes = resp.getSignature().getRawSignature();
+                    final CMSSignedData cmsSignedData = new CMSSignedData(cmsSigBytes);
 
-                // 5. Attach signature to PDF
-                SignatureValue signatureValue = new SignatureValue(SIG_ALG, sigBytes);
-                signedDocument = this.service.signDocument(this.doc, this.parameters, signatureValue);
+                    // 3. Fill certs to SignatureParameters
+                    final Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
+                    final SignerInformationStore         signers = cmsSignedData.getSignerInfos();
+                    
+                    for (final SignerInformation signer : signers.getSigners()) {
+                        @SuppressWarnings("unchecked")
+                        final Selector<X509CertificateHolder>              sid = signer.getSID();
+                        final Collection<X509CertificateHolder> certCollection = certStore.getMatches(sid);
+                        for (final X509CertificateHolder certH : certCollection) {                    
+                            if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH))) {
+                                final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
+                                parameters.setSigningCertificate(certT);
+                            }
+                        }
+                    }
+
+                    // All certificates - match against "null"
+                    for (final X509CertificateHolder certH : certStore.getMatches(null)) {
+                        final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
+                        // Really: add if not already stored
+                        parameters.setCertificateChain(certT);
+                    }
+
+                    // 5. Attach signature to PDF, using customized processing method
+                    signedDocument = service.signDocument(this.doc, parameters, cmsSignedData);
+
+                    
+                } else {
+                    // Pick raw PKCS#1 signature
+                    final byte[] sigBytes = resp.getSignature().getRawSignature();
+
+                    // 5. Attach signature to PDF
+                    final SignatureValue signatureValue = new SignatureValue(SIG_ALG, sigBytes);
+                    signedDocument = service.signDocument(this.doc, parameters, signatureValue);
+                }
 
             } catch (Throwable e) {
                 System.out.println("PAdES sign failed:");

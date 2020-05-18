@@ -31,6 +31,11 @@ public class MSS_Formats {
     public final static String PKCS7 = "http://uri.etsi.org/TS102204/v1.1.2#PKCS7";
 
     /**
+     * http://uri.etsi.org/TS102204/v1.1.2#CMS-Signature
+     */
+    public final static String CMS = "http://uri.etsi.org/TS102204/v1.1.2#CMS-Signature";
+
+    /**
      * http://www.methics.fi/KiuruMSSP/v3.2.0#PKCS1
      */
     public final static String KIURU_PKCS1 = "http://www.methics.fi/KiuruMSSP/v3.2.0#PKCS1";
