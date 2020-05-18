@@ -27,18 +27,18 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import eu.europa.esig.dss.DSSDocument;
-import eu.europa.esig.dss.DigestAlgorithm;
-import eu.europa.esig.dss.FileDocument;
-import eu.europa.esig.dss.SignatureAlgorithm;
-import eu.europa.esig.dss.SignatureLevel;
-import eu.europa.esig.dss.SignaturePackaging;
-import eu.europa.esig.dss.SignatureValue;
-import eu.europa.esig.dss.ToBeSigned;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.SignatureValue;
+import eu.europa.esig.dss.model.ToBeSigned;
+import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.x509.CertificateToken;
 import fi.laverca.CmsSignature;
 import fi.laverca.MSS_Formats;
 import fi.laverca.SignatureProfiles;
@@ -78,7 +78,7 @@ public class PAdES {
     private String signedFile;
     private DSSDocument doc;
             
-    private PAdESService             service;
+    private PAdESService                service;
     private PAdESSignatureParameters parameters;
     
     private MssConf    conf;
@@ -118,6 +118,7 @@ public class PAdES {
         this.parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         this.parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
         this.parameters.setDigestAlgorithm(DIGEST_ALG);
+        // this.parameters.setLocation(locationString);
         
         this.conf   = MssConf.fromPropertyFile("conf/examples.conf");
         this.client = new EtsiClient(conf);
@@ -128,7 +129,7 @@ public class PAdES {
      */
     public void run() {
         
-        // Create AP_TransID to use. This can be any unique String. 
+        // Create AP_TransID to use. This can be any String unique within this AP.
         String apTransId = "A" + System.currentTimeMillis();
       
         // 1. Get Signing Certificate
@@ -181,9 +182,17 @@ public class PAdES {
             
             DSSDocument signedDocument = null;
             try {
+                // Pick raw PKCS#1 signature
+                final byte[] sigBytes = resp.getSignature().getRawSignature();
+                // Pick CMS signature part, the WPKI signer produces CMS signature
+                // final byte[] cmsSigBytes = resp.getSignature().getRawSignature();
+                // CmsSignature cs = new CmsSignature(cmsSigBytes);
+                // final byte[] sigBytes = cs.getSignatureValue();
+
                 // 5. Attach signature to PDF
-                SignatureValue signatureValue = new SignatureValue(SIG_ALG, resp.getSignature().getRawSignature());
+                SignatureValue signatureValue = new SignatureValue(SIG_ALG, sigBytes);
                 signedDocument = this.service.signDocument(this.doc, this.parameters, signatureValue);
+
             } catch (Throwable e) {
                 System.out.println("PAdES sign failed:");
                 e.printStackTrace();
@@ -275,5 +284,4 @@ public class PAdES {
         md.update(data);
         return md.digest();
     }
-    
 }

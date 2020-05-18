@@ -24,7 +24,8 @@
 
 
   <property name="libs"      location="libs"/>
-  <property name="docs"      location="docs"/>	
+  <property name="jlibs"     location="libs/jaxb-ri-240-b180830" />
+  <property name="docs"      location="docs"/>
 
   <property name="examples"  location="examples"/>
   <property name="conf"      value="${examples}/conf"/>
@@ -37,12 +38,27 @@
   <property name="examples-lib"  location="${build}/laverca-examples.jar" />
 
   <path id="laverca-libs">
-    <fileset dir="${libs}"><include name="*.jar" /></fileset>
+    <fileset dir="${libs}">
+      <include name="*.jar" />
+      <exclude name="axis-1.4.patched.jar" />
+    </fileset>
+    <pathelement location="${jlibs}/jaxb-api.jar" />
+    <pathelement location="${jlibs}/jaxb-runtime.jar" />
+    <pathelement location="${jlibs}/istack-common-runtime.jar" />
+    <pathelement location="${libs}/axis-1.4.patched.jar" />
   </path>
 
-
   <path id="anttasks.classpath">
-    <fileset dir="${libs}"><include name="*.jar" /></fileset>
+    <fileset dir="${libs}">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+
+  <path id="xjc.classpath">
+    <fileset dir="${libs}/jaxb-ri-240-b180830">
+      <include name="*.jar" />
+    </fileset>
+    <pathelement location="${libs}/xml-apis-2.11.0-20110622.jar" />
   </path>
 
 
@@ -52,9 +68,9 @@
     <attribute name="file" />
     <sequential>
       <echo>XJC @{file}</echo>
-      <java classname="com.sun.tools.internal.xjc.XJCFacade"
+      <java classname="com.sun.tools.xjc.XJCFacade"
             failonerror="true"
-            classpathref="anttasks.classpath">
+            classpathref="xjc.classpath">
         <arg line="-verbose -npa -no-header " />
         <arg line="-d @{todir}"/>
         <arg line="-extension -b ${buildproperties}/xjc-bindings.xml" />
@@ -69,9 +85,9 @@
     <attribute name="file" />
     <sequential>
      <echo>Generating JAXB datatypes with XJC</echo>
-     <java classname="com.sun.tools.internal.xjc.XJCFacade"
+     <java classname="com.sun.tools.xjc.XJCFacade"
             failonerror="true"
-            classpathref="anttasks.classpath">
+            classpathref="xjc.classpath">
         <arg line="-npa -no-header -nv" />
         <arg line="-d @{todir}"/>
         <arg line="-extension"/>
@@ -130,6 +146,12 @@
         <include name="laverca-client-config.wsdd" />
       </fileset>
     </jar>
+
+
+    <copy todir="${dist}/libs" file="${jlibs}/jaxb-runtime.jar" />
+    <copy todir="${dist}/libs" file="${jlibs}/jaxb-api.jar" />
+    <copy todir="${dist}/libs" file="${jlibs}/istack-common-runtime.jar" />
+
   </target>
 
   <target name="build-examples">
@@ -152,6 +174,10 @@
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>
     <copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
     <copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
+
+    <copy todir="${dist}/libs" file="${jlibs}/jaxb-runtime.jar" />
+    <copy todir="${dist}/libs" file="${jlibs}/jaxb-api.jar" />
+    <copy todir="${dist}/libs" file="${jlibs}/istack-common-runtime.jar" />
     
     <copy todir="${dist}" file="${core-lib}" />
     <copy todir="${dist}/examples" file="${examples-lib}" />

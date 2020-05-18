@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -56,10 +57,15 @@ public class JMarshallerFactory {
 
     private static NSPfxMapper nsp;
 
+    // JAXB-RI value, which disagrees with Java-8 runtime value
+    private static final String JAXB_CONTEXT_FACTORY       = "javax.xml.bind.context.factory";
+    private static final String JAXB_CONTEXT_FACTORY_VALUE = "com.sun.xml.bind.v2.ContextFactory";
+    private static final String NAMESPACE_PREFIX_MAPPER    = "com.sun.xml.bind.namespacePrefixMapper";
+
     /**
-     * JAXB RI NamespacePrefixMapper, Oracle Java 8 JRE
+     * JAXB RI NamespacePrefixMapper 
      */
-    private static class NSPfxMapper extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper  {
+    private static class NSPfxMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  {
 
         private HashMap<String,String> uri2pfx = new HashMap<>();
         private HashMap<String,String> pfx2uri = new HashMap<>();
@@ -157,10 +163,18 @@ public class JMarshallerFactory {
         nsp.setNamespaceMapping("wsa",  "http://www.w3.org/2005/08/addressing");
         nsp.setNamespaceMapping("wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd");
         nsp.setNamespaceMapping("xenc", "http://www.w3.org/2001/04/xmlenc#");
-        nsp.setNamespaceMapping("xs",   "http://www.w3.org/2001/XMLSchema");
-        nsp.setNamespaceMapping("xsi",  "http://www.w3.org/2001/XMLSchema-instance");
         nsp.setNamespaceMapping("env",  "http://www.w3.org/2003/05/soap-envelope");
-        nsp.setNamespaceMapping("xmlns","http://www.w3.org/XML/1998/namespace");
+        nsp.setNamespaceMapping("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        nsp.setNamespaceMapping("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+        nsp.setNamespaceMapping("xml",  XMLConstants.XML_NS_URI);
+
+        try {
+            // Setup JAXB-RI context factory -- make sure it exists
+            Class.forName(JAXB_CONTEXT_FACTORY_VALUE);
+            System.setProperty(JAXB_CONTEXT_FACTORY, JAXB_CONTEXT_FACTORY_VALUE);
+        } catch (Exception e) {
+            log.warn("Could not initialize JAXB ContextFactory "+JAXB_CONTEXT_FACTORY_VALUE);
+        }
     }
 
     /** 
@@ -186,10 +200,10 @@ public class JMarshallerFactory {
         throws JAXBException
     {
         try {
-            m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", nsp);
+            m.setProperty(NAMESPACE_PREFIX_MAPPER,nsp);
         } catch (PropertyException e) {
             try {
-                m.setProperty("com.sun.xml.bind.namespacePrefixMapper",nsp);
+                m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",nsp);
             } catch (PropertyException e2) {
                 log.trace("Failed to set jaxb PrefixMapper");
             }
@@ -203,6 +217,7 @@ public class JMarshallerFactory {
     
     private static JAXBContext globalJAXBContext;
     private static Set<String> globalJAXBPaths = new HashSet<>();
+    private static boolean     globalJAXBPathsModified;
 
     /**
      * Register a path to a known JAXB package
@@ -210,13 +225,15 @@ public class JMarshallerFactory {
      */
     public static void addJAXBPath(String p) {
         if (p == null) return;
-        synchronized (JAXBContextDelayedLoad.class) {
+        synchronized (globalJAXBPaths) {
             globalJAXBPaths.add(p);
+            globalJAXBPathsModified = true;
         }
     }
 
     private static class JAXBContextDelayedLoad {
         private final Class<?> clazz;
+        private JAXBContext jaxbContext;
         
         public JAXBContextDelayedLoad(final Class<?> clazz) {
             this.clazz = clazz;
@@ -226,11 +243,13 @@ public class JMarshallerFactory {
             throws JAXBException
         {
             // Fast part: Return the context value if it already exists
-            if (globalJAXBContext != null) return globalJAXBContext;
+            if (this.jaxbContext != null && !globalJAXBPathsModified) return this.jaxbContext;
             try {
                 // Slow part under synchronization: create the JAXBContext.
-                globalJAXBContext = JAXBContext.newInstance(String.join(":", globalJAXBPaths));
-                return globalJAXBContext;
+                // Main context builder uses globalJAXBPath 
+                this.jaxbContext = JAXBContext.newInstance( this.clazz);
+                // this.jaxbContext = JAXBContext.newInstance(String.join(":", globalJAXBPaths));
+                return this.jaxbContext;
             } catch (JAXBException e) {
                 log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
                 throw e;
@@ -254,6 +273,22 @@ public class JMarshallerFactory {
     private static JAXBContext getJAXBContext(final Class<?> clazz)
         throws JAXBException
     {
+        if (globalJAXBContext != null && !globalJAXBPathsModified) return globalJAXBContext;
+        if (globalJAXBPathsModified) {
+            // The HashSet access (for iteration) must be synchronized..
+            // .. and it is so rare that ConcurrentHashSet is not needed.
+            final String path;
+            synchronized (globalJAXBPaths) {
+                path = String.join(":", globalJAXBPaths);
+            }
+            log.trace("JAXBContext path: "+path);
+            // Create new GlobalContext with this new path
+            globalJAXBContext = JAXBContext.newInstance(path);
+            globalJAXBPathsModified = false;
+            return globalJAXBContext;
+        }
+
+        // Don't worry about synchronization
         JAXBContextDelayedLoad ret = jaxbCache.get(clazz);
         if (ret == null) {
             ret = new JAXBContextDelayedLoad(clazz);
