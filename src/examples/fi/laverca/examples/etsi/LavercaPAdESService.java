@@ -89,12 +89,7 @@ public class LavercaPAdESService extends PAdESService {
                                     final CMSSignedData cmsSignedData)
         throws CMSException
     {
-        assertSigningDateInCertificateValidityRange(parameters);
-
-
         // Fill certs to SignatureParameters
-
-
         try {
             final JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
             final Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
@@ -124,6 +119,7 @@ public class LavercaPAdESService extends PAdESService {
         }
 
         // Proceed with signature building
+        assertSigningDateInCertificateValidityRange(parameters);
 
         final SignatureLevel signatureLevel = parameters.getSignatureLevel();
         final byte[] encodedData = generateCMSSignedData(toSignDocument, parameters, cmsSignedData);
