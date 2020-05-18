@@ -112,7 +112,7 @@ public class Pkcs7 extends CmsSignature {
         if(sd == null) {
             throw new IllegalArgumentException("null input");
         }
-        List<X509Certificate> signerCerts = new ArrayList<X509Certificate>();
+        List<X509Certificate> signerCerts = new ArrayList<>();
 
         // 1. Read PKCS7.Certificates to get all possible certs.
         log.debug("Read all certs");
@@ -168,7 +168,7 @@ public class Pkcs7 extends CmsSignature {
             return null;
         }
 
-        List<X509Certificate> certs = new ArrayList<X509Certificate>();
+        List<X509Certificate> certs = new ArrayList<>();
 
         ASN1Set certSet = sd.getCertificates();
         Enumeration<?> en = certSet.getObjects();
@@ -196,7 +196,7 @@ public class Pkcs7 extends CmsSignature {
             return null;
         }
         
-        List<SignerInfo> signerInfos = new ArrayList<SignerInfo>();
+        List<SignerInfo> signerInfos = new ArrayList<>();
 
         ASN1Set siSet = sd.getSignerInfos();
         Enumeration<?> e = siSet.getObjects();

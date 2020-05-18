@@ -105,7 +105,7 @@ public class DTBS {
      */
     public byte[] toBytes() {
         if (this.data != null) {
-            return data;
+            return this.data;
         }
         if (this.text != null) {
             try {

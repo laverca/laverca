@@ -437,10 +437,10 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         }
         
         log.debug("Sending receipt");
-        final MSSReceiptReq receiptReq = this.mssClient.createReceiptRequest(fiResp.originalSigResp, 
-                                                                             fiResp.originalSigReq.getAPInfo().getAPTransID(), 
+        final MSSReceiptReq receiptReq = this.mssClient.createReceiptRequest(fiResp.getMSS_SignatureResp(), 
+                                                                             fiResp.getMSS_SignatureReq().getAPInfo().getAPTransID(), 
                                                                              message);
-        receiptReq.setMobileUser(fiResp.originalSigReq.getMobileUser());
+        receiptReq.setMobileUser(fiResp.getMSS_SignatureReq().getMobileUser());
         return this.mssClient.send(receiptReq);
     }
     

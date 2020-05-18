@@ -63,17 +63,17 @@ public abstract class MssResponse {
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
     
     /**
-     * @deprecated Will be made private in the future.
+     * @deprecated Will be made private in the future. Use {@link MssResponse#getMSS_SignatureReq()} instead.
      */
     @Deprecated
-    public final MSSSignatureReq  originalSigReq;
+    private final MSSSignatureReq  originalSigReq;
     /**
-     * @deprecated WIll be made private in the future. Use {@link MssResponse#getMSS_SignatureResp()} instead.
+     * @deprecated Will be made private in the future. Use {@link MssResponse#getMSS_SignatureResp()} instead.
      */
     @Deprecated
     public final MSSSignatureResp originalSigResp;
     /**
-     * @deprecated WIll be made private in the future. Use {@link MssResponse#getMSS_StatusResp()} instead.
+     * @deprecated Will be made private in the future. Use {@link MssResponse#getMSS_StatusResp()} instead.
      */
     @Deprecated
     public final MSSStatusResp    finalStatusResp;
@@ -200,6 +200,14 @@ public abstract class MssResponse {
             log.debug("not a pkcs1?", iae);
             return null;
         }
+    }
+
+    /**
+     * Get the raw XML datatype of the MSS_SignatureReq
+     * @return {@link MSSSignatureReq}
+     */
+    public MSSSignatureReq getMSS_SignatureReq() {
+        return this.originalSigReq;
     }
 
     /**

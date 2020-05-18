@@ -44,7 +44,6 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.SignedData;
 import org.bouncycastle.asn1.pkcs.SignerInfo;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.util.encoders.Base64;
 
 import fi.laverca.mss.MssException;
@@ -391,16 +390,14 @@ public class CmsSignature implements Signature {
      * @param dn2 Second Distinguished name
      * @return true if DNs are equal, false otherwise
      */
-    @SuppressWarnings("deprecation")
-    public static boolean dnsEqual(String dn1, String dn2) {
+    public static boolean dnsEqual(final String dn1, final String dn2) {
         if (dn1 == null || dn2 == null) {
             return false;
         }
 
-        X509Name n1 = new X509Name(dn1);
-        X509Name n2 = new X509Name(dn2);
+        final X500Name n1 = new X500Name(dn1);
+        final X500Name n2 = new X500Name(dn2);
 
-        return n1.equals(n2, false);
+        return n1.equals(n2);
     }
-
 }

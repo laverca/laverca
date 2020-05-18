@@ -157,7 +157,7 @@ public class Saml2Util {
      * @return List of attributes (may be empty)
      */
     public static List<Attribute> parseFromAttributeStatement(final AttributeStatement as) {
-        List<Attribute> attributes = new ArrayList<Attribute>();
+        List<Attribute> attributes = new ArrayList<>();
 
         if (as == null) return attributes;
         final List<Object> aList = as.getAttributesAndEncryptedAttributes();

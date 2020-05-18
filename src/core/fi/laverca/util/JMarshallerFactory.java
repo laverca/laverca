@@ -101,7 +101,7 @@ public class JMarshallerFactory {
             pfx = suggestion;
             
             if (pfx == null && requirePrefix) {
-                pfx = "ns" + counter.getAndIncrement();
+                pfx = "ns" + this.counter.getAndIncrement();
             }
             if (pfx != null) {
                 synchronized (this) {

@@ -123,7 +123,7 @@ public class XAdES {
         this.parameters.setDigestAlgorithm(DIGEST_ALG);
         
         this.conf   = MssConf.fromPropertyFile("conf/examples.conf");
-        this.client = new EtsiClient(conf);
+        this.client = new EtsiClient(this.conf);
     } 
     
     /**
@@ -157,7 +157,7 @@ public class XAdES {
         
         // 3. Send the actual XAdES signature request
         try {            
-            final ToBeSigned dataToSign   = service.getDataToSign(doc, parameters);
+            final ToBeSigned dataToSign   = this.service.getDataToSign(this.doc, this.parameters);
             final byte[] dataToSignBytes  = dataToSign.getBytes();
             final byte[] dataToSignDigest = digest(dataToSignBytes);
             
@@ -224,24 +224,24 @@ public class XAdES {
     /**
      * Get the certificate chain.
      * <p>First tries to get the chain with ProfileQuery extension.
-     * If unsuccessful, results to sending a dummy signature requestto the MSSP to get the chain.
+     * If unsuccessful, results to sending a dummy signature request to the MSSP to get the chain.
      * 
-     * @param msisdn    Target MSISDN
+     * @param _msisdn    Target MSISDN
      * @param apTransId AP transaction ID
      * @return Certificate chain (may be empty in which case the signing will fail)
      * @throws IOException
      */
-    private X509CertificateChain getCertChain(final String msisdn, final String apTransId) 
+    private X509CertificateChain getCertChain(final String _msisdn, final String apTransId) 
         throws IOException 
     {
         
         // Send a ProfileQueryReq. Depending on the MSSP configuration, the response may contain the needed certs. 
-        ProfileQueryResponse profileResp = this.client.sendProfileQuery(msisdn, apTransId);
+        ProfileQueryResponse profileResp = this.client.sendProfileQuery(_msisdn, apTransId);
         X509CertificateChain certChain   = profileResp.getCertificate(MSS_SIG_PROF);
         
         // If ProfileQueryResponse does not contain certs, get the certs from a Signature. 
         if (certChain.isEmpty()) {
-            certChain = getCertsWithSign(msisdn, apTransId);
+            certChain = getCertsWithSign(_msisdn, apTransId);
         }
         
         return certChain;
@@ -250,12 +250,12 @@ public class XAdES {
     /**
      * Get the certificate chain by sending a dummy signature request to the MSSP for the user to sign.
      * 
-     * @param msisdn    Target MSISDN
+     * @param _msisdn    Target MSISDN
      * @param apTransId AP transaction ID
      * @return Certificate chain (may be empty in which case the signing will fail)
      * @throws IOException
      */
-    private X509CertificateChain getCertsWithSign(final String msisdn, final String apTransId) 
+    private X509CertificateChain getCertsWithSign(final String _msisdn, final String apTransId) 
         throws IOException
     {
         DTBS   dtbs = new DTBS("CAdES dummy signature to pick certificates.");

@@ -2,8 +2,8 @@ package fi.laverca.examples.etsi;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +69,7 @@ public class LavercaPAdESService extends PAdESService {
     
     
     // This method is protected in original implementation.
+    @Override
     public byte[] computeDocumentDigest(final DSSDocument toSignDocument, final PAdESSignatureParameters parameters) {
         final PDFSignatureService pdfSignatureService = PdfObjFactory.newPAdESSignatureService();
         return pdfSignatureService.digest(toSignDocument, parameters, parameters.getDigestAlgorithm());
@@ -157,7 +158,7 @@ public class LavercaPAdESService extends PAdESService {
 
         if (signatureLevel != SignatureLevel.PAdES_BASELINE_B) {
             // use an embedded timestamp
-            CAdESLevelBaselineT cadesLevelBaselineT = new CAdESLevelBaselineT(tspSource, false);
+            CAdESLevelBaselineT cadesLevelBaselineT = new CAdESLevelBaselineT(this.tspSource, false);
             data = cadesLevelBaselineT.extendCMSSignatures(data, parameters);
         }
 
@@ -172,9 +173,9 @@ public class LavercaPAdESService extends PAdESService {
         case PAdES_BASELINE_T:
             return new PAdESLevelBaselineT(super.tspSource);
         case PAdES_BASELINE_LT:
-            return new PAdESLevelBaselineLT(super.tspSource, certificateVerifier);
+            return new PAdESLevelBaselineLT(super.tspSource, this.certificateVerifier);
         case PAdES_BASELINE_LTA:
-            return new PAdESLevelBaselineLTA(super.tspSource, certificateVerifier);
+            return new PAdESLevelBaselineLTA(super.tspSource, this.certificateVerifier);
         default:
             throw new IllegalArgumentException("Signature format '" + signatureLevel + "' not supported");
         }
@@ -198,7 +199,7 @@ class PAdESLevelBaselineT implements SignatureExtension<PAdESSignatureParameters
     public DSSDocument extendSignatures(final DSSDocument document, final PAdESSignatureParameters params) throws DSSException {
         // Will add a DocumentTimeStamp. signature-timestamp (CMS) is impossible to add while extending
         final PDFTimestampService timestampService = PdfObjFactory.newTimestampSignatureService();
-        return timestampService.timestamp(document, params, tspSource);
+        return timestampService.timestamp(document, params, this.tspSource);
     }
 
 }
@@ -227,16 +228,16 @@ class PAdESLevelBaselineLT implements SignatureExtension<PAdESSignatureParameter
 
         // check if needed to extends with PAdESLevelBaselineT
         PDFDocumentValidator pdfDocumentValidator = new PDFDocumentValidator(document);
-        pdfDocumentValidator.setCertificateVerifier(certificateVerifier);
+        pdfDocumentValidator.setCertificateVerifier(this.certificateVerifier);
 
         List<AdvancedSignature> signatures = pdfDocumentValidator.getSignatures();
         for (final AdvancedSignature signature : signatures) {
             if (isRequireDocumentTimestamp(signature)) {
-                final PAdESLevelBaselineT padesLevelBaselineT = new PAdESLevelBaselineT(tspSource);
+                final PAdESLevelBaselineT padesLevelBaselineT = new PAdESLevelBaselineT(this.tspSource);
                 document = padesLevelBaselineT.extendSignatures(document, parameters);
 
                 pdfDocumentValidator = new PDFDocumentValidator(document);
-                pdfDocumentValidator.setCertificateVerifier(certificateVerifier);
+                pdfDocumentValidator.setCertificateVerifier(this.certificateVerifier);
                 break;
             }
         }
@@ -245,7 +246,7 @@ class PAdESLevelBaselineLT implements SignatureExtension<PAdESSignatureParameter
 
         // create DSS dictionary (order is important to know the original object
         // streams)
-        List<DSSDictionaryCallback> callbacks = new LinkedList<DSSDictionaryCallback>();
+        List<DSSDictionaryCallback> callbacks = new ArrayList<>();
         for (final AdvancedSignature signature : signatures) {
             if (signature instanceof PAdESSignature) {
                 callbacks.add(validate((PAdESSignature) signature));
@@ -265,7 +266,7 @@ class PAdESLevelBaselineLT implements SignatureExtension<PAdESSignatureParameter
 
     protected DSSDictionaryCallback validate(PAdESSignature signature) {
 
-        ValidationContext validationContext = signature.getSignatureValidationContext(certificateVerifier);
+        ValidationContext validationContext = signature.getSignatureValidationContext(this.certificateVerifier);
 
         DefaultAdvancedSignature.RevocationDataForInclusion revocationsForInclusionInProfileLT = signature.getRevocationDataForInclusion(validationContext);
 
@@ -304,12 +305,12 @@ class PAdESLevelBaselineLTA implements SignatureExtension<PAdESSignatureParamete
 
         // check if needed to extends with PAdESLevelBaselineLT
         final PDFDocumentValidator pdfDocumentValidator = new PDFDocumentValidator(document);
-        pdfDocumentValidator.setCertificateVerifier(certificateVerifier);
+        pdfDocumentValidator.setCertificateVerifier(this.certificateVerifier);
 
-        document = padesLevelBaselineLT.extendSignatures(document, parameters);
+        document = this.padesLevelBaselineLT.extendSignatures(document, parameters);
 
         // Will add a Document TimeStamp (not CMS)
-        return padesLevelBaselineT.extendSignatures(document, parameters);
+        return this.padesLevelBaselineT.extendSignatures(document, parameters);
     }
 }
 

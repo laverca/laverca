@@ -135,7 +135,7 @@ public class SwisscomClient extends ClientBase<SwisscomRequest, SwisscomResponse
                                                  SignatureProfiles.SWISSCOM_AUTHENTICATION,
                                                  MSS_Formats.PKCS7);
         
-        return this.call(req, handler);
+        return this.send(req, handler);
     }
 
 

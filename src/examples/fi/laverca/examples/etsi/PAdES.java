@@ -120,11 +120,11 @@ public class PAdES {
             System.err.println("Supplied file is not a PDF");
             return;
         }
-        this.signedFile = fileToSign.replace(".pdf", ".signed.pdf");
+        this.signedFile = this.fileToSign.replace(".pdf", ".signed.pdf");
         this.doc        = new FileDocument(this.fileToSign);
         
         this.conf   = MssConf.fromPropertyFile("conf/examples.conf");
-        this.client = new EtsiClient(conf);
+        this.client = new EtsiClient(this.conf);
     }
     
     /**
@@ -242,7 +242,7 @@ public class PAdES {
             try {
                 // 6. Save signed file
                 if (signedDocument != null) {
-                    signedDocument.save(signedFile);
+                    signedDocument.save(this.signedFile);
                     System.out.println("Saved signed document to " + new File(this.signedFile).getAbsolutePath());
                 }
                 
@@ -264,22 +264,22 @@ public class PAdES {
      * <p>First tries to get the chain with ProfileQuery extension.
      * If unsuccessful, results to sending a dummy signature requestto the MSSP to get the chain.
      * 
-     * @param msisdn    Target MSISDN
+     * @param _msisdn    Target MSISDN
      * @param apTransId AP transaction ID
      * @return Certificate chain (may be empty in which case the signing will fail)
      * @throws IOException
      */
-    private X509CertificateChain getCertChain(final String msisdn, final String apTransId) 
+    private X509CertificateChain getCertChain(final String _msisdn, final String apTransId) 
         throws IOException 
     {
         
         // Send a ProfileQueryReq. Depending on the MSSP configuration, the response may contain the needed certs. 
-        ProfileQueryResponse profileResp = this.client.sendProfileQuery(msisdn, apTransId);
+        ProfileQueryResponse profileResp = this.client.sendProfileQuery(_msisdn, apTransId);
         X509CertificateChain certChain   = profileResp.getCertificate(MSS_SIG_PROF);
         
         // If ProfileQueryResponse does not contain certs, get the certs from a Signature. 
         if (certChain.isEmpty()) {
-            certChain = this.getCertsWithSign(msisdn, apTransId);
+            certChain = this.getCertsWithSign(_msisdn, apTransId);
         }
         
         return certChain;
@@ -288,12 +288,12 @@ public class PAdES {
     /**
      * Get the certificate chain by sending a dummy signature request to the MSSP for the user to sign.
      * 
-     * @param msisdn    Target MSISDN
+     * @param _msisdn    Target MSISDN
      * @param apTransId AP transaction ID
      * @return Certificate chain (may be empty in which case the signing will fail)
      * @throws IOException
      */
-    private X509CertificateChain getCertsWithSign(final String msisdn, final String apTransId) 
+    private X509CertificateChain getCertsWithSign(final String _msisdn, final String apTransId) 
         throws IOException
     {
         DTBS   dtbs = new DTBS("CAdES dummy signature to pick certificates.");

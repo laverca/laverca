@@ -40,13 +40,13 @@ public class LavercaSSLTrustManager implements X509TrustManager {
     private static final Log log = LogFactory.getLog(LavercaSSLTrustManager.class);
 
     /** There can be a chain of trust managers in thread-local context! */
-    private final ThreadLocal<X509TrustManager> nextTrustManager = new ThreadLocal<X509TrustManager>();
+    private final ThreadLocal<X509TrustManager> nextTrustManager = new ThreadLocal<>();
 
     /**
      * If the "expectedServerCerts" list is defined and non-empty,
      * the remote server certificate
      */
-    private final ThreadLocal<List<byte[]>> expectedServerCerts = new ThreadLocal<List<byte[]>>();
+    private final ThreadLocal<List<byte[]>> expectedServerCerts = new ThreadLocal<>();
 
     private static final LavercaSSLTrustManager self = new LavercaSSLTrustManager();
 

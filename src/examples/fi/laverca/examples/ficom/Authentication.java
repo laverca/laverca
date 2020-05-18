@@ -175,8 +175,8 @@ public class Authentication {
      */
     private static List<AdditionalServiceType> createAdditionalServices() {
 
-        List<AdditionalServiceType> additionalServices = new ArrayList<AdditionalServiceType>();
-        List<String> attributeNames = new ArrayList<String>(); 
+        List<AdditionalServiceType> additionalServices = new ArrayList<>();
+        List<String> attributeNames = new ArrayList<>(); 
  
         attributeNames.add(FiComAdditionalServices.PERSON_ID_VALIDUNTIL);
         attributeNames.add(FiComAdditionalServices.PERSON_ID_ADDRESS);

@@ -109,19 +109,19 @@ public class XmlDsigUtil {
      */
     public static void validate(final FiComResponse resp) throws IOException, ValidationException, JAXBException {
         
-        if (resp.finalStatusResp != null) {
+        if (resp.getMSS_StatusResp() != null) {
             // Asynch client-server
             JAXBContext jc = JAXBContext.newInstance(MSSStatusResp.class);
             Marshaller m = jc.createMarshaller();
             StringWriter writer = new StringWriter();
-            m.marshal(resp.finalStatusResp, writer);
+            m.marshal(resp.getMSS_StatusResp(), writer);
             validate(writer.toString());
-        } else if (resp.originalSigResp != null) {
+        } else if (resp.getMSS_SignatureResp() != null) {
             // Synch
             JAXBContext jc = JAXBContext.newInstance(MSSSignatureResp.class);
             Marshaller m = jc.createMarshaller();
             StringWriter writer = new StringWriter();
-            m.marshal(resp.originalSigResp, writer);
+            m.marshal(resp.getMSS_SignatureResp(), writer);
             validate(writer.toString());
         }
     }
@@ -151,6 +151,8 @@ public class XmlDsigUtil {
     @SuppressWarnings("unchecked")
     private static class SimpleKeySelector extends KeySelector {
         
+        public SimpleKeySelector() {}
+
         @Override
         public KeySelectorResult select(final KeyInfo             keyInfo,
                                         final KeySelector.Purpose purpose,

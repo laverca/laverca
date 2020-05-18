@@ -118,11 +118,8 @@ public class MssConf {
     public static MssConf fromPropertyFile(final String fileName) {
         File f = new File(fileName);
         Properties p = new Properties();
-        FileInputStream is;
-        try {
-            is = new FileInputStream(f);
+        try (FileInputStream is = new FileInputStream(f)) {
             p.load(is);
-            is.close();
         } catch (Exception e) {
             log.fatal("Could not load properties");
             throw new IllegalArgumentException(e);

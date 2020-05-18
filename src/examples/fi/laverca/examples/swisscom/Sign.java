@@ -19,11 +19,7 @@
 
 package fi.laverca.examples.swisscom;
 
-import java.io.IOException;
-
 import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.axis.AxisFault;
 
 import fi.laverca.MSS_Formats;
 import fi.laverca.ProgressUpdate;
@@ -104,33 +100,25 @@ public class Sign {
         SwisscomResponseHandler handler = new SwisscomResponseHandler() {
             
             @Override
-            public void onResponse(final SwisscomRequest req, final SwisscomResponse resp) {
+            public void onResponse(final SwisscomRequest _req, final SwisscomResponse resp) {
                 System.out.println("Got a response");
                 System.out.println("  StatusCode   : " + resp.getStatusCode());
                 System.out.println("  StatusMessage: " + resp.getStatusMessage());
             }
 
             @Override
-            public void onError(final SwisscomRequest req, final Throwable t) {
+            public void onError(final SwisscomRequest _req, final Throwable t) {
                 System.out.println("Got an error:");
                 t.printStackTrace();
             }
 
             @Override
-            public void onOutstandingProgress(final SwisscomRequest req, final ProgressUpdate prgUpdate) {
+            public void onOutstandingProgress(final SwisscomRequest _req, final ProgressUpdate prgUpdate) {
                 System.out.println("Got a progress update");
             }
         };
         
-        try {
-            client.call(req, handler);
-        } catch(AxisFault af) {
-            System.out.println("Got a SOAP fault:");
-            af.printStackTrace();
-        } catch(IOException ioe) {
-            System.out.println("Got an IOException:");
-            ioe.printStackTrace();
-        }
+        client.send(req, handler);
         
         // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
         client.shutdown();
