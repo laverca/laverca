@@ -24,19 +24,10 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
-import org.bouncycastle.util.Selector;
-import org.bouncycastle.util.Store;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
@@ -222,8 +213,6 @@ public class PAdES {
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
             System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
 
-            final JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
-
             DSSDocument signedDocument = null;
             try {
                 
@@ -231,29 +220,6 @@ public class PAdES {
                     // Pick CMS signature part, the WPKI signer produces CMS signature
                     final byte[] cmsSigBytes = resp.getSignature().getRawSignature();
                     final CMSSignedData cmsSignedData = new CMSSignedData(cmsSigBytes);
-
-                    // 3. Fill certs to SignatureParameters
-                    final Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
-                    final SignerInformationStore         signers = cmsSignedData.getSignerInfos();
-                    
-                    for (final SignerInformation signer : signers.getSigners()) {
-                        @SuppressWarnings("unchecked")
-                        final Selector<X509CertificateHolder>              sid = signer.getSID();
-                        final Collection<X509CertificateHolder> certCollection = certStore.getMatches(sid);
-                        for (final X509CertificateHolder certH : certCollection) {                    
-                            if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH))) {
-                                final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
-                                parameters.setSigningCertificate(certT);
-                            }
-                        }
-                    }
-
-                    // All certificates - match against "null"
-                    for (final X509CertificateHolder certH : certStore.getMatches(null)) {
-                        final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
-                        // Really: add if not already stored
-                        parameters.setCertificateChain(certT);
-                    }
 
                     // 5. Attach signature to PDF, using customized processing method
                     signedDocument = service.signDocument(this.doc, parameters, cmsSignedData);

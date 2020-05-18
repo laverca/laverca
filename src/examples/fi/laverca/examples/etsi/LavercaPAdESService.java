@@ -1,6 +1,8 @@
 package fi.laverca.examples.etsi;
 
 import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -10,9 +12,17 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.CMSAttributes;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSAttributeTableGenerator;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.Selector;
+import org.bouncycastle.util.Store;
 
 import eu.europa.esig.dss.cades.signature.CAdESLevelBaselineB;
 import eu.europa.esig.dss.cades.signature.CAdESLevelBaselineT;
@@ -79,7 +89,41 @@ public class LavercaPAdESService extends PAdESService {
         throws CMSException
     {
         assertSigningDateInCertificateValidityRange(parameters);
-        
+
+
+        // Fill certs to SignatureParameters
+
+
+        try {
+            final JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
+            final Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
+            final SignerInformationStore         signers = cmsSignedData.getSignerInfos();
+            for (final SignerInformation signer : signers.getSigners()) {
+                @SuppressWarnings("unchecked")
+                final Selector<X509CertificateHolder>              sid = signer.getSID();
+                final Collection<X509CertificateHolder> certCollection = certStore.getMatches(sid);
+                for (final X509CertificateHolder certH : certCollection) {                    
+                    if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH))) {
+                        final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
+                        parameters.setSigningCertificate(certT);
+                    }
+                }
+            }
+    
+            // All certificates - match against "null"
+            for (final X509CertificateHolder certH : certStore.getMatches(null)) {
+                final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
+                // Really: add if not already stored
+                parameters.setCertificateChain(certT);
+            }
+        } catch (CertificateException e) {
+            throw new CMSException(e.getMessage(), e);
+        } catch (OperatorCreationException e) {
+            throw new CMSException(e.getMessage(), e);
+        }
+
+        // Proceed with signature building
+
         final SignatureLevel signatureLevel = parameters.getSignatureLevel();
         final byte[] encodedData = generateCMSSignedData(toSignDocument, parameters, cmsSignedData);
         
