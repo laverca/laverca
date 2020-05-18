@@ -44,7 +44,7 @@
     </fileset>
     <pathelement location="${jlibs}/jaxb-api.jar" />
     <pathelement location="${jlibs}/jaxb-runtime.jar" />
-    <pathelement location="${jlibs}/istack-common-runtime.jar" />
+    <pathelement location="${jlibs}/istack-commons-runtime.jar" />
     <pathelement location="${libs}/axis-1.4.patched.jar" />
   </path>
 
@@ -150,7 +150,7 @@
 
     <copy todir="${dist}/libs" file="${jlibs}/jaxb-runtime.jar" />
     <copy todir="${dist}/libs" file="${jlibs}/jaxb-api.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/istack-common-runtime.jar" />
+    <copy todir="${dist}/libs" file="${jlibs}/istack-commons-runtime.jar" />
 
   </target>
 
@@ -177,7 +177,7 @@
 
     <copy todir="${dist}/libs" file="${jlibs}/jaxb-runtime.jar" />
     <copy todir="${dist}/libs" file="${jlibs}/jaxb-api.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/istack-common-runtime.jar" />
+    <copy todir="${dist}/libs" file="${jlibs}/istack-commons-runtime.jar" />
     
     <copy todir="${dist}" file="${core-lib}" />
     <copy todir="${dist}/examples" file="${examples-lib}" />
