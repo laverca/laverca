@@ -21,7 +21,6 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.SignerInformationVerifier;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Selector;
 import org.bouncycastle.util.Store;
 
@@ -82,7 +81,7 @@ public class LavercaPAdESService extends PAdESService {
      * @param toSignDocument
      * @param parameters
      * @param cmsSignedData a CMS signature value
-     * @return
+     * @return Signed document container
      * @throws CMSException
      */
     public DSSDocument signDocument(final DSSDocument toSignDocument,
@@ -100,8 +99,8 @@ public class LavercaPAdESService extends PAdESService {
                 final Selector<X509CertificateHolder>              sid = signer.getSID();
                 final Collection<X509CertificateHolder> certCollection = certStore.getMatches(sid);
                 for (final X509CertificateHolder certH : certCollection) {
-                    System.err.println("preparing for signerInfo verify call");
                     try {
+                        //System.err.println("preparing for signerInfo verify call");
                         //final SignerInformationVerifier siv = new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH);
                         //if (signer.verify(siv)) {
                             final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
@@ -224,7 +223,7 @@ class PAdESLevelBaselineLT implements SignatureExtension<PAdESSignatureParameter
     /**
      * @param document
      * @param parameters
-     * @return
+     * @return modified document
      * @throws IOException
      */
     @Override

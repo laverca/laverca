@@ -178,7 +178,15 @@ public class PAdES {
             // this.parameters.setLocation(locationString);
 
 
-            if (!useCMSmode) {
+            // Both signature mode preparations need user certificates.
+            // Without it the reference data object modifies (PDF embedding block size parameter)
+            // during the document signature assembly.
+            //
+            // It could be possible to fix the space reservation at eSIG-DSS, but
+            // we will now do this.
+            //
+            //if (!useCMSmode)
+            {
                 // 2. Get Signing Certificate
                 X509CertificateChain chain = null;
                 try {
