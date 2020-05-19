@@ -78,6 +78,7 @@ public class PAdES {
     private String fileToSign;
     private String signedFile;
     private DSSDocument doc;
+    private MessagingModeType msgMode = MessagingModeType.ASYNCH_CLIENT_SERVER;
             
     private MssConf    conf;
     private EtsiClient client;
@@ -91,7 +92,7 @@ public class PAdES {
     //          processing ("PKCS1" signature).
     // 
 
-    private static boolean useCMSmode = true;
+    private static boolean useCMSmode = false;
 
     
     public static void main(final String[] args) {
@@ -103,15 +104,42 @@ public class PAdES {
      * @param args command arguments to parse
      */
     public PAdES(final String[] args) {
-        
+
         this.msisdn = "+35847001001";
-        if (args.length == 1) {
-            this.fileToSign = args[0];
-        } else if (args.length > 1) {
-            this.msisdn     = args[0];
-            this.fileToSign = args[1];
-        } else {
-            System.err.println("Usage: [msisdn] filename");
+        
+        for (String arg : args) {
+            if (arg.equals("-cms")) {
+                useCMSmode = true;
+                continue;
+            }
+            if (arg.equals("-sync")) {
+                this.msgMode = MessagingModeType.SYNCH;
+                continue;
+            }
+            // MSISDN pickup
+            char c = arg.length() > 0 ? arg.charAt(0) : 0;
+            if (c == '+') {
+                c = arg.length() > 1 ? arg.charAt(1) : 0;
+                if (Character.isDigit(c)) {
+                    this.msisdn = arg;
+                    continue;
+                }
+            }
+            if (Character.isDigit(c)) {
+                this.msisdn = arg;
+                continue;
+            }
+            
+            final File f = new File(arg);
+            if (f.exists() && f.canRead()) {
+                this.fileToSign = arg;
+                continue;
+            }
+            System.err.println("Usage: [-cms] [msisdn] filename");
+            System.exit(64);
+        }
+        if (this.fileToSign == null) {
+            System.err.println("Usage: [-cms] [msisdn] filename");
             System.exit(64);
         }
         
@@ -188,7 +216,7 @@ public class PAdES {
                 final byte[] dataToSignDigest = digest(dataToSignBytes);
                 
                 dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
-                mssFormat = MSS_Formats.FICOM_PKCS1;
+                mssFormat = MSS_Formats.KIURU_PKCS1;
             }
             
             // Data to be displayed
@@ -203,7 +231,7 @@ public class PAdES {
                                                         null,                    // Additional services
                                                         MSS_SIG_PROF,            // Signature profile
                                                         mssFormat,               // MSS Format
-                                                        MessagingModeType.ASYNCH_CLIENT_SERVER);
+                                                        this.msgMode);
     
             // 4. Send Signature request
             EtsiResponse resp = this.client.send(req);

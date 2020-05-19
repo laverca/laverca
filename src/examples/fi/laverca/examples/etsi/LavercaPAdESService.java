@@ -19,6 +19,7 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.SignerInformationVerifier;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Selector;
@@ -98,10 +99,17 @@ public class LavercaPAdESService extends PAdESService {
                 @SuppressWarnings("unchecked")
                 final Selector<X509CertificateHolder>              sid = signer.getSID();
                 final Collection<X509CertificateHolder> certCollection = certStore.getMatches(sid);
-                for (final X509CertificateHolder certH : certCollection) {                    
-                    if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH))) {
-                        final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
-                        parameters.setSigningCertificate(certT);
+                for (final X509CertificateHolder certH : certCollection) {
+                    System.err.println("preparing for signerInfo verify call");
+                    try {
+                        //final SignerInformationVerifier siv = new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH);
+                        //if (signer.verify(siv)) {
+                            final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
+                            parameters.setSigningCertificate(certT);
+                        //}
+                    } catch (Exception e) {
+                        System.err.println("Exception: "+e.getMessage());
+                        e.printStackTrace(System.err);
                     }
                 }
             }
@@ -114,8 +122,8 @@ public class LavercaPAdESService extends PAdESService {
             }
         } catch (CertificateException e) {
             throw new CMSException(e.getMessage(), e);
-        } catch (OperatorCreationException e) {
-            throw new CMSException(e.getMessage(), e);
+        //} catch (OperatorCreationException e) {
+        //    throw new CMSException(e.getMessage(), e);
         }
 
         // Proceed with signature building
