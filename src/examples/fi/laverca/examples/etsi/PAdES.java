@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2017 Laverca Project
+ * Copyright 2020 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,16 @@ package fi.laverca.examples.etsi;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.stream.Collectors;
 
 import org.bouncycastle.cms.CMSSignedData;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
-import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.TimestampParameters;
-import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
@@ -69,7 +64,6 @@ import fi.laverca.util.X509CertificateChain;
 public class PAdES {
 
     private static final DigestAlgorithm    DIGEST_ALG    = DigestAlgorithm.SHA256;
-    private static final SignatureAlgorithm SIG_ALG       = SignatureAlgorithm.RSA_SHA256;
     private static final String             DTBS_MIMETYPE = DTBS.MIME_SHA256;
     
     // MSS SignatureProfile
@@ -83,18 +77,6 @@ public class PAdES {
             
     private MssConf    conf;
     private EtsiClient client;
-
-    // Select the operation mode.
-    // - true: Makes a CMS external hash signature, and merges the CMS signature
-    //         Does require that MSSP making the signature does produce a PAdES_BASELINE_B
-    //         (CAdES-BES) profile conformant SignedAttributes collection.
-    // - false: Does query the remote MSSP server for end-user certificates, prepares
-    //          the signature material, and then digests it for final signing device
-    //          processing ("PKCS1" signature).
-    // 
-
-    private static boolean useCMSmode = false;
-
     
     public static void main(final String[] args) {
         new PAdES(args).run();
@@ -106,13 +88,9 @@ public class PAdES {
      */
     public PAdES(final String[] args) {
 
-        this.msisdn = "+35847007007";
+        this.msisdn = "+35847001001";
         
         for (String arg : args) {
-            if (arg.equals("-cms")) {
-                useCMSmode = true;
-                continue;
-            }
             // MSISDN pickup
             char c = arg.length() > 0 ? arg.charAt(0) : 0;
             if (c == '+') {
@@ -191,27 +169,17 @@ public class PAdES {
             DTBS dtbs;
             String mssFormat;
             
-            if (useCMSmode) {
-                final byte[] messageDigest = service.computeDocumentDigest(this.doc, parameters);
-                dtbs = new DTBS(messageDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
-                mssFormat = MSS_Formats.CMS;
+            final byte[] messageDigest = service.computeDocumentDigest(this.doc, parameters);
+            dtbs = new DTBS(messageDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
+            mssFormat = MSS_Formats.CMS;
 
-                // LTV
-                verifier.setExceptionOnMissingRevocationData(false);
-                verifier.setCheckRevocationForUntrustedChains(true);
-                verifier.setIncludeCertificateRevocationValues(true);
-                verifier.setOcspSource(new OnlineOCSPSource());
-                verifier.setCrlSource(new OnlineCRLSource());
+            // LTV
+            verifier.setExceptionOnMissingRevocationData(false);
+            verifier.setCheckRevocationForUntrustedChains(true);
+            verifier.setIncludeCertificateRevocationValues(true);
+            verifier.setOcspSource(new OnlineOCSPSource());
+            verifier.setCrlSource(new OnlineCRLSource());
 
-            } else {
-                final ToBeSigned dataToSign   = service.getDataToSign(this.doc, parameters);
-                final byte[] dataToSignBytes  = dataToSign.getBytes();
-                final byte[] dataToSignDigest = digest(dataToSignBytes);
-                
-                dtbs = new DTBS(dataToSignDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
-                mssFormat = MSS_Formats.KIURU_PKCS1;
-            }
-            
             // Data to be displayed
             String dtbd = dtbs.toString();
 
@@ -236,17 +204,10 @@ public class PAdES {
             // Attach signature to PDF
             DSSDocument signedDocument;
             try {
-                if (useCMSmode) {
-                    // Pick CMS signature part, the WPKI signer produces CMS signature
-                    final byte[] sigBytes = resp.getSignature().getRawSignature();
-                    final CMSSignedData signedData = new CMSSignedData(sigBytes);
-                    signedDocument = service.signDocument(this.doc, parameters, signedData);
-                } else {
-                    // Pick raw PKCS#1 signature
-                    final byte[] sigBytes = resp.getSignature().getRawSignature();
-                    final SignatureValue signedData = new SignatureValue(SIG_ALG, sigBytes);
-                    signedDocument = service.signDocument(this.doc, parameters, signedData);
-                }
+                // Pick CMS signature part, the WPKI signer produces CMS signature
+                final byte[] sigBytes = resp.getSignature().getRawSignature();
+                final CMSSignedData signedData = new CMSSignedData(sigBytes);
+                signedDocument = service.signDocument(this.doc, parameters, signedData);
             } catch (Throwable e) {
                 System.out.println("PAdES sign failed:");
                 e.printStackTrace();
@@ -324,19 +285,5 @@ public class PAdES {
         
         EtsiResponse resp = this.client.send(req);
         return ((CmsSignature)resp.getSignature()).getCertificateChain();
-    }
-    
-    /**
-     * Digest the given data with {@code DIGEST_ALG}
-     * 
-     * @param data Data to digest
-     * @return digest
-     * @throws NoSuchAlgorithmException
-     */
-    private byte[] digest(final byte[] data) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance(DIGEST_ALG.getJavaName());
-        md.reset();
-        md.update(data);
-        return md.digest();
     }
 }
