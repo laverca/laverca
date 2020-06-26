@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bouncycastle.cms.CMSSignedData;
@@ -36,9 +34,13 @@ import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.SignatureValue;
+import eu.europa.esig.dss.model.TimestampParameters;
 import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.service.crl.OnlineCRLSource;
+import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import fi.laverca.CmsSignature;
 import fi.laverca.MSS_Formats;
@@ -78,7 +80,6 @@ public class PAdES {
     private String fileToSign;
     private String signedFile;
     private DSSDocument doc;
-    private MessagingModeType msgMode = MessagingModeType.ASYNCH_CLIENT_SERVER;
             
     private MssConf    conf;
     private EtsiClient client;
@@ -105,15 +106,11 @@ public class PAdES {
      */
     public PAdES(final String[] args) {
 
-        this.msisdn = "+35847001001";
+        this.msisdn = "+35847007007";
         
         for (String arg : args) {
             if (arg.equals("-cms")) {
                 useCMSmode = true;
-                continue;
-            }
-            if (arg.equals("-sync")) {
-                this.msgMode = MessagingModeType.SYNCH;
                 continue;
             }
             // MSISDN pickup
@@ -165,59 +162,47 @@ public class PAdES {
       
         try {
             
-            // 1. Prepare the PAdES signature request
-
-            final LavercaPAdESService service    = new LavercaPAdESService(new CommonCertificateVerifier());
-            
-            final DigestAlgorithm digAlg = DIGEST_ALG;
-
-            final PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-            parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+            // Prepare the PAdES signature request
+            final CommonCertificateVerifier verifier   = new CommonCertificateVerifier();
+            final LavercaPAdESService       service    = new LavercaPAdESService(verifier);
+            final PAdESSignatureParameters  parameters = new PAdESSignatureParameters();
+            parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
             parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-            parameters.setDigestAlgorithm(digAlg);
-            // this.parameters.setLocation(locationString);
-
-
-            // Both signature mode preparations need user certificates.
-            // Without it the reference data object modifies (PDF embedding block size parameter)
-            // during the document signature assembly.
-            //
-            // It could be possible to fix the space reservation at eSIG-DSS, but
-            // we will now do this.
-            //
-            //if (!useCMSmode)
-            {
-                // 2. Get Signing Certificate
-                X509CertificateChain chain = null;
-                try {
-                    chain = this.getCertChain(this.msisdn, apTransId);
-                } catch (IOException ioe) {
-                    System.out.println("Failed to get certs from MSSP.");
-                    ioe.printStackTrace();
-                    this.client.shutdown();
-                    return;
-                }
-    
-                // 3. Fill certs to SignatureParameters
-                final X509Certificate       signingCert = chain.getSigningCert();        
-                final List<CertificateToken> tokenChain = chain.stream()
-                                                               .map(CertificateToken::new)
-                                                               .collect(Collectors.toList());
-                
-                parameters.setCertificateChain(tokenChain);
-                parameters.setSigningCertificate(new CertificateToken(signingCert));
+            parameters.setDigestAlgorithm(DIGEST_ALG);
+            parameters.setReason("Laverca PDF example");
+            parameters.setArchiveTimestampParameters(new TimestampParameters(DIGEST_ALG));
+            service.setTspSource(new OnlineTSPSource("http://timestamp.digicert.com/"));
+            
+            //Get Signing Certificate
+            X509CertificateChain chain = null;
+            try {
+                chain = this.getCertChain(this.msisdn, apTransId);
+            } catch (IOException ioe) {
+                System.out.println("Failed to get certs from MSSP.");
+                ioe.printStackTrace();
+                return;
             }
 
-            // 4. Prepare signature request
-            
+            // Fill certificates to SignatureParameters
+            parameters.setCertificateChain(chain.stream().map(CertificateToken::new).collect(Collectors.toList()));
+            parameters.setSigningCertificate(new CertificateToken(chain.getSigningCert()));
+
+            // Prepare signature request
             DTBS dtbs;
-            
             String mssFormat;
             
             if (useCMSmode) {
                 final byte[] messageDigest = service.computeDocumentDigest(this.doc, parameters);
                 dtbs = new DTBS(messageDigest, DTBS.ENCODING_BASE64, DTBS_MIMETYPE);
                 mssFormat = MSS_Formats.CMS;
+
+                // LTV
+                verifier.setExceptionOnMissingRevocationData(false);
+                verifier.setCheckRevocationForUntrustedChains(true);
+                verifier.setIncludeCertificateRevocationValues(true);
+                verifier.setOcspSource(new OnlineOCSPSource());
+                verifier.setCrlSource(new OnlineCRLSource());
+
             } else {
                 final ToBeSigned dataToSign   = service.getDataToSign(this.doc, parameters);
                 final byte[] dataToSignBytes  = dataToSign.getBytes();
@@ -230,8 +215,7 @@ public class PAdES {
             // Data to be displayed
             String dtbd = dtbs.toString();
 
-            // 5. Send signature request
-            
+            // Send signature request
             EtsiRequest req = this.client.createRequest(apTransId,               // AP Transaction ID
                                                         this.msisdn,             // MSISDN
                                                         dtbs,                    // Data to be signed
@@ -239,9 +223,9 @@ public class PAdES {
                                                         null,                    // Additional services
                                                         MSS_SIG_PROF,            // Signature profile
                                                         mssFormat,               // MSS Format
-                                                        this.msgMode);
+                                                        MessagingModeType.SYNCH);
     
-            // 4. Send Signature request
+            // Send Signature request
             EtsiResponse resp = this.client.send(req);
 
             System.out.println("Got a response");
@@ -249,39 +233,32 @@ public class PAdES {
             System.out.println("  StatusMessage: " + resp.getStatusMessage());
             System.out.println("  Signature    : " + resp.getSignature().getBase64Signature());
 
-            DSSDocument signedDocument = null;
+            // Attach signature to PDF
+            DSSDocument signedDocument;
             try {
-                
                 if (useCMSmode) {
                     // Pick CMS signature part, the WPKI signer produces CMS signature
-                    final byte[] cmsSigBytes = resp.getSignature().getRawSignature();
-                    final CMSSignedData cmsSignedData = new CMSSignedData(cmsSigBytes);
-
-                    // 5. Attach signature to PDF, using customized processing method
-                    signedDocument = service.signDocument(this.doc, parameters, cmsSignedData);
-
-                    
+                    final byte[] sigBytes = resp.getSignature().getRawSignature();
+                    final CMSSignedData signedData = new CMSSignedData(sigBytes);
+                    signedDocument = service.signDocument(this.doc, parameters, signedData);
                 } else {
                     // Pick raw PKCS#1 signature
                     final byte[] sigBytes = resp.getSignature().getRawSignature();
-
-                    // 5. Attach signature to PDF
-                    final SignatureValue signatureValue = new SignatureValue(SIG_ALG, sigBytes);
-                    signedDocument = service.signDocument(this.doc, parameters, signatureValue);
+                    final SignatureValue signedData = new SignatureValue(SIG_ALG, sigBytes);
+                    signedDocument = service.signDocument(this.doc, parameters, signedData);
                 }
-
             } catch (Throwable e) {
                 System.out.println("PAdES sign failed:");
                 e.printStackTrace();
+                return;
             }
             
             try {
-                // 6. Save signed file
+                // Save signed file
                 if (signedDocument != null) {
                     signedDocument.save(this.signedFile);
                     System.out.println("Saved signed document to " + new File(this.signedFile).getAbsolutePath());
                 }
-                
             } catch (IOException e) {
                 System.out.println("Failed to save signed document:");
                 e.printStackTrace();
@@ -290,9 +267,10 @@ public class PAdES {
         } catch (Exception e) {
             System.out.println("Got an Exception:");
             e.printStackTrace();
+        } finally {
+            // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
+            this.client.shutdown();
         }
-        // Kill the thread pool - otherwise this example would wait 60 seconds for the thread to die
-        this.client.shutdown();
     }
     
     /**

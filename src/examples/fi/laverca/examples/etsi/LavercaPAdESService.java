@@ -19,8 +19,6 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.cms.SignerInformationVerifier;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.util.Selector;
 import org.bouncycastle.util.Store;
 
@@ -44,6 +42,7 @@ import eu.europa.esig.dss.spi.DSSASN1Utils;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.AdvancedSignature;
+import eu.europa.esig.dss.validation.CMSOCSPSource;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.DefaultAdvancedSignature;
 import eu.europa.esig.dss.validation.ValidationContext;
@@ -98,14 +97,10 @@ public class LavercaPAdESService extends PAdESService {
                 @SuppressWarnings("unchecked")
                 final Selector<X509CertificateHolder>              sid = signer.getSID();
                 final Collection<X509CertificateHolder> certCollection = certStore.getMatches(sid);
-                for (final X509CertificateHolder certH : certCollection) {
+                for (X509CertificateHolder certH : certCollection) {
                     try {
-                        //System.err.println("preparing for signerInfo verify call");
-                        //final SignerInformationVerifier siv = new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(certH);
-                        //if (signer.verify(siv)) {
-                            final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
-                            parameters.setSigningCertificate(certT);
-                        //}
+                        CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
+                        parameters.setSigningCertificate(certT);
                     } catch (Exception e) {
                         System.err.println("Exception: "+e.getMessage());
                         e.printStackTrace(System.err);
@@ -114,15 +109,12 @@ public class LavercaPAdESService extends PAdESService {
             }
     
             // All certificates - match against "null"
-            for (final X509CertificateHolder certH : certStore.getMatches(null)) {
-                final CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
-                // Really: add if not already stored
+            for (X509CertificateHolder certH : certStore.getMatches(null)) {
+                CertificateToken certT = new CertificateToken(certConverter.getCertificate(certH));
                 parameters.setCertificateChain(certT);
             }
         } catch (CertificateException e) {
             throw new CMSException(e.getMessage(), e);
-        //} catch (OperatorCreationException e) {
-        //    throw new CMSException(e.getMessage(), e);
         }
 
         // Proceed with signature building
@@ -144,10 +136,24 @@ public class LavercaPAdESService extends PAdESService {
                 signature = extension.extendSignatures(signature, parameters);
             }
         }
+//        if (signatureLevel == SignatureLevel.PAdES_BASELINE_LTA) {
+//            Attribute tokenAttr = new Attribute(PKCSObjectIdentifiers.id_aa_signatureTimeStampToken, new DERSet(ASN1Primitive.fromByteArray(token)));
+//            ASN1EncodableVector timestampVector = new ASN1EncodableVector();
+//            timestampVector.add(tokenAttr);
+//            AttributeTable at = new AttributeTable(timestampVector);
+//            this.certificateVerifier.setSignatureOCSPSource();
+//        }
         
         parameters.reinitDeterministicId();
         signature.setName(getFinalFileName(toSignDocument, SigningOperation.SIGN, parameters.getSignatureLevel()));
         return signature;
+    }
+    
+    public static class OCSPSource extends CMSOCSPSource {
+        private static final long serialVersionUID = 1L;
+        public OCSPSource(CMSSignedData cms) {
+            super(cms, null);
+        }
     }
 
 
@@ -324,7 +330,7 @@ class PAdESLevelBaselineLTA implements SignatureExtension<PAdESSignatureParamete
  */
 class PAdESLevelBaselineB {
 
-    AttributeTable getSignedAttributes(Map params, CAdESLevelBaselineB cadesProfile, PAdESSignatureParameters parameters, byte[] messageDigest) {
+    AttributeTable getSignedAttributes(Map<?,?> params, CAdESLevelBaselineB cadesProfile, PAdESSignatureParameters parameters, byte[] messageDigest) {
 
         AttributeTable signedAttributes = cadesProfile.getSignedAttributes(parameters);
 
