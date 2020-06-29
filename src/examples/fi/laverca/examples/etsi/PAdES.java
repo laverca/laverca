@@ -110,11 +110,11 @@ public class PAdES {
                 this.fileToSign = arg;
                 continue;
             }
-            System.err.println("Usage: [-cms] [msisdn] filename");
+            System.err.println("Usage: [msisdn] filename");
             System.exit(64);
         }
         if (this.fileToSign == null) {
-            System.err.println("Usage: [-cms] [msisdn] filename");
+            System.err.println("Usage: [msisdn] filename");
             System.exit(64);
         }
         

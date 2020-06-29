@@ -136,24 +136,10 @@ public class LavercaPAdESService extends PAdESService {
                 signature = extension.extendSignatures(signature, parameters);
             }
         }
-//        if (signatureLevel == SignatureLevel.PAdES_BASELINE_LTA) {
-//            Attribute tokenAttr = new Attribute(PKCSObjectIdentifiers.id_aa_signatureTimeStampToken, new DERSet(ASN1Primitive.fromByteArray(token)));
-//            ASN1EncodableVector timestampVector = new ASN1EncodableVector();
-//            timestampVector.add(tokenAttr);
-//            AttributeTable at = new AttributeTable(timestampVector);
-//            this.certificateVerifier.setSignatureOCSPSource();
-//        }
         
         parameters.reinitDeterministicId();
         signature.setName(getFinalFileName(toSignDocument, SigningOperation.SIGN, parameters.getSignatureLevel()));
         return signature;
-    }
-    
-    public static class OCSPSource extends CMSOCSPSource {
-        private static final long serialVersionUID = 1L;
-        public OCSPSource(CMSSignedData cms) {
-            super(cms, null);
-        }
     }
 
 
