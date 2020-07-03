@@ -16,12 +16,77 @@
   <xs:element name="ProfileQueryExtension">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="MobileUserCertificate" type="mcs:CertificateType" minOccurs="0" maxOccurs="unbounded"/>
+       
+        <!-- v1.1-v1.2 elements -->
+        <xs:element name="MobileUserCertificate"  type="mcs:CertificateType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="AutoActivation"         type="xs:boolean"          minOccurs="0" maxOccurs="1"/>
+        <xs:element name="ServerSideSignature"    type="xs:boolean"          minOccurs="0" maxOccurs="1"/>
+        <xs:element name="RecoveryCodeCreated"    type="xs:boolean"          minOccurs="0" maxOccurs="1"/>
+        <xs:element name="PreferredSigningMethod" type="xs:string"           minOccurs="0" maxOccurs="1"/>
+        <!-- v1.1-v1.2 elements -->
+        
+        <!-- v2.0 elements -->
+        <xs:element name="MobileUser" type="mcs:MobileUserType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Sscds"      type="mcs:SscdListType"   minOccurs="0" maxOccurs="1"/>
+        <!-- end of v2.0 elements -->
+        
         <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
+  <!-- Type containing mobile user details as attributes -->
+  <xs:complexType name="MobileUserType">   
+    <xs:sequence> 
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence> 
+    <xs:attribute name="RecoveryCodeCreated"    type="xs:boolean" use="optional"/> 
+    <xs:attribute name="AutoActivation"         type="xs:boolean" use="optional"/> 
+    <xs:attribute name="ServerSideSignature"    type="xs:boolean" use="optional"/> 
+    <xs:attribute name="PreferredSigningMethod" type="xs:string" use="optional"/> 
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+  
+  <!-- List containing SSCDs -->
+  <xs:complexType name="SscdListType">   
+    <xs:sequence> 
+        <xs:element name="Sim" type="mcs:SscdType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="App" type="mcs:SscdType" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!-- Generic SSCD type used for both SIM and APP -->
+  <xs:complexType name="SscdType">   
+    <xs:sequence> 
+        <xs:element name="State"      type="xs:string"          minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Activation" type="mcs:ActivationType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="PinStatus"  type="mcs:PinStatusType"  minOccurs="0" maxOccurs="1"/>
+        
+        <xs:element name="MobileUserCertificate" type="mcs:CertificateType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence> 
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+  
+  <!-- Element containing activation status of an SSCD (step name and success) -->
+  <xs:complexType name="ActivationType">   
+    <xs:sequence> 
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence> 
+    <xs:attribute name="name"    type="xs:string"  use="optional"/> 
+    <xs:attribute name="success" type="xs:boolean" use="optional"/> 
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+  
+  <!-- Element containing activation status of an SSCD (step name and success) -->
+  <xs:complexType name="PinStatusType">   
+    <xs:sequence> 
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence> 
+    <xs:attribute name="blocked" type="xs:boolean" use="optional"/> 
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+  
   <!-- Certificate element that should contain 1 X509Certificate and 1 X509SubjectName -->
   <xs:complexType name="CertificateType">
     <xs:complexContent>
@@ -29,6 +94,7 @@
         <xs:attribute name="State"             type="xs:string" use="optional" />
         <xs:attribute name="Algorithm"         type="xs:string" use="optional" />
         <xs:attribute name="SignatureProfiles" type="mcs:SignatureProfileType" use="optional" />
+        <xs:attribute name="SigningMethod"     type="xs:string" use="optional" />
         <xs:anyAttribute namespace="##other" processContents="lax"/>
       </xs:extension>
     </xs:complexContent>
@@ -37,5 +103,5 @@
   <xs:simpleType name="SignatureProfileType">
     <xs:list itemType="xs:string" />
   </xs:simpleType>
-
+  
 </xs:schema>

@@ -21,6 +21,9 @@ package fi.laverca.mss;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import fi.laverca.jaxb.mcs204ext1.CertificateType;
 import fi.laverca.jaxb.mcs204ext1.ProfileQueryExtension;
@@ -56,8 +59,7 @@ public class ProfileQueryResponse {
     }
     
     /**
-     * If the MSSP supports ProfileQueryExtension,
-     * return the Mobile User's certificates.
+     * If the MSSP supports ProfileQueryExtension, return the Mobile User's certificates.
      * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
      * @deprecated Use {@link #getCertificate(String)} instead
      */
@@ -70,19 +72,15 @@ public class ProfileQueryResponse {
         if (this.resp.getStatus() == null) return certs;
         if (this.resp.getStatus().getStatusDetail() == null) return certs;
 
-        for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
-            if (o instanceof ProfileQueryExtension) {
-                ProfileQueryExtension ext = (ProfileQueryExtension)o;
-                for (CertificateType certType : ext.getMobileUserCertificates()) {
-                    certs = new X509CertificateChain(certType);
-                    if (certs.isNonRepudiation()) {
-                        // Found nonRepudiation
-                        return certs;
-                    }
-                }
+        ProfileQueryExtension ext = this.getProfileQueryExtension();
+        for (CertificateType certType : ext.getMobileUserCertificates()) {
+            certs = new X509CertificateChain(certType);
+            if (certs.isNonRepudiation()) {
+                // Found nonRepudiation
+                return certs;
             }
         }
-        
+
         return certs;
     }
     
@@ -92,24 +90,39 @@ public class ProfileQueryResponse {
      * @param mssSigProf SignatureProfile the certificate is related to
      * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
      */
-    public X509CertificateChain getCertificate(String mssSigProf) {
+    public X509CertificateChain getCertificate(final String mssSigProf) {
 
         if (this.resp             == null) return new X509CertificateChain();
         if (this.resp.getStatus() == null) return new X509CertificateChain();
         if (this.resp.getStatus().getStatusDetail() == null) return new X509CertificateChain();
 
+        // Filter certs by signature profile
+        ProfileQueryExtension    extension = this.getProfileQueryExtension();
+        List<X509CertificateChain> certs = extension.getMobileUserCertificates().stream()
+                                                                                .map(X509CertificateChain::new)
+                                                                                .filter(c -> c.getSignatureProfiles() != null)
+                                                                                .filter(c -> c.getSignatureProfiles().contains(mssSigProf))
+                                                                                .collect(Collectors.toList());
+        
+        // Find first acceptable cert
+        Predicate<X509CertificateChain> wantedSigningMethod = (c) -> Objects.equals(c.getSigningMethod(), extension.getPreferredSigningMethod());
+        return certs.stream()
+                    .filter(wantedSigningMethod).findFirst() // find first cert matching our wanted signing method
+                    .orElse(certs.stream().findFirst()       // or if none found, find any other cert
+                    .orElse(new X509CertificateChain()));    // or if none found, return empty cert chain
+    }
+    
+    /**
+     * Get a ProfileQueryExtension from the response
+     * @return ProfileQueryExtension or null if not found
+     */
+    private ProfileQueryExtension getProfileQueryExtension() {
         for (Object o : this.resp.getStatus().getStatusDetail().getAniesAndServiceResponsesAndReceiptRequestExtensions()) {
             if (o instanceof ProfileQueryExtension) {
-                ProfileQueryExtension ext = (ProfileQueryExtension)o;
-                for (CertificateType certType : ext.getMobileUserCertificates()) {
-                    X509CertificateChain cert = new X509CertificateChain(certType);
-                    if (cert.getSignatureProfiles() != null && cert.getSignatureProfiles().contains(mssSigProf)) {
-                        return cert;
-                    }
-                }
+                return (ProfileQueryExtension)o;
             }
         }
-        return new X509CertificateChain();
+        return null;
     }
         
 }

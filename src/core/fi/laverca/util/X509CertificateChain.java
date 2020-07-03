@@ -28,6 +28,7 @@ public class X509CertificateChain implements Collection<X509Certificate> {
 
     private List<X509Certificate> certChain = new ArrayList<>();
     private List<String>          sigProfs  = new ArrayList<>();
+    private String                signingMethod;
     
     public X509CertificateChain(CertificateType certData) {
         CertificateFactory certFactory = null;
@@ -38,6 +39,7 @@ public class X509CertificateChain implements Collection<X509Certificate> {
             return;
         }
 
+        this.signingMethod = certData.getSigningMethod();
         this.sigProfs.addAll(certData.getSignatureProfiles());
         for (Object o: certData.getX509IssuerSerialsAndX509SKISAndX509SubjectNames()) {
 
@@ -65,6 +67,14 @@ public class X509CertificateChain implements Collection<X509Certificate> {
      */
     public List<String> getSignatureProfiles() {
         return this.sigProfs;
+    }
+    
+    /**
+     * Get certificate SigningMethod
+     * @return e.g. APP or SIM
+     */
+    public String getSigningMethod() {
+        return this.signingMethod;
     }
 
     public X509Certificate get(int i) {
