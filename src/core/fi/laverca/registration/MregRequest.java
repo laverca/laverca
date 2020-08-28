@@ -34,6 +34,7 @@ import fi.laverca.jaxb.mreg.WirelessOperation;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MeshMemberType;
 import fi.laverca.jaxb.mss.MobileUserType;
+import fi.laverca.jaxb.wsssecext.Security;
 import fi.laverca.mss.MssClient;
 import fi.laverca.util.LavercaContext;
 
@@ -75,6 +76,8 @@ public class MregRequest {
         CAURI
     }
     
+    // WSSE security headers
+    public Security security;
     public LavercaContext context;
     
     protected Target  targetType = Target.MOBILEUSER;
@@ -101,6 +104,8 @@ public class MregRequest {
     // These override any client specific AP ID and AP PWD when sending this req. 
     private String senderApId;
     private String senderApPwd;
+    
+
     
     /**
      * Create a new MReg request wrapper
@@ -306,6 +311,10 @@ public class MregRequest {
      */
     public void setWireless(final boolean wireless) {
         this.wireless = wireless;
+    }
+    
+    public void setWSSESecurity(final Security security) {
+        this.security = security;
     }
     
     /**

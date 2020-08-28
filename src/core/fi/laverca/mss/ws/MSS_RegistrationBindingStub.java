@@ -32,6 +32,7 @@ import org.apache.axis.soap.SOAPConstants;
 import fi.laverca.jaxb.mss.MSSMessageSignature;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
+import fi.laverca.jaxb.wsssecext.Security;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.JMarshallerFactory;
 
@@ -109,7 +110,7 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
     }
 
     @Override
-    public MSSRegistrationResp MSS_Registration(final MSSRegistrationReq req) throws java.rmi.RemoteException {
+    public MSSRegistrationResp MSS_Registration(final MSSRegistrationReq req, final Security security) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -121,7 +122,13 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
         _call1.setSOAPActionURI("#MSS_Registration");
 
         this.setRequestHeaders(_call1);
-        Object _resp = _call1.invoke(new Object[] {req});
+        
+        Object _resp = null;
+        if (security != null) {
+            _call1.invoke(new Object[] {req, security});
+        } else {
+            _call1.invoke(new Object[] {req});
+        }
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;

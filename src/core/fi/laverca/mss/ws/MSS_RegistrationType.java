@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2020 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ package fi.laverca.mss.ws;
 
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
+import fi.laverca.jaxb.wsssecext.Security;
 
 public interface MSS_RegistrationType extends java.rmi.Remote {
-    public MSSRegistrationResp MSS_Registration(MSSRegistrationReq req) throws java.rmi.RemoteException;
+    public MSSRegistrationResp MSS_Registration(MSSRegistrationReq req, Security security) throws java.rmi.RemoteException;
 }

@@ -116,7 +116,8 @@
     <mkdir dir="${datatypes-src}" />
     <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
                       todir="${datatypes-src}" />
-                      
+    <jaxb-xsd2src-gen file="${xmlschemas}/oasis-200401-wss-wssecurity-secext-1.0.xsd"
+                      todir="${datatypes-src}" />
   </target>
   
 

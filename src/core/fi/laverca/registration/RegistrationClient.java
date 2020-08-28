@@ -64,7 +64,7 @@ public class RegistrationClient {
     public MregResponse send(final MregRequest req) throws IOException {
         req.context = new LavercaContext();
         MSSRegistrationReq  _req  = req.toMSSReq(this.client);
-        MSSRegistrationResp _resp = this.client.send(_req, req.context);
+        MSSRegistrationResp _resp = this.client.send(_req, req.context, req.security);
         return new MregResponse(_resp, req.context);
     }
     
@@ -104,7 +104,7 @@ public class RegistrationClient {
             
             _final.getRegistrationInputs().add(_input);
         }
-        MSSRegistrationResp _resp = this.client.send(_final, req.context);
+        MSSRegistrationResp _resp = this.client.send(_final, req.context, req.security);
         
         return new MregResponse(_resp, req.context);
     }
