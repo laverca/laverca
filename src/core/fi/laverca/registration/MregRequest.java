@@ -73,7 +73,8 @@ public class MregRequest {
         SPID,
         NASID,
         MSSPURI,
-        CAURI
+        CAURI,
+        USERID
     }
     
     // WSSE security headers
@@ -100,12 +101,12 @@ public class MregRequest {
     protected String nasId;
     protected String msspUri;
     protected String caUri;
-
+    protected String userIdentifier;
+    
     // These override any client specific AP ID and AP PWD when sending this req. 
     private String senderApId;
     private String senderApPwd;
     
-
     
     /**
      * Create a new MReg request wrapper
@@ -209,6 +210,10 @@ public class MregRequest {
                 this.caUri      = value;
                 this.targetType = Target.ENTITY;
                 break;
+            case USERID:
+                this.userIdentifier = value;
+                this.targetType = Target.MOBILEUSER;
+                break;
         }
     }
 
@@ -259,6 +264,34 @@ public class MregRequest {
      */
     public void setTargetCaUri(final String caUri) {
         this.setTarget(TargetName.CAURI, caUri);
+    }
+    
+    /**
+     * If the target is an MSSP, set the MSSP URI identifying it
+     * @param value Target MSSP URI
+     */
+    public void setTargetMsspUri(String value) {
+        this.setTarget(TargetName.MSSPURI, value);
+    }
+
+    /**
+     * If the target is an Customer, set the CUSTOMERID identifying it
+     * @param value Target CUSTOMERID
+     */
+    public void setTargetCustomerID(String value) {
+        this.setTarget(TargetName.CUSTOMERID, value);
+    }
+
+    public void setTargetUserIdentifier(final String uid) {
+        this.setTarget(TargetName.USERID, uid);
+    }
+
+    public void setTargetNasId(String value) {
+        this.setTarget(TargetName.NASID, value);
+    }
+
+    public void setTargetSpId(String value) {
+        this.setTarget(TargetName.SPID, value);
     }
     
     /**
@@ -313,6 +346,10 @@ public class MregRequest {
         this.wireless = wireless;
     }
     
+    /**
+     * Set WSSE security header to be used in the request
+     * @param security WSSE security header
+     */
     public void setWSSESecurity(final Security security) {
         this.security = security;
     }
@@ -401,6 +438,7 @@ public class MregRequest {
             case MOBILEUSER:
                 MobileUserType mu = new MobileUserType();
                 mu.setMSISDN(this.msisdn);
+                mu.setUserIdentifier(this.userIdentifier);
                 target.setMobileUser(mu);
                 break;
             case SIMCARD:
