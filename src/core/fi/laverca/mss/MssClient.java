@@ -329,7 +329,10 @@ public class MssClient {
                 fi.laverca.jaxb.sco204ext1.ObjectFactory.class,
                 fi.laverca.jaxb.soap12env.ObjectFactory.class,
                 fi.laverca.jaxb.xmldsigcore.ObjectFactory.class,
-                fi.laverca.jaxb.xmlenc.ObjectFactory.class }) {
+                fi.laverca.jaxb.xmlenc.ObjectFactory.class,
+                fi.laverca.jaxb.wsssecext.ObjectFactory.class,
+                fi.laverca.jaxb.wsssecutil.ObjectFactory.class,
+                fi.laverca.jaxb.kiuruwsse1.ObjectFactory.class}) {
 
             final String p = c.getPackage().getName();
             JMarshallerFactory.addJAXBPath(p);
