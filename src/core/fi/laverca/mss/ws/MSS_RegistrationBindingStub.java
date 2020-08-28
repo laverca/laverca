@@ -51,6 +51,8 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
         final QName reqQN     = new QName(NS204, "MSS_RegistrationReq");
         final QName respQN    = new QName(NS204, "MSS_RegistrationResp");
 
+        final QName securityQN   = new QName(NSWSSEC, "Security");
+        
         OperationDesc oper;
         ParameterDesc [] params;
         params = new ParameterDesc [] {
@@ -61,8 +63,13 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
                               reqQN,
                               MSSRegistrationReq.class,
                               false, false),
+            new ParameterDesc(securityQN,
+                              ParameterDesc.IN,
+                              securityQN,
+                              Security.class,
+                              true, false),
         };
-        params[0].setOmittable(true);
+        params[1].setOmittable(true);
         oper = new OperationDesc("MSS_Registration",
                                  new QName("", "MSS_Registration"), // Element QName
                                  params,
@@ -84,12 +91,12 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
         // 4. dserClass
         // 5. encodingStyleURI
 
-        oper.registerType(MSSRegistrationReq.class,  reqQN, sf, df, null);
+        oper.registerType(MSSRegistrationReq.class,   reqQN, sf, df, null);
         oper.registerType(MSSRegistrationResp.class, respQN, sf, df, null);
+        oper.registerType(Security.class,        securityQN, sf, df, null);
         oper.registerType(MSSMessageSignature.class, MESSAGESIGNATURE_HEADER, sf, df, null);
 
         MSS_RegistrationBindingStub._operations[0] = oper;
-
     }
 
     public MSS_RegistrationBindingStub() {
@@ -123,12 +130,7 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
 
         this.setRequestHeaders(_call1);
         
-        Object _resp = null;
-        if (security != null) {
-            _call1.invoke(new Object[] {req, security});
-        } else {
-            _call1.invoke(new Object[] {req});
-        }
+        Object _resp = _call1.invoke(new Object[] {req, security});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
