@@ -59,14 +59,45 @@ public class ProfileQueryResponse {
     }
     
     /**
-     * If the MSSP supports ProfileQueryExtension, return the Mobile User's certificates.
-     * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
-     * @deprecated Use {@link #getCertificate(String)} instead
+     * If the MSSP supports ProfileQueryExtension, return the Mobile User's nonRepudiation certificate.
+     * @return Mobile User certificate chain for nonRepudiation certificate.
+     * @deprecated Use {@link #getCertificate(String)} or {@link #getNonRepudiationCertificate()} instead
      */
     @Deprecated
     public X509CertificateChain getCertificates() {
+        return this.getNonRepudiationCertificate();
+    }
+    
+    /**
+     * If the MSSP supports ProfileQueryExtension, return the Mobile User's nonRepudiation certificate.
+     * @return Mobile User certificate chain for nonRepudiation certificate.
+     */
+    public X509CertificateChain getNonRepudiationCertificate() {
+        for (X509CertificateChain chain : this.getAllCertificates()) {
+            if (chain.isNonRepudiation()) return chain;
+        }
+        return new X509CertificateChain();
+    }
+    
+    
+    /**
+     * If the MSSP supports ProfileQueryExtension, return the Mobile User's digitalSignature certificate.
+     * @return Mobile User certificate chain for nonRepudiation certificate.
+     */
+    public X509CertificateChain getDigitalSignatureCertificate() {
+        for (X509CertificateChain chain : this.getAllCertificates()) {
+            if (chain.isDigitalSignature()) return chain;
+        }
+        return new X509CertificateChain();
+    }
+    
+    /**
+     * If the MSSP supports ProfileQueryExtension, return all of the the Mobile User's certificates.
+     * @return Mobile User certificate chains.
+     */
+    public List<X509CertificateChain> getAllCertificates() {
         
-        X509CertificateChain certs = new X509CertificateChain();
+        List<X509CertificateChain> certs = new ArrayList<>();
         
         if (this.resp             == null) return certs;
         if (this.resp.getStatus() == null) return certs;
@@ -74,21 +105,15 @@ public class ProfileQueryResponse {
 
         ProfileQueryExtension ext = this.getProfileQueryExtension();
         for (CertificateType certType : ext.getMobileUserCertificates()) {
-            certs = new X509CertificateChain(certType);
-            if (certs.isNonRepudiation()) {
-                // Found nonRepudiation
-                return certs;
-            }
+            certs.add(new X509CertificateChain(certType));
         }
-
         return certs;
     }
     
     /**
-     * If the MSSP supports ProfileQueryExtension,
-     * return the Mobile User's certificates.
+     * If the MSSP supports ProfileQueryExtension, return the Mobile User's certificates.
      * @param mssSigProf SignatureProfile the certificate is related to
-     * @return Mobile User certificates in X509Data elements. Each element contains a whole certificate chain.
+     * @return Mobile User certificate chains.
      */
     public X509CertificateChain getCertificate(final String mssSigProf) {
 

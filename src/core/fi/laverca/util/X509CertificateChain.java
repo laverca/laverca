@@ -104,6 +104,16 @@ public class X509CertificateChain implements Collection<X509Certificate> {
         return this.certChain.get(0).getKeyUsage()[1];
     }
 
+    
+    /**
+     * Does the signing certificate have KeyUsage digitalSignature?
+     * @return true if the signing certificate have KeyUsage digitalSignature
+     */
+    public boolean isDigitalSignature() {
+        if (this.isEmpty()) return false;
+        return this.certChain.get(0).getKeyUsage()[0];
+    }
+    
     @Override
     public boolean contains(Object arg0) {
         return this.certChain.contains(arg0);
