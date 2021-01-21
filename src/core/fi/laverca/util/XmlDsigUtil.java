@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
+import sun.security.x509.X509CertImpl;
 
 public class XmlDsigUtil {
 
@@ -175,7 +176,7 @@ public class XmlDsigUtil {
                         throw new KeySelectorException(ke);
                     }
                 } else if (xmlStructure instanceof X509Data) {
-                    List<sun.security.x509.X509CertImpl> certs = ((X509Data)xmlStructure).getContent();
+                    List<X509CertImpl> certs = (List<X509CertImpl>) ((X509Data)xmlStructure).getContent();
                     pk = certs.get(0).getPublicKey();
                 } else  {
                     log.error(xmlStructure + " not supported");
