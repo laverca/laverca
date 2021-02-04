@@ -3,6 +3,7 @@ package fi.laverca.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -22,8 +23,9 @@ import fi.laverca.jaxb.mcs204ext1.CertificateType;
  * Wrapper for a list of certificates that represents a certificate chain. 
  * Null object cannot be added to this. 
  */
-public class X509CertificateChain implements Collection<X509Certificate> {
+public class X509CertificateChain implements Collection<X509Certificate>, Serializable {
 
+    private static final long serialVersionUID = 1L;
     private static final Log log = LogFactory.getLog(X509CertificateChain.class);
 
     private List<X509Certificate> certChain = new ArrayList<>();
