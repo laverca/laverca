@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2021 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,13 @@ public class MssClient {
     
     public static final String CLIENT_CONFIG_WSDD_FILENAME = "laverca-client-config.wsdd";
     
+    /**
+     * Note: TLSv1.2 is obsolete by 2020..  but it depends upon your Java runtime what you can use.
+     * See {@link #setTLSContextName(String)} for a method to set it <i>before</i> calling
+     * the constructor {@link #MssClient(MssConf)}.
+     */
+    private static String TLSContextName = "TLSv1.2";
+    
     private static boolean marshallerInitDone;
     // AP settings
     private String apId  = null;
@@ -117,15 +124,16 @@ public class MssClient {
     private SSLSocketFactory  sslSocketFactory;
 
     private LavercaHttpClient httpClient;
+
+    private List<byte[]> expectedServerCerts;
     
     /**
-     * <b>NOTE:</b> 
-     * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
-     *
-     * <p>If the configuration contains keystore and/or truststore parameters,
+     * Initialize the MssClient instance with supplied configuration.
+     * <p>
+     * <b>NOTE:</b> If the configuration contains keystore and/or truststore parameters,
      * {@link #createSSLFactory(String, String, String, String, String, String)} and {@link #setSSLSocketFactory(SSLSocketFactory)}
-     * are automatically run. Ignores any keystore loading problems.
+     * are automatically run. That call ignores any keystore loading problems.
+     * Upon TrustStore load success, this will initialize LavercaSSLTrustStore collection of expected server certificates. 
      *
      * @param conf MSS Configuration object (not null)
      */
@@ -144,6 +152,7 @@ public class MssClient {
                 SSLSocketFactory ssf = MssClient.createSSLFactory(conf.getKeystore(),   conf.getKeystorePwd(),   conf.getKeystoreType(), 
                                                                   conf.getTruststore(), conf.getTruststorePwd(), conf.getTruststoreType());
                 this.setSSLSocketFactory(ssf);
+                this.expectedServerCerts = LavercaSSLTrustManager.getInstance().getExpectedServerCerts();
             } catch (Exception e) {
                 log.error("Failed to load keystore and/or truststore", e);
             }
@@ -151,9 +160,9 @@ public class MssClient {
     }
 
     /**
-     * <b>NOTE:</b> 
-     * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
+     * Initialize the MssClient instance with supplied configuration.
+     * <p>
+     * <b>NOTE:</b> This does not auto-initialize the keystore/truststore settings
      *
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
      * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
@@ -170,9 +179,9 @@ public class MssClient {
     }
     
     /** 
-     * <b>NOTE:</b> 
-     * <br>if any of the URLs require SSL, you must
-     * call {@link fi.laverca.util.JvmSsl#setSSL(String,String,String,String,String)} OR set the engine configuration before sending any requests.
+     * Initialize the MssClient instance with supplied configuration.
+     * <p>
+     * <b>NOTE:</b> This does not auto-initialize the keystore/truststore settings
      * 
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
      * @param apPwd Your password; MessageAbstractType/AP_Info/AP_PWD. Not null.
@@ -229,6 +238,7 @@ public class MssClient {
     
     /**
      * Create an SSLSocketFactory
+     * 
      * @param ksFile Keystore filename
      * @param ksPwd  Keystore password
      * @param ksType Keystore type
@@ -243,7 +253,11 @@ public class MssClient {
     }
 
     /**
-     * Create an SSLSocketFactory
+     * Create an SSLSocketFactory.
+     * <p>
+     * <b>NOTE:</b> This fills the set of expected server certificate set to LavercaSSLTrustManager in <i>global</i> context.
+     * If you instantiate multiple MssClient's, they must have identical TrustStore files.
+     * 
      * @param ksFile Keystore filename
      * @param ksPwd  Keystore password
      * @param ksType Keystore type
@@ -269,7 +283,7 @@ public class MssClient {
             ks.load(kis, ksPwd.toCharArray());
             kmf.init(ks, ksPwd.toCharArray());
 
-            SSLContext ctx = SSLContext.getInstance("TLSv1.2");
+            final SSLContext ctx = SSLContext.getInstance(TLSContextName);
             
             if (tsFile != null) {
                 ts = KeyStore.getInstance(tsType);
@@ -282,9 +296,14 @@ public class MssClient {
                     if (ts.isKeyEntry(alias)) {
                         X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
                         if (cert != null) certs.add(cert.getEncoded());
+                    } else if (ts.isCertificateEntry(alias)) {
+                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                        if (cert != null) certs.add(cert.getEncoded());
                     }
                 }
 
+                // Note: Following is GLOBAL setting to all MssClient instances!
+                // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
                 LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
             }
             
@@ -863,6 +882,7 @@ public class MssClient {
 
         // Set tools for each context.
         port.setProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
+        LavercaSSLTrustManager.getInstance().setExpectedServerCerts(this.expectedServerCerts);
 
         MessageAbstractType resp = null;
         
@@ -893,4 +913,12 @@ public class MssClient {
         return resp;
     }
 
+    /**
+     * Set specific TLS protocol version name, if necessary.
+     * 
+     * @param name  Use "TLSv1.3"  or later
+     */
+    public static void setTLSContextName(String name) {
+        TLSContextName = name;
+    }
 }
