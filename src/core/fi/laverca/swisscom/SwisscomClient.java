@@ -42,6 +42,15 @@ public class SwisscomClient extends ClientBase<SwisscomRequest, SwisscomResponse
     
     public static final ObjectFactory factory = new ObjectFactory();
 
+    /**
+     * Preferred form of initialize a SwisscomClient
+     * 
+     * @param conf Configuration data collection
+     */
+    public SwisscomClient(MssConf conf) {
+        super(conf);
+    }
+
     public SwisscomClient(final String apId,             // AP settings
                           final String apPwd, 
                           final String msspSignatureUrl, // AE connection settings
@@ -50,10 +59,6 @@ public class SwisscomClient extends ClientBase<SwisscomRequest, SwisscomResponse
         throws IllegalArgumentException
     {
         super(apId, apPwd,  msspSignatureUrl, msspStatusUrl, msspReceiptUrl);
-    }
-    
-    public SwisscomClient(MssConf conf) {
-        super(conf);
     }
 
     /**

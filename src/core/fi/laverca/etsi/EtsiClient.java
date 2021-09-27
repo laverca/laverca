@@ -34,6 +34,16 @@ import fi.laverca.util.DTBS;
  * An asynchronous client for standard ETSI TS 102 204 signature requests.
  */
 public class EtsiClient extends ClientBase<EtsiRequest, EtsiResponse> {
+    
+    
+    /**
+     * Preferred form of initialize a EtsiClient
+     * 
+     * @param conf Configuration data collection
+     */
+    public EtsiClient(MssConf conf) {
+        super(conf);
+    }
 
     /**
      * Initialize an EtsiClient
@@ -81,10 +91,6 @@ public class EtsiClient extends ClientBase<EtsiRequest, EtsiResponse> {
         throws IllegalArgumentException
     {
         super(apId, apPwd, msspSignatureUrl, msspStatusUrl, msspReceiptUrl, msspRegistrationUrl, msspProfileUrl, msspHandshakeUrl);
-    }
-    
-    public EtsiClient(MssConf conf) {
-        super(conf);
     }
 
     /**

@@ -47,6 +47,19 @@ public class FiComClient extends ClientBase<FiComRequest, FiComResponse> {
     private static final long TIMEOUT      = 5 * 1000 * 60; // Timeout 5 min
     
     /**
+     * Preferred form of initialize a FiComClient
+     * 
+     * @param conf Configuration data collection
+     */
+    public FiComClient(final MssConf conf) {
+        super(conf);
+        
+        this.initialWait    = INITIAL_WAIT;
+        this.subsequentWait = SUBSEQ_WAIT;
+        this.timeout        = TIMEOUT;
+    }
+
+    /**
      * Initialize a FiComClient
      * 
      * @param apId Your identifier; MessageAbstractType/AP_Info/AP_ID. Not null.
@@ -100,14 +113,6 @@ public class FiComClient extends ClientBase<FiComRequest, FiComResponse> {
               msspProfileUrl,
               msspHandshakeUrl);
 
-        this.initialWait    = INITIAL_WAIT;
-        this.subsequentWait = SUBSEQ_WAIT;
-        this.timeout        = TIMEOUT;
-    }
-    
-    public FiComClient(final MssConf conf) {
-        super(conf);
-        
         this.initialWait    = INITIAL_WAIT;
         this.subsequentWait = SUBSEQ_WAIT;
         this.timeout        = TIMEOUT;
