@@ -22,7 +22,7 @@ package fi.laverca.mss.ws;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.Remote;
-import java.util.List;
+import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
@@ -450,7 +450,7 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
     private java.util.List<QName> ports = null;
 
     @Override
-    public List<QName> getPorts() {
+    public Iterator<QName> getPorts() {
         if (this.ports == null) {
             this.ports = new java.util.ArrayList<QName>();
             this.ports.add(new QName("http://laverca.fi/mssp", "MSS_SignaturePort"));
@@ -461,7 +461,7 @@ public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service 
             this.ports.add(new QName("http://laverca.fi/mssp", "MSS_ProfileQueryPort"));
             this.ports.add(new QName("http://laverca.fi/mssp", "MSS_HandshakePort"));
         }
-        return this.ports;
+        return this.ports.iterator();
     }
 
     /**

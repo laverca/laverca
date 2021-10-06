@@ -33,7 +33,7 @@ public class LavercaContext {
     private Map<String, Object> contents = new HashMap<>();
     
     public void setMessageContext(final MessageContext messageContext) {
-        Iterator<String> iter = messageContext.getPropertyNames().iterator();
+        Iterator<String> iter = messageContext.getPropertyNames();
 
         while (iter.hasNext()) {
             String s = (String) iter.next();
