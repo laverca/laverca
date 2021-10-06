@@ -20,6 +20,7 @@
 package fi.laverca.util;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.axis.MessageContext;
@@ -32,7 +33,10 @@ public class LavercaContext {
     private Map<String, Object> contents = new HashMap<>();
     
     public void setMessageContext(final MessageContext messageContext) {
-        for (String s : messageContext.getPropertyNames()) {
+        Iterator<String> iter = messageContext.getPropertyNames().iterator();
+
+        while (iter.hasNext()) {
+            String s = (String) iter.next();
             this.put(s, messageContext.getProperty(s));
         }
     }
