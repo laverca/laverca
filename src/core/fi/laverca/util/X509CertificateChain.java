@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,7 +33,14 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
     private List<X509Certificate> certChain = new ArrayList<>();
     private List<String>          sigProfs  = new ArrayList<>();
     private String                signingMethod;
+    private String                state;
     
+    private Map<QName, String> attributes;
+    
+    /**
+     * Construct an {@link X509CertificateChain} from SOAP {@link CertificateType} data.
+     * @param certData SOAP data
+     */
     public X509CertificateChain(CertificateType certData) {
         CertificateFactory certFactory = null;
         try {
@@ -41,10 +50,12 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
             return;
         }
 
+        this.attributes    = certData.getOtherAttributes();
         this.signingMethod = certData.getSigningMethod();
+        this.state         = certData.getState();
         this.sigProfs.addAll(certData.getSignatureProfiles());
+        
         for (Object o: certData.getX509IssuerSerialsAndX509SKISAndX509SubjectNames()) {
-
             if (o instanceof JAXBElement<?>) {
                 JAXBElement<?> element = (JAXBElement<?>) o;
                 Object val = element.getValue();
@@ -62,6 +73,13 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
             }
         }
     }
+
+    /**
+     * Empty default constructor
+     */
+    public X509CertificateChain() {
+        // Do nothing. 
+    }
     
     /**
      * Get SignatureProfiles for this certificate chain
@@ -78,13 +96,33 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
     public String getSigningMethod() {
         return this.signingMethod;
     }
-
-    public X509Certificate get(int i) {
-        return this.certChain.get(i);
+    
+    /**
+     * Get certificate state
+     * @return one of: ACTIVE, INACTIVE
+     */
+    public String getCertState() {
+        return this.state;
     }
 
-    public X509CertificateChain() {
-        // Do nothing. 
+    /**
+     * Get nth certificate from this certificate chain
+     * @param n
+     * @return certificate if found
+     * @throws IndexOutOfBoundsException if the index is out of range
+     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     */
+    public X509Certificate get(int n) {
+        return this.certChain.get(n);
+    }
+    
+    /**
+     * Get an attribute from the SOAP certificate element
+     * @param qname QName of the attribute
+     * @return attribute or null if not found
+     */
+    public String getAttribute(final QName qname) {
+        return this.attributes.get(qname);
     }
 
     @Override
@@ -106,7 +144,6 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
         return this.certChain.get(0).getKeyUsage()[1];
     }
 
-    
     /**
      * Does the signing certificate have KeyUsage digitalSignature?
      * @return true if the signing certificate have KeyUsage digitalSignature
