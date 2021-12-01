@@ -25,10 +25,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.jaxb.mss.AdditionalServiceType;
+import fi.laverca.jaxb.mss.DataType;
 import fi.laverca.jaxb.mss.MssURIType;
 import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mssfi.ServiceResponses;
 import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
+import fi.methics.ts102204.ext.v1_0.AdditionalSignatureRequest;
 
 public class AdditionalServices {
 
@@ -50,6 +52,25 @@ public class AdditionalServices {
         final MssURIType            d = MssClient.mssObjFactory.createMssURIType();
         d.setMssURI(uri);
         s.setDescription(d);
+        return s;
+    }
+    
+    /**
+     * Create a BatchSigning AdditionalService element
+     * @param docref Document/Hash reference
+     * @return Created AdditionalService element
+     */
+    public static AdditionalServiceType createBatchSigningService(final String docref, final DataType dtbs) {
+        final AdditionalServiceType s = MssClient.mssObjFactory.createAdditionalServiceType();
+        final MssURIType            d = MssClient.mssObjFactory.createMssURIType();
+        d.setMssURI(BATCH_SIGNATURE_URI);
+        s.setDescription(d);
+        
+        AdditionalSignatureRequest req = new AdditionalSignatureRequest();
+        req.setDocumentRef(docref);
+        req.setDataToBeSigned(dtbs);
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(req);
+        
         return s;
     }
     

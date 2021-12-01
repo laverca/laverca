@@ -405,6 +405,7 @@
             <xs:element ref="fi:NoSpamCode"/>
             <xs:element ref="fi:UserLang"/> 
             <xs:element ref="fi:DisplayName"/>
+	        <xs:element ref="mds:AdditionalSignatureRequest"/>
             <xs:element ref="samlp:AttributeQuery"/> 
             <xs:any namespace="##other" processContents="lax" />
       </xs:choice>
