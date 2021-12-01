@@ -35,9 +35,10 @@ public class AdditionalServices {
     private static final Log log = LogFactory.getLog(AdditionalServices.class);
     
     // MISC AdditionalService URIs
-    public static final String POP_URI          = "http://www.methics.fi/KiuruMSSP/v3.0.0#POP";
-    public static final String ROLE_URI         = "http://www.methics.fi/KiuruMSSP/v5.0.0#role";
-    public static final String SIGNING_CERT_URI = "http://www.methics.fi/KiuruMSSP/v5.0.0#signingCertificate";
+    public static final String POP_URI             = "http://www.methics.fi/KiuruMSSP/v3.0.0#POP";
+    public static final String ROLE_URI            = "http://www.methics.fi/KiuruMSSP/v5.0.0#role";
+    public static final String SIGNING_CERT_URI    = "http://www.methics.fi/KiuruMSSP/v5.0.0#signingCertificate";
+    public static final String BATCH_SIGNATURE_URI = "http://www.methics.fi/KiuruMSSP/v5.0.0#docsign";
     
     /**
      * Create a basic AdditionalService element

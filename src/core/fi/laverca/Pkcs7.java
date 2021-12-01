@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2017 Laverca Project
+ * Copyright 2021 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,10 @@ import fi.laverca.ficom.FiComException;
 import fi.laverca.util.X509Util;
 
 /** 
- * A CMS PKCS7 signature wrapper
- * @deprecated Use CmsSignature instead
+ * A PKCS7 signature wrapper
+ * @see {@link CmsSignature}
  */ 
-@Deprecated
+@SuppressWarnings("deprecation")
 public class Pkcs7 extends CmsSignature {
 
     private static final Log log = LogFactory.getLog(CmsSignature.class);
@@ -253,15 +253,12 @@ public class Pkcs7 extends CmsSignature {
      * @param dn2 Second Distinguished name
      * @return true if DNs are equal, false otherwise
      */
-    @SuppressWarnings("deprecation")
     public static boolean dnsEqual(String dn1, String dn2) {
         if (dn1 == null || dn2 == null) {
             return false;
         }
-
         X509Name n1 = new X509Name(dn1);
         X509Name n2 = new X509Name(dn2);
-
         return n1.equals(n2, false);
     }
     

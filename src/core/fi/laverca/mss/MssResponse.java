@@ -2,7 +2,7 @@
  * Laverca Project
  * https://sourceforge.net/projects/laverca/
  * ==========================================
- * Copyright 2015 Laverca Project
+ * Copyright 2021 Laverca Project
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import fi.laverca.BatchSignature;
 import fi.laverca.CmsSignature;
-import fi.laverca.MSS_Formats;
-import fi.laverca.MobileConnectSignature;
 import fi.laverca.Pkcs1;
 import fi.laverca.Signature;
-import fi.laverca.SignatureProfiles;
+import fi.laverca.StatusCodes;
 import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
@@ -39,9 +38,10 @@ import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.jaxb.mss.SignatureType;
 import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mss.StatusType;
-import fi.laverca.jaxb.mssfi.PKCS1;
 import fi.laverca.jaxb.mssfi.ServiceResponses;
 import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
+import fi.laverca.util.SignatureUtil;
+import fi.methics.ts102204.ext.v1_0.AdditionalSignatureResponse;
 
 /**
  * Represents the final response to a signature request. Signature requests can be either synchronous or asynchronous. 
@@ -62,21 +62,9 @@ public abstract class MssResponse {
 
     private static final Log log = LogFactory.getLog(EtsiResponse.class);
     
-    /**
-     * @deprecated Will be made private in the future. Use {@link MssResponse#getMSS_SignatureReq()} instead.
-     */
-    @Deprecated
     private final MSSSignatureReq  originalSigReq;
-    /**
-     * @deprecated Will be made private in the future. Use {@link MssResponse#getMSS_SignatureResp()} instead.
-     */
-    @Deprecated
-    public final MSSSignatureResp originalSigResp;
-    /**
-     * @deprecated Will be made private in the future. Use {@link MssResponse#getMSS_StatusResp()} instead.
-     */
-    @Deprecated
-    public final MSSStatusResp    finalStatusResp;
+    private final MSSSignatureResp originalSigResp;
+    private final MSSStatusResp    finalStatusResp;
     
     protected final StatusType    status;
     protected final SignatureType signature;
@@ -107,58 +95,7 @@ public abstract class MssResponse {
      * @throws IllegalStateException if the signature parsing fails
      */
     public Signature getSignature() throws IllegalStateException {
-        
-        if (this.signature == null) {
-            return null;
-        }
-        
-        Signature signature = null;
-
-        try {
-            PKCS1  p1  = this.signature.getPKCS1();
-            byte[] sig = this.signature.getBase64Signature();
-            
-            if (p1 != null) {
-                signature = new Pkcs1(p1);
-            }
-            
-            if (sig != null) {
-                if (this.getMssFormat() == null) {
-                    if (this.getSignatureProfile() != null) {
-                        switch (this.getSignatureProfile()) {
-                            case SignatureProfiles.MOBILECONNECT_LOA2:
-                            case SignatureProfiles.MOBILECONNECT_LOA3:
-                                signature = new MobileConnectSignature(sig);
-                                break;
-                            default:
-                                try {
-                                    signature = new CmsSignature(sig);
-                                } catch (IllegalArgumentException e) {
-                                    // Not CMS - assume it's MobileConnect
-                                    signature = new MobileConnectSignature(sig);
-                                }
-                                break;
-                        }
-                    }
-                } else {
-                    switch (this.getMssFormat()) {
-                        case MSS_Formats.KIURU_PKCS1:
-                            p1 = new PKCS1();
-                            p1.setSignatureValue(sig);
-                            signature = new Pkcs1(p1);
-                            break;
-                        case MSS_Formats.PKCS7:
-                        default:
-                            signature = new CmsSignature(sig);
-                            break;
-                    }
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-        
-        return signature;
+        return SignatureUtil.parseSignature(this, this.signature);
     }
     
     /**
@@ -170,34 +107,53 @@ public abstract class MssResponse {
     public boolean hasSignature() throws IllegalStateException {
         return this.getSignature() != null;
     }
+    
+    /**
+     * Return batch signatures
+     * @return batch signatures
+     * @see {@link #isBatchSignature()}
+     */
+    public List<BatchSignature> getBatchSignatures() {
+        List<BatchSignature> resp = new ArrayList<>();
+        BatchSignature sig = new BatchSignature(this.getSignature(), this.originalSigReq);
+        resp.add(sig);
+        for (AdditionalServiceResponse as : this.getAdditionalServiceResponses()) {
+            if (as.getDescription() == null) continue;
+            if (as.getDescription().equals(AdditionalServices.BATCH_SIGNATURE_URI)) {
+                if (as.getServiceResponse() == null) continue;
+                if (as.getServiceResponse().getAdditionalSignatureResponses() == null) continue;
+                for (AdditionalSignatureResponse ar : as.getServiceResponse().getAdditionalSignatureResponses()) {
+                    resp.add(new BatchSignature(ar, this));
+                }
+            }
+        }
+        return resp;
+    }
 
     /** 
      * Get the PKCS7 signature from this response
      * @return PKCS7 signature or null if the signature is not in this format.
-     * @deprecated Use {@link #getSignature()} instead
+     * @see {@link #getSignature()}
      */
-    @Deprecated
     public CmsSignature getPkcs7Signature() {
         try {
             return new CmsSignature(this.signature.getBase64Signature());
-        } catch(IllegalArgumentException iae) {
-            log.debug("not a pkcs7?", iae);
+        } catch (IllegalArgumentException iae) {
+            log.debug("Response is not PKCS7", iae);
             return null;
         }
-
     }
     
     /** 
      * Get the PKCS1 signature from this response
      * @return PKCS1 signature or null if the signature is not in this format.
-     * @deprecated Use {@link #getSignature()} instead
+     * @see {@link #getSignature()}
      */
-    @Deprecated
     public Pkcs1 getPkcs1Signature() {
         try {
             return new Pkcs1(this.signature.getPKCS1());
         } catch(IllegalArgumentException iae) {
-            log.debug("not a pkcs1?", iae);
+            log.debug("Response is not PKCS#1", iae);
             return null;
         }
     }
@@ -235,7 +191,6 @@ public abstract class MssResponse {
         if (this.status != null && this.status.getStatusCode() != null && this.status.getStatusCode().getValue() != null) {
             return this.status.getStatusCode().getValue().longValue();
         }
-        
         return -1L;
     }
     
@@ -299,6 +254,21 @@ public abstract class MssResponse {
     }
     
     /**
+     * Check if this response contains given AdditionalService URI
+     * @param uri URI
+     * @return true if response for given AdditionalService is present
+     * @see {@link AdditionalServices}
+     */
+    public boolean hasAdditionalServiceResponse(String uri) {
+        for (AdditionalServiceResponse resp : this.getAdditionalServiceResponses()) {
+            if (resp == null) continue;
+            if (resp.getDescription() == null) continue;
+            if (resp.getDescription().equals(uri)) return true;
+        }
+        return false;
+    }
+    
+    /**
      * Was this transaction synchronous?
      * @return true if MessagingMode was "synch"
      */
@@ -312,7 +282,16 @@ public abstract class MssResponse {
      * @return true for successful response
      */
     public boolean isSuccess() {
-        return this.getStatusCode() == 500 || this.getStatusCode() == 502;
+        return StatusCodes.SIGNATURE.equals(this.getStatusCode()) || StatusCodes.VALID_SIGNATURE.equals(this.getStatusCode()) ;
+    }
+    
+    /**
+     * Check if this response is a batch signature response
+     * @return true if batch signature response is present
+     * @see {@link getBatchSignatures()}
+     */
+    public boolean isBatchSignature() {
+        return this.hasAdditionalServiceResponse(AdditionalServices.BATCH_SIGNATURE_URI);
     }
     
     @Override

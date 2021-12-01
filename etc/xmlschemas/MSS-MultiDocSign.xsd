@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"
+           xmlns:mcs="http://www.methics.fi/TS102204/ext/v1.0.0"
+           xmlns:mds="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"
+           elementFormDefault="qualified">
+
+  <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#"
+             schemaLocation="MSS-plus.xsd"/>
+
+  <!-- New types for AdditionalSignature -->
+
+  <xs:element  name="AdditionalSignatureRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="DataToBeSigned"       type="mss:DataType" />
+        <xs:element name="DataToBeDisplayed"    type="mss:DataType"   minOccurs="0"/>
+        <xs:element name="SignatureProfile"     type="mss:mssURIType" minOccurs="0"/>
+        <xs:element name="MSS_Format"           type="mss:mssURIType" minOccurs="0"/>
+        <xs:element name="KeyReference"         type="mss:KeyReferenceType"  minOccurs="0"/>
+        <xs:element name="SignatureProfileComparison" type="mss:SignatureProfileComparisonType" minOccurs="0"/>
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="DocumentRef" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="AdditionalSignatureResponse">
+    <xs:complexType >
+      <xs:sequence>
+        <!-- The signature can be omitted while status is not completed. -->
+        <xs:element name="MSS_Signature" type="mss:SignatureType"  minOccurs="0"/>
+        <xs:element name="Status"        type="mss:StatusType"     />
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="DocumentRef" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

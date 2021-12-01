@@ -20,20 +20,24 @@
 package fi.laverca;
 
 /**
- * FiCom MSS Status Codes
- * <p>As per MSS FiCom Implementation Guideline v2.1
+ * Status Codes + FiCom MSS Status Codes
+ * As per:
+ * <ul>
+ * <li>ETSI TS 102 204
+ * <li>MSS FiCom Implementation Guideline v2.1
+ * </ul>
  */
 public class StatusCodes {
 
     public final static int NO_SECONDARY_CODE = -1;
 
-    public final static StatusCode      REQUEST_OK                       = new StatusCode(100);
-    public final static StatusCode      SIGNATURE                        = new StatusCode(500);
-    public final static StatusCode      REVOKED_CERTIFICATE              = new StatusCode(501);
-    public final static StatusCode      VALID_SIGNATURE                  = new StatusCode(502);
-    public final static StatusCode      INVALID_SIGNATURE                = new StatusCode(503);
-    public final static StatusCode      OUTSTANDING_TRANSACTION          = new StatusCode(504);
-    public final static StatusCode      CONSTRAINT_MISMATCH              = new StatusCode(505);
+    public final static StatusCode REQUEST_OK              = new StatusCode(100);
+    public final static StatusCode SIGNATURE               = new StatusCode(500);
+    public final static StatusCode REVOKED_CERTIFICATE     = new StatusCode(501);
+    public final static StatusCode VALID_SIGNATURE         = new StatusCode(502);
+    public final static StatusCode INVALID_SIGNATURE       = new StatusCode(503);
+    public final static StatusCode OUTSTANDING_TRANSACTION = new StatusCode(504);
+    public final static StatusCode CONSTRAINT_MISMATCH     = new StatusCode(505);
     
     public static class StatusCode {
         private final int primaryCode;
@@ -41,9 +45,14 @@ public class StatusCodes {
         public StatusCode(int primary) {
             this.primaryCode = primary;
         }
-        
         public int getValue(){
         	return this.primaryCode;
+        }
+        public boolean equals(int code) {
+            return this.getValue() == code;
+        }
+        public boolean equals(long code) {
+            return this.getValue() == (int)code;
         }
     }
 

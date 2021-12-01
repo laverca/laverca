@@ -3,6 +3,7 @@
            xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
            xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"
            xmlns:mcs="http://www.methics.fi/TS102204/ext/v1.0.0"
+           xmlns:mds="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"
            xmlns:fi="http://mss.ficom.fi/TS102204/v1.0.0#"
            xmlns:mreg="http://www.methics.fi/MSSPRegistration/v1.0.0#"
            xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -29,6 +30,8 @@
              schemaLocation="MSS-RegistrationExt.xsd" />
   <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
              schemaLocation="MSS-SubscriberInfo.xsd" />
+  <xs:import namespace="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"
+             schemaLocation="MSS-MultiDocSign.xsd" />
   <xs:import namespace="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
              schemaLocation="oasis-200401-wss-wssecurity-secext-1.0.xsd" />
              
