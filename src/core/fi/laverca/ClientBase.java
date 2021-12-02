@@ -386,7 +386,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                         boolean done = isDone(resp);
                         long statusCode = parseStatus(statResp.getStatus());
 
-                        if (StatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
+                        if (StatusCodes.OUTSTANDING_TRANSACTION.equals(statusCode)) {
                             log.trace("Got an outstanding Status Response. Continuing to wait for a final answer.");
                             handler.onOutstandingProgress(req, update);
                             continue;
@@ -480,9 +480,10 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         if (resp == null) {
             return false;
         }
-        if (resp.isBatchSignature() && !resp.isBatchSignatureComplete()) return false;
-        if (!resp.hasSignature()) return false;
-        return true;
+        if (resp.isBatchSignature()) {
+            return resp.isBatchSignatureComplete();
+        }
+        return resp.hasSignature();
     }
 
     /**

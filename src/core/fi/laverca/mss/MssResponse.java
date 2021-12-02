@@ -301,6 +301,7 @@ public abstract class MssResponse {
      */
     public boolean isBatchSignatureComplete() {
         if (!this.isBatchSignature()) return true;
+        if (!this.hasSignature()) return false;
         for (BatchSignature sig : this.getBatchSignatures()) {
             if (!sig.isComplete()) return false;
         }
