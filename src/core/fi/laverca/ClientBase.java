@@ -301,24 +301,29 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         log.debug("Sending sigReq");
         _sigResp = this.mssClient.send(req.sigReq, _context);
         log.debug("Got resp");
-        req.sigResp = _sigResp;
-        req.context = _context;
-
-        // Init the task and add it to the Req object
-        try {
-            req.ft = this.initializeTask(req, _sigResp, new SynchHandler<Req, Resp>());
-        } catch (SynchHandlerException e) {
-            if (e.getCause() instanceof IOException) throw e;
-            else throw new IOException(e.getCause());
-        }
-
-        log.debug("Starting calling");
-        this.threadExecutor.execute(req.ft);
         
-        try {
-            return req.waitForResponse();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IOException(e);
+        if (req.isSynchronous()) {
+            return this.createResp(req.sigReq, _sigResp, null);
+        } else {
+            req.sigResp = _sigResp;
+            req.context = _context;
+    
+            // Init the task and add it to the Req object
+            try {
+                req.ft = this.initializeTask(req, _sigResp, new SynchHandler<Req, Resp>());
+            } catch (SynchHandlerException e) {
+                if (e.getCause() instanceof IOException) throw e;
+                else throw new IOException(e.getCause());
+            }
+    
+            log.debug("Starting calling");
+            this.threadExecutor.execute(req.ft);
+            
+            try {
+                return req.waitForResponse();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new IOException(e);
+            }
         }
     }
     

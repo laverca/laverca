@@ -24,6 +24,7 @@ import java.util.concurrent.FutureTask;
 
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
+import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.util.LavercaContext;
 
 /**
@@ -61,6 +62,15 @@ public abstract class MssRequest<Resp> {
     public void cancel() {
         if (this.ft == null) return;
         this.ft.cancel(true);
+    }
+    
+    /**
+     * Check if this request is synchronous
+     * @return true if synchronous (or unknown)
+     */
+    public boolean isSynchronous() {
+        if (this.sigReq == null) return true;
+        return this.sigReq.getMessagingMode() == MessagingModeType.SYNCH;
     }
     
 }
