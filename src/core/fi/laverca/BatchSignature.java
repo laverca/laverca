@@ -55,21 +55,25 @@ public class BatchSignature implements Signature {
 
     @Override
     public byte[] getRawSignature() {
+        if (this.sig == null) return null;
         return this.sig.getRawSignature();
     }
 
     @Override
     public String getBase64Signature() {
+        if (this.sig == null) return null;
         return this.sig.getBase64Signature();
     }
 
     @Override
     public String getSignerCn() {
+        if (this.sig == null) return null;
         return this.sig.getSignerCn();
     }
 
     @Override
     public X509Certificate getSignerCert() throws MssException {
+        if (this.sig == null) return null;
         return this.sig.getSignerCert();
     }
     
