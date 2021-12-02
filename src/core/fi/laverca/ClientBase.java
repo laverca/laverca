@@ -40,7 +40,6 @@ import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusReq;
 import fi.laverca.jaxb.mss.MSSStatusResp;
-import fi.laverca.jaxb.mss.SignatureType;
 import fi.laverca.jaxb.mss.StatusCodeType;
 import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.mss.MssClient;
@@ -388,10 +387,12 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                         log.trace("Got statResp");
 
                         resp = ClientBase.this.createResp(req.sigReq, sigResp, statResp);
-                        boolean done = isDone(resp);
-                        long statusCode = parseStatus(statResp.getStatus());
+                        
+                        boolean done          = isDone(resp);
+                        boolean batchSignDone = resp.isBatchSignatureComplete();
+                        long    statusCode    = parseStatus(statResp.getStatus());
 
-                        if (StatusCodes.OUTSTANDING_TRANSACTION.equals(statusCode)) {
+                        if (StatusCodes.OUTSTANDING_TRANSACTION.equals(statusCode) || !batchSignDone) {
                             log.trace("Got an outstanding Status Response. Continuing to wait for a final answer.");
                             handler.onOutstandingProgress(req, update);
                             continue;
