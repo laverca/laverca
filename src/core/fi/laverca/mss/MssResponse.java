@@ -116,7 +116,7 @@ public abstract class MssResponse {
     public List<BatchSignature> getBatchSignatures() {
         List<BatchSignature> resp = new ArrayList<>();
         if (this.signature != null) {
-            resp.add(new BatchSignature(this.getSignature(), this.originalSigReq));
+            resp.add(new BatchSignature(this.getSignature(), this.originalSigReq, this));
         }
         for (AdditionalServiceResponse as : this.getAdditionalServiceResponses()) {
             if (as.getDescription() == null) continue;

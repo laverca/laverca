@@ -38,8 +38,9 @@ public class BatchSignature implements Signature {
      * @param sig    Signature
      * @param sigreq Signature request
      */
-    public BatchSignature(Signature sig, MSSSignatureReq sigreq) {
-        this.sig = sig;
+    public BatchSignature(Signature sig, MSSSignatureReq sigreq, StatusType status) {
+        this.sig    = sig;
+        this.status = status;
         if (sigreq != null && sigreq.getDataToBeDisplayed() != null) {
             this.docref = sigreq.getDataToBeDisplayed().getValue();
         }
