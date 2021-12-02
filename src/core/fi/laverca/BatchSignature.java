@@ -99,6 +99,14 @@ public class BatchSignature implements Signature {
     }
     
     /**
+     * Is this a successful Batch Signature (500 SIGNATURE or 502 VALID_SIGNATURE)
+     * @return true for successful batch signature
+     */
+    public boolean isSuccess() {
+        return StatusCodes.SIGNATURE.equals(this.getStatusCode()) || StatusCodes.VALID_SIGNATURE.equals(this.getStatusCode()) ;
+    }
+    
+    /**
      * Get BatchSignature response status code
      * @return StatusCode (or -1 if not available)
      */
@@ -117,4 +125,5 @@ public class BatchSignature implements Signature {
         if (this.status == null) return null;
         return this.status.getStatusMessage();
     }
+    
 }
