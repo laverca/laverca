@@ -382,7 +382,8 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                         statResp = ClientBase.this.mssClient.send(statReq);
                         log.trace("Got statResp");
 
-                        boolean done = isDone(statResp);
+                        resp = ClientBase.this.createResp(req.sigReq, sigResp, statResp);
+                        boolean done = isDone(resp);
                         long statusCode = parseStatus(statResp.getStatus());
 
                         if (StatusCodes.OUTSTANDING_TRANSACTION.getValue() == statusCode) {
@@ -391,8 +392,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                             continue;
                         } else if (done) {
                             log.info("Got a final Status Response. Ending the wait.");
-                            resp = ClientBase.this.createResp(req.sigReq, sigResp, statResp);
-
                             handler.onResponse(req, resp);
                             break;                              
                         } else {
@@ -474,15 +473,16 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
 
     /**
      * Checks whether the given StatusResp contains an MSS_Signature
-     * @param statResp StatusResponse to check
+     * @param resp     Response to check
      * @return true if signature was found, false otherwise
      */
-    protected static boolean isDone(final MSSStatusResp statResp) {
-        if (statResp == null) {
+    protected boolean isDone(final Resp resp) {
+        if (resp == null) {
             return false;
         }
-        final SignatureType sig = statResp.getMSSSignature();
-        return sig != null;
+        if (resp.isBatchSignature() && !resp.isBatchSignatureComplete()) return false;
+        if (!resp.hasSignature()) return false;
+        return true;
     }
 
     /**
