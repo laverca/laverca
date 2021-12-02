@@ -54,6 +54,14 @@ public class StatusCodes {
         public boolean equals(long code) {
             return this.getValue() == (int)code;
         }
+        public boolean equals(Integer code) {
+            if (code == null) return false;
+            return this.getValue() == code.intValue();
+        }
+        public boolean equals(Long code) {
+            if (code == null) return false;
+            return this.getValue() == code.intValue();
+        }
     }
 
 }

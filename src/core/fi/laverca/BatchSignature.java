@@ -21,6 +21,7 @@ package fi.laverca;
 import java.security.cert.X509Certificate;
 
 import fi.laverca.jaxb.mss.MSSSignatureReq;
+import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.mss.MssException;
 import fi.laverca.mss.MssResponse;
 import fi.laverca.util.SignatureUtil;
@@ -28,8 +29,9 @@ import fi.methics.ts102204.ext.v1_0.AdditionalSignatureResponse;
 
 public class BatchSignature implements Signature {
 
-    private Signature sig;
-    private String docref;
+    private Signature     sig;
+    private String     docref;
+    private StatusType status;
     
     /**
      * Build a BatchSignature from the "regular" response
@@ -51,6 +53,7 @@ public class BatchSignature implements Signature {
     public BatchSignature(AdditionalSignatureResponse as, MssResponse sigresp) {
         this.sig    = SignatureUtil.parseSignature(sigresp, as.getMSSSignature());
         this.docref = as.getDocumentRef();
+        this.status = as.getStatus();
     }
 
     @Override
@@ -83,6 +86,16 @@ public class BatchSignature implements Signature {
      */
     public String getDocRef() {
         return this.docref;
+    }
+    
+    /**
+     * Check if the signature is complete
+     * @return true for complete signature, false for outstanding one (504)
+     */
+    public boolean isComplete() {
+        if (this.status == null) return true;
+        if (this.status.getStatusCode() == null) return false;
+        return !StatusCodes.OUTSTANDING_TRANSACTION.equals(this.status.getStatusCode().getValue());
     }
 
 }

@@ -295,6 +295,18 @@ public abstract class MssResponse {
         return this.hasAdditionalServiceResponse(AdditionalServices.BATCH_SIGNATURE_URI);
     }
     
+    /**
+     * Check that all batch signature responses are complete
+     * @return true if all batch signature responses are complete
+     */
+    public boolean isBatchSignatureComplete() {
+        if (!this.isBatchSignature()) return true;
+        for (BatchSignature sig : this.getBatchSignatures()) {
+            if (!sig.isComplete()) return false;
+        }
+        return true;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
