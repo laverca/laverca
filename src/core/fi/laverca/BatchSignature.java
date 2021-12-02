@@ -97,5 +97,24 @@ public class BatchSignature implements Signature {
         if (this.status.getStatusCode() == null) return false;
         return !StatusCodes.OUTSTANDING_TRANSACTION.equals(this.status.getStatusCode().getValue());
     }
+    
+    /**
+     * Get BatchSignature response status code
+     * @return StatusCode (or -1 if not available)
+     */
+    public int getStatusCode() {
+        if (this.status == null) return -1;
+        if (this.status.getStatusCode() == null) return -1;
+        if (this.status.getStatusCode().getValue() == null) return -1;
+        return this.status.getStatusCode().getValue().intValue();
+    }
 
+    /**
+     * Get BatchSignature response status message
+     * @return StatusMessage (or null if not available)
+     */
+    public String getStatusMessage() {
+        if (this.status == null) return null;
+        return this.status.getStatusMessage();
+    }
 }
