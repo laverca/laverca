@@ -31,6 +31,7 @@ import fi.laverca.jaxb.mss.StatusDetailType;
 import fi.laverca.jaxb.mssfi.ServiceResponses;
 import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
 import fi.methics.ts102204.ext.v1_0.AdditionalSignatureRequest;
+import fi.methics.ts102204.ext.v1_0.BatchSignatureRequest;
 
 public class AdditionalServices {
 
@@ -40,7 +41,8 @@ public class AdditionalServices {
     public static final String POP_URI             = "http://www.methics.fi/KiuruMSSP/v3.0.0#POP";
     public static final String ROLE_URI            = "http://www.methics.fi/KiuruMSSP/v5.0.0#role";
     public static final String SIGNING_CERT_URI    = "http://www.methics.fi/KiuruMSSP/v5.0.0#signingCertificate";
-    public static final String BATCH_SIGNATURE_URI = "http://www.methics.fi/KiuruMSSP/v5.0.0#docsign";
+    public static final String BATCH_SIGNATURE_URI = "http://www.methics.fi/KiuruMSSP/v5.0.0#batchsign";
+    public static final String MULTIDOC_URI        = "http://www.methics.fi/KiuruMSSP/v5.0.0#docsign";
     
     /**
      * Create a basic AdditionalService element
@@ -56,18 +58,39 @@ public class AdditionalServices {
     }
     
     /**
-     * Create a BatchSigning AdditionalService element
+     * Create a Multi-doc AdditionalService element
      * @param docref Document/Hash reference
+     * @parma dtbs   Data to be signed
      * @return Created AdditionalService element
      */
-    public static AdditionalServiceType createBatchSigningService(final String docref, final DataType dtbs) {
+    public static AdditionalServiceType createMultidocService(final String docref, final DataType dtbs) {
+        final AdditionalServiceType s = MssClient.mssObjFactory.createAdditionalServiceType();
+        final MssURIType            d = MssClient.mssObjFactory.createMssURIType();
+        d.setMssURI(MULTIDOC_URI);
+        s.setDescription(d);
+        
+        AdditionalSignatureRequest req = new AdditionalSignatureRequest();
+        req.setDocumentRef(docref);
+        req.setDataToBeSigned(dtbs);
+        s.getSessionIDsAndEventIDsAndNoSpamCodes().add(req);
+        
+        return s;
+    }
+    
+    /**
+     * Create a Multi-doc AdditionalService element
+     * @param dtbd Data to be displayed
+     * @parma dtbs Data to be signed
+     * @return Created AdditionalService element
+     */
+    public static AdditionalServiceType createBatchSignatureService(final DataType dtbd, final DataType dtbs) {
         final AdditionalServiceType s = MssClient.mssObjFactory.createAdditionalServiceType();
         final MssURIType            d = MssClient.mssObjFactory.createMssURIType();
         d.setMssURI(BATCH_SIGNATURE_URI);
         s.setDescription(d);
         
-        AdditionalSignatureRequest req = new AdditionalSignatureRequest();
-        req.setDocumentRef(docref);
+        BatchSignatureRequest req = new BatchSignatureRequest();
+        req.setDataToBeDisplayed(dtbd);
         req.setDataToBeSigned(dtbs);
         s.getSessionIDsAndEventIDsAndNoSpamCodes().add(req);
         

@@ -120,7 +120,7 @@ public abstract class MssResponse {
         }
         for (AdditionalServiceResponse as : this.getAdditionalServiceResponses()) {
             if (as.getDescription() == null) continue;
-            if (as.getDescription().equals(AdditionalServices.BATCH_SIGNATURE_URI)) {
+            if (as.getDescription().equals(AdditionalServices.MULTIDOC_URI)) {
                 if (as.getServiceResponse() == null) continue;
                 if (as.getServiceResponse().getAdditionalSignatureResponses() == null) continue;
                 for (AdditionalSignatureResponse ar : as.getServiceResponse().getAdditionalSignatureResponses()) {
@@ -292,7 +292,7 @@ public abstract class MssResponse {
      * @see {@link getBatchSignatures()}
      */
     public boolean isBatchSignature() {
-        return this.hasAdditionalServiceResponse(AdditionalServices.BATCH_SIGNATURE_URI);
+        return this.hasAdditionalServiceResponse(AdditionalServices.MULTIDOC_URI);
     }
     
     /**
