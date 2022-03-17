@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.methics.fi/TS102204/ext/v1.0.0#BatchSignature"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"
+           xmlns:mcs="http://www.methics.fi/TS102204/ext/v1.0.0"
+           xmlns:mds="http://www.methics.fi/TS102204/ext/v1.0.0#BatchSignature"
+           elementFormDefault="qualified">
+
+  <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#" schemaLocation="MSS-plus.xsd"/>
+
+  <!-- New types for BatchSignature -->
+  <xs:element  name="BatchSignatureRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="DataToBeSigned"    type="mss:DataType" />
+        <xs:element name="DataToBeDisplayed" type="mss:DataType" minOccurs="0"/>
+        <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="BatchSignatureResponse">
+    <xs:complexType >
+      <xs:sequence>
+        <xs:element name="MSS_Signature"     type="mss:SignatureType" minOccurs="0"/>
+        <xs:element name="DataToBeDisplayed" type="mss:DataType"      minOccurs="0"/>
+        <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

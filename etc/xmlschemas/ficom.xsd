@@ -2,21 +2,18 @@
            xmlns:xs="http://www.w3.org/2001/XMLSchema" 
            xmlns:mss="http://uri.etsi.org/TS102204/v1.1.2#"  
 	       xmlns:mds="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"
+	       xmlns:batch="http://www.methics.fi/TS102204/ext/v1.0.0#BatchSignature"
            xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
            xmlns:mth="http://www.methics.fi/KiuruMSSP/v5.0.0#"  
            xmlns:asc="http://mid.swisscom.ch/TS102204/as/v1.0"
            elementFormDefault="qualified">   
 
-  <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#" 
-             schemaLocation="MSS-plus.xsd"/> 
-  <xs:import namespace="urn:oasis:names:tc:SAML:2.0:protocol"
-             schemaLocation="saml-schema-protocol-2.0.xsd"/>
-  <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"
-             schemaLocation="MSS-SubscriberInfo.xsd" />
-  <xs:import namespace="http://www.methics.fi/KiuruMSSP/v5.0.0#"
-             schemaLocation="MSS-SigningCertificate.xsd" />
-  <xs:import namespace="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"
-             schemaLocation="MSS-MultiDocSign.xsd" />
+  <xs:import namespace="http://uri.etsi.org/TS102204/v1.1.2#"                     schemaLocation="MSS-plus.xsd"/> 
+  <xs:import namespace="urn:oasis:names:tc:SAML:2.0:protocol"                     schemaLocation="saml-schema-protocol-2.0.xsd"/>
+  <xs:import namespace="http://mid.swisscom.ch/TS102204/as/v1.0"                  schemaLocation="MSS-SubscriberInfo.xsd" />
+  <xs:import namespace="http://www.methics.fi/KiuruMSSP/v5.0.0#"                  schemaLocation="MSS-SigningCertificate.xsd" />
+  <xs:import namespace="http://www.methics.fi/TS102204/ext/v1.0.0#MultiDocSign"   schemaLocation="MSS-MultiDocSign.xsd" />
+  <xs:import namespace="http://www.methics.fi/TS102204/ext/v1.0.0#BatchSignature" schemaLocation="MSS-BatchSignature.xsd" />
              
   <xs:element name="NoSpamCode">
     <xs:complexType>
@@ -28,7 +25,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="EventID" type="xs:string"/>
+  <xs:element name="EventID"   type="xs:string"/>
   <xs:element name="SessionID" type="xs:string"/>
 
 <!--
@@ -67,7 +64,8 @@
               <xs:element ref="mth:signingCertificate" minOccurs="0"/>
               <xs:element ref="asc:SubscriberInfo" minOccurs="0"/>
               <xs:element ref="mds:AdditionalSignatureResponse" minOccurs="0" maxOccurs="unbounded"/>
-              <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> 
+              <xs:element ref="batch:BatchSignatureResponse"    minOccurs="0" maxOccurs="unbounded"/>
+              <xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/> 
             </xs:sequence>
           </xs:complexType> 
         </xs:element> 
