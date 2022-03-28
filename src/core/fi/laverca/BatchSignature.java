@@ -26,12 +26,15 @@ import fi.laverca.mss.MssException;
 import fi.laverca.mss.MssResponse;
 import fi.laverca.util.SignatureUtil;
 import fi.methics.ts102204.ext.v1_0.AdditionalSignatureResponse;
+import fi.methics.ts102204.ext.v1_0.BatchSignatureResponse;
 
 public class BatchSignature implements Signature {
 
     private Signature     sig;
     private String     docref;
-    private StatusType status;
+    
+    private int    statuscode    = -1;
+    private String statusMessage = null;
     
     /**
      * Build a BatchSignature from the "regular" response
@@ -40,21 +43,48 @@ public class BatchSignature implements Signature {
      */
     public BatchSignature(Signature sig, MSSSignatureReq sigreq, StatusType status) {
         this.sig    = sig;
-        this.status = status;
         if (sigreq != null && sigreq.getDataToBeDisplayed() != null) {
             this.docref = sigreq.getDataToBeDisplayed().getValue();
+        }
+        if (status != null) { 
+            this.statusMessage = status.getStatusMessage();
+            if (status.getStatusCode() != null && status.getStatusCode().getValue() != null) { 
+                this.statuscode = status.getStatusCode().getValue().intValue();
+            }
+        } else {
+            this.statuscode = -1;
         }
     }
     
     /**
-     * Build a BatchSignature from a BatchSignature AdditionalService response element
-     * @param as      BatchSignature AdditionalService response element
+     * Build a BatchSignature from a Multi-Doc Signing AdditionalService response element
+     * @param as      Multi-Doc Signing AdditionalService response element
      * @param sigresp MSS Signature Response
      */
     public BatchSignature(AdditionalSignatureResponse as, MssResponse sigresp) {
         this.sig    = SignatureUtil.parseSignature(sigresp, as.getMSSSignature());
         this.docref = as.getDocumentRef();
-        this.status = as.getStatus();
+        StatusType status = as.getStatus();
+        if (status != null) { 
+            this.statusMessage = status.getStatusMessage();
+            if (status.getStatusCode() != null && status.getStatusCode().getValue() != null) { 
+                this.statuscode = status.getStatusCode().getValue().intValue();
+            }
+        } else {
+            this.statuscode = -1;
+        }
+    }
+    
+    /**
+     * Build a BatchSignature from a BatchSignature AdditionalService response element
+     * @param as      BatchSignature AdditionalService resopnse element
+     * @param sigresp MSS Signature Response
+     */
+    public BatchSignature(BatchSignatureResponse as, MssResponse sigresp) {
+        this.sig           = SignatureUtil.parseSignature(sigresp, as.getMSSSignature());
+        this.docref        = as.getDataToBeDisplayed().getValue();
+        this.statuscode    = (int)sigresp.getStatusCode();
+        this.statusMessage = sigresp.getStatusMessage();
     }
 
     @Override
@@ -83,6 +113,7 @@ public class BatchSignature implements Signature {
     
     /**
      * Return document/hash reference "docref"
+     * <p>When using BatchSignature AdditionalService, this returns the DTBD.
      * @return reference or null
      */
     public String getDocRef() {
@@ -94,9 +125,7 @@ public class BatchSignature implements Signature {
      * @return true for complete signature, false for outstanding one (504)
      */
     public boolean isComplete() {
-        if (this.status == null) return true;
-        if (this.status.getStatusCode() == null) return false;
-        return !StatusCodes.OUTSTANDING_TRANSACTION.equals(this.status.getStatusCode().getValue());
+        return !StatusCodes.OUTSTANDING_TRANSACTION.equals(this.statuscode);
     }
     
     /**
@@ -104,7 +133,8 @@ public class BatchSignature implements Signature {
      * @return true for successful batch signature
      */
     public boolean isSuccess() {
-        return StatusCodes.SIGNATURE.equals(this.getStatusCode()) || StatusCodes.VALID_SIGNATURE.equals(this.getStatusCode()) ;
+        return StatusCodes.SIGNATURE.equals(this.getStatusCode()) || 
+               StatusCodes.VALID_SIGNATURE.equals(this.getStatusCode());
     }
     
     /**
@@ -112,10 +142,7 @@ public class BatchSignature implements Signature {
      * @return StatusCode (or -1 if not available)
      */
     public int getStatusCode() {
-        if (this.status == null) return -1;
-        if (this.status.getStatusCode() == null) return -1;
-        if (this.status.getStatusCode().getValue() == null) return -1;
-        return this.status.getStatusCode().getValue().intValue();
+        return this.statuscode;
     }
 
     /**
@@ -123,8 +150,7 @@ public class BatchSignature implements Signature {
      * @return StatusMessage (or null if not available)
      */
     public String getStatusMessage() {
-        if (this.status == null) return null;
-        return this.status.getStatusMessage();
+        return this.statusMessage;
     }
     
 }

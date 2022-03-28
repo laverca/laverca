@@ -42,6 +42,7 @@ import fi.laverca.jaxb.mssfi.ServiceResponses;
 import fi.laverca.jaxb.mssfi.ServiceResponses.ServiceResponse;
 import fi.laverca.util.SignatureUtil;
 import fi.methics.ts102204.ext.v1_0.AdditionalSignatureResponse;
+import fi.methics.ts102204.ext.v1_0.BatchSignatureResponse;
 
 /**
  * Represents the final response to a signature request. Signature requests can be either synchronous or asynchronous. 
@@ -122,9 +123,15 @@ public abstract class MssResponse {
             if (as.getDescription() == null) continue;
             if (as.getDescription().equals(AdditionalServices.MULTIDOC_URI)) {
                 if (as.getServiceResponse() == null) continue;
-                if (as.getServiceResponse().getAdditionalSignatureResponses() == null) continue;
-                for (AdditionalSignatureResponse ar : as.getServiceResponse().getAdditionalSignatureResponses()) {
-                    resp.add(new BatchSignature(ar, this));
+                if (as.getServiceResponse().getAdditionalSignatureResponses() != null) {
+                    for (AdditionalSignatureResponse ar : as.getServiceResponse().getAdditionalSignatureResponses()) {
+                        resp.add(new BatchSignature(ar, this));
+                    }
+                }
+                if (as.getServiceResponse().getBatchSignatureResponses() != null) {
+                    for (BatchSignatureResponse br : as.getServiceResponse().getBatchSignatureResponses()) {
+                        resp.add(new BatchSignature(br, this));
+                    }
                 }
             }
         }
