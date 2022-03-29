@@ -121,13 +121,15 @@ public abstract class MssResponse {
         }
         for (AdditionalServiceResponse as : this.getAdditionalServiceResponses()) {
             if (as.getDescription() == null) continue;
-            if (as.getDescription().equals(AdditionalServices.MULTIDOC_URI)) {
+            if (as.getDescription().equals(AdditionalServices.MULTIDOC_URI) || as.getDescription().equals(AdditionalServices.BATCH_SIGNATURE_URI)) {
                 if (as.getServiceResponse() == null) continue;
+                // Multi-doc AdditionalService
                 if (as.getServiceResponse().getAdditionalSignatureResponses() != null) {
                     for (AdditionalSignatureResponse ar : as.getServiceResponse().getAdditionalSignatureResponses()) {
                         resp.add(new BatchSignature(ar, this));
                     }
                 }
+                // BatchSignature AdditionalService
                 if (as.getServiceResponse().getBatchSignatureResponses() != null) {
                     boolean first = true;
                     for (BatchSignatureResponse br : as.getServiceResponse().getBatchSignatureResponses()) {
@@ -305,7 +307,8 @@ public abstract class MssResponse {
      * @see {@link getBatchSignatures()}
      */
     public boolean isBatchSignature() {
-        return this.hasAdditionalServiceResponse(AdditionalServices.MULTIDOC_URI);
+        return this.hasAdditionalServiceResponse(AdditionalServices.MULTIDOC_URI) || 
+               this.hasAdditionalServiceResponse(AdditionalServices.BATCH_SIGNATURE_URI);
     }
     
     /**
