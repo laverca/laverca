@@ -129,7 +129,13 @@ public abstract class MssResponse {
                     }
                 }
                 if (as.getServiceResponse().getBatchSignatureResponses() != null) {
+                    boolean first = true;
                     for (BatchSignatureResponse br : as.getServiceResponse().getBatchSignatureResponses()) {
+                        if (first) {
+                            // Skip the first cert, as it's the same as this.signature
+                            first = false;
+                            continue;
+                        }
                         resp.add(new BatchSignature(br, this));
                     }
                 }
