@@ -156,6 +156,22 @@ public class MregRequest {
     }
     
     /**
+     * Get the operation name
+     * @return operation name
+     */
+    public String getOperation() {
+        return this.operation;
+    }
+    
+    /**
+     * Get the operation namespace
+     * @return operation namespace
+     */
+    public String getNamespace() {
+        return this.namespace;
+    }
+    
+    /**
      * Set a target for the request
      * @param name {@link TargetName} specifying target name
      * @param value String value of target
@@ -247,7 +263,6 @@ public class MregRequest {
      */
     public void setTargetApId(final String apId) {
         this.setTarget(TargetName.APID, apId);
-
     }
     
     /**
