@@ -57,7 +57,14 @@ public class SignatureUtil {
                     case MSS_Formats.PKCS7:
                     case MSS_Formats.CMS:
                     default:
-                        signature = new CmsSignature(soapSig.getBase64Signature());
+                        try {
+                            // Try to parse as CMS, fall back to PKCS1 if not possible
+                            signature = new CmsSignature(soapSig.getBase64Signature());
+                        } catch (Exception e) {
+                            PKCS1 p1 = new PKCS1();
+                            p1.setSignatureValue(soapSig.getBase64Signature());
+                            signature = new Pkcs1(p1);
+                        }
                         break;
                 }
             } else {
