@@ -48,7 +48,8 @@ public class SignatureUtil {
                 return new Pkcs1(soapSig.getPKCS1());
             }
             if (resp.getMssFormat() != null) {
-                switch (resp.getMssFormat()) {
+                // Ignore #rsa-pss tail as it is not meaningful in format comparison
+                switch (resp.getMssFormat().replace("#rsa-pss", "")) {
                     case MSS_Formats.KIURU_PKCS1:
                         PKCS1 p1 = new PKCS1();
                         p1.setSignatureValue(soapSig.getBase64Signature());
@@ -69,7 +70,7 @@ public class SignatureUtil {
                 }
             } else {
                 if (resp.getSignatureProfile() != null) {
-                    switch (resp.getSignatureProfile().replace("#rsa-pss", "")) {
+                    switch (resp.getSignatureProfile()) {
                         case SignatureProfiles.MOBILECONNECT_LOA2:
                         case SignatureProfiles.MOBILECONNECT_LOA3:
                             signature = new MobileConnectSignature(soapSig.getBase64Signature());
