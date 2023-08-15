@@ -61,9 +61,9 @@ public class SignatureUtil {
                             // Try to parse as CMS, fall back to PKCS1 if not possible
                             signature = new CmsSignature(soapSig.getBase64Signature());
                         } catch (Exception e) {
-                            PKCS1 p1 = new PKCS1();
-                            p1.setSignatureValue(soapSig.getBase64Signature());
-                            signature = new Pkcs1(p1);
+                            PKCS1 p2 = new PKCS1();
+                            p2.setSignatureValue(soapSig.getBase64Signature());
+                            signature = new Pkcs1(p2);
                         }
                         break;
                 }
