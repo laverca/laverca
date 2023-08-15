@@ -62,7 +62,7 @@ public class SignatureUtil {
                 }
             } else {
                 if (resp.getSignatureProfile() != null) {
-                    switch (resp.getSignatureProfile().replace("rsa-pss", "")) {
+                    switch (resp.getSignatureProfile().replace("#rsa-pss", "")) {
                         case SignatureProfiles.MOBILECONNECT_LOA2:
                         case SignatureProfiles.MOBILECONNECT_LOA3:
                             signature = new MobileConnectSignature(soapSig.getBase64Signature());
