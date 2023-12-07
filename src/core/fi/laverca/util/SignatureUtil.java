@@ -48,7 +48,8 @@ public class SignatureUtil {
                 return new Pkcs1(soapSig.getPKCS1());
             }
             if (resp.getMssFormat() != null) {
-                switch (resp.getMssFormat()) {
+                // Ignore #rsa-pss tail as it is not meaningful in format comparison
+                switch (resp.getMssFormat().replace("#rsa-pss", "")) {
                     case MSS_Formats.KIURU_PKCS1:
                         PKCS1 p1 = new PKCS1();
                         p1.setSignatureValue(soapSig.getBase64Signature());
@@ -57,7 +58,14 @@ public class SignatureUtil {
                     case MSS_Formats.PKCS7:
                     case MSS_Formats.CMS:
                     default:
-                        signature = new CmsSignature(soapSig.getBase64Signature());
+                        try {
+                            // Try to parse as CMS, fall back to PKCS1 if not possible
+                            signature = new CmsSignature(soapSig.getBase64Signature());
+                        } catch (Exception e) {
+                            PKCS1 p2 = new PKCS1();
+                            p2.setSignatureValue(soapSig.getBase64Signature());
+                            signature = new Pkcs1(p2);
+                        }
                         break;
                 }
             } else {
