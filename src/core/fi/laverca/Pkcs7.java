@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
@@ -51,9 +49,6 @@ import fi.laverca.util.X509Util;
 @SuppressWarnings("deprecation")
 public class Pkcs7 extends CmsSignature {
 
-    private static final Log log = LogFactory.getLog(CmsSignature.class);
-
-    
     public Pkcs7(byte[] bytes) throws IllegalArgumentException {
         super(bytes);
     }
@@ -115,7 +110,6 @@ public class Pkcs7 extends CmsSignature {
         List<X509Certificate> signerCerts = new ArrayList<>();
 
         // 1. Read PKCS7.Certificates to get all possible certs.
-        log.debug("Read all certs");
         List<X509Certificate> certs = readCerts(sd);
         
         if (certs.isEmpty()) {
@@ -123,7 +117,6 @@ public class Pkcs7 extends CmsSignature {
         }
 
         // 2. Read PKCS7.SignerInfo to get all signers.
-        log.debug("Read SignerInfo");
         List<SignerInfo> signerInfos = readSignerInfos(sd);
         
         if (signerInfos.isEmpty()) {
@@ -131,7 +124,6 @@ public class Pkcs7 extends CmsSignature {
         }
 
         // 3. Verify that signerInfo cert details match the cert on hand
-        log.debug("Matching cert and SignerInfo details");
         for (SignerInfo si : signerInfos) {
             for (X509Certificate c : certs) {
                 String siIssuer = readIssuer(si);
@@ -142,19 +134,11 @@ public class Pkcs7 extends CmsSignature {
     
                 if (dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
                     signerCerts.add(c);
-                    log.debug("Cert does match signerInfo");
-                    log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
-                    log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
-                } else {
-                    log.debug("Cert does not match signerInfo");
-                    log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
-                    log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
                 }
             }
         }
 
         // 4. Return the list.
-        log.debug("Returning " + signerCerts.size() + " certs");
         return signerCerts;
     }
 
@@ -172,14 +156,14 @@ public class Pkcs7 extends CmsSignature {
 
         ASN1Set certSet = sd.getCertificates();
         Enumeration<?> en = certSet.getObjects();
-        while(en.hasMoreElements()) {
+        while (en.hasMoreElements()) {
             Object o = en.nextElement();
             try {
                 byte[] certDer = ((ASN1Sequence)o).getEncoded();
                 X509Certificate cert = X509Util.DERtoX509Certificate(certDer);
                 certs.add(cert);
             } catch (IOException e) {
-                log.debug("Failed to read cert", e);
+                continue;
             }
         }
 
@@ -200,13 +184,13 @@ public class Pkcs7 extends CmsSignature {
 
         ASN1Set siSet = sd.getSignerInfos();
         Enumeration<?> e = siSet.getObjects();
-        while(e.hasMoreElements()) {
+        while (e.hasMoreElements()) {
             Object o = e.nextElement();
             try {
                 SignerInfo si = SignerInfo.getInstance(o);
                 signerInfos.add(si);
             } catch (RuntimeException ex) {
-                log.trace("SignerInfo " + o + " not found");
+                continue;
             }
         }
 

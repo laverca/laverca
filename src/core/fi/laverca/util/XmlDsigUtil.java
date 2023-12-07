@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyException;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -38,7 +39,6 @@ import javax.xml.crypto.KeySelectorResult;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLCryptoContext;
 import javax.xml.crypto.XMLStructure;
-import javax.xml.crypto.dsig.Reference;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
@@ -49,8 +49,6 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -59,7 +57,6 @@ import org.xml.sax.SAXException;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
-import sun.security.x509.X509CertImpl;
 
 public class XmlDsigUtil {
 
@@ -180,7 +177,7 @@ public class XmlDsigUtil {
                         throw new KeySelectorException(ke);
                     }
                 } else if (xmlStructure instanceof X509Data) {
-                    List<X509CertImpl> certs = (List<X509CertImpl>) ((X509Data)xmlStructure).getContent();
+                    List<X509Certificate> certs = (List<X509Certificate>) ((X509Data)xmlStructure).getContent();
                     pk = certs.get(0).getPublicKey();
                 } else  {
                     continue;

@@ -30,8 +30,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.EngineConfiguration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.jaxb.mss.MSSProfileReq;
 import fi.laverca.jaxb.mss.MSSReceiptReq;

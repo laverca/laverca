@@ -1,7 +1,6 @@
 package fi.laverca.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.security.cert.CertificateException;
@@ -15,9 +14,6 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.jaxb.mcs204ext1.CertificateType;
 

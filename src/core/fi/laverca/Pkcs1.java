@@ -26,8 +26,6 @@ import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 
 import fi.laverca.jaxb.mssfi.PKCS1;

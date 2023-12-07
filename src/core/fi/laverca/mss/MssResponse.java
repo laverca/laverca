@@ -22,15 +22,11 @@ package fi.laverca.mss;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import fi.laverca.BatchSignature;
 import fi.laverca.CmsSignature;
 import fi.laverca.Pkcs1;
 import fi.laverca.Signature;
 import fi.laverca.StatusCodes;
-import fi.laverca.etsi.EtsiResponse;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
@@ -61,8 +57,6 @@ import fi.methics.ts102204.ext.v1_0.BatchSignatureResponse;
  */
 public abstract class MssResponse {
 
-    private static final Log log = LogFactory.getLog(EtsiResponse.class);
-    
     private final MSSSignatureReq  originalSigReq;
     private final MSSSignatureResp originalSigResp;
     private final MSSStatusResp    finalStatusResp;
@@ -155,7 +149,6 @@ public abstract class MssResponse {
         try {
             return new CmsSignature(this.signature.getBase64Signature());
         } catch (IllegalArgumentException iae) {
-            log.debug("Response is not PKCS7", iae);
             return null;
         }
     }
@@ -169,7 +162,6 @@ public abstract class MssResponse {
         try {
             return new Pkcs1(this.signature.getPKCS1());
         } catch(IllegalArgumentException iae) {
-            log.debug("Response is not PKCS#1", iae);
             return null;
         }
     }

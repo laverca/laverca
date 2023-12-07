@@ -28,22 +28,16 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.client.Stub;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 @SuppressWarnings({"serial", "rawtypes"})
 public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service implements MSS_SignatureService {
 
-    private static Log log = LogFactory.getLog(MSS_SignatureServiceLocator.class);
-
     public MSS_SignatureServiceLocator() {
         super();
-        log.debug("MSS_SignatureServiceLocator()");
     }
 
     public MSS_SignatureServiceLocator(org.apache.axis.EngineConfiguration config) {
         super(config);
-        log.debug("MSS_SignatureServiceLocator(EngineConfiguration)");
     }
 
     // Use to get a proxy class for MSS_SignaturePort
