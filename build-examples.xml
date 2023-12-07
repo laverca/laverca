@@ -32,7 +32,11 @@
 
   <target name="build-examples">
     <mkdir dir="${build}/examples" />
-    <javac debug="true" deprecation="true" destdir="${build}/examples" encoding="ISO-8859-15" includeantruntime="false">
+    <javac debug="true" 
+           deprecation="true"
+           destdir="${build}/examples" 
+           encoding="ISO-8859-15"
+           includeantruntime="false">
       <src path="${examples-src}" />
       <classpath>
       	<path refid="example-libs" />

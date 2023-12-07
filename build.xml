@@ -4,11 +4,9 @@
   </description>
 
   <!-- Make sure the Java runtime system classpath does not mess compilation -->
-  <!-- <property name="build.sysclasspath"           value="ignore" /> -->
-  <property name="build.sysclasspath"           value="last" />
+  <property name="build.sysclasspath" value="last" />
 
-  
-  <property name="project-version" value="2.1.7" />
+  <property name="project-version" value="2.2.0" />
   <property name="project-name"    value="laverca" />
   
   <property name="build"     location="build" />
@@ -119,7 +117,7 @@
   </target>
   
 
-  <target name="build"  depends="build-core, build-examples" />  
+  <target name="build" depends="build-core" />  
 
   <target name="build-core"
           depends="generate-datatypes">
@@ -179,7 +177,6 @@
     <copy todir="${dist}/libs" file="${jlibs}/istack-commons-runtime.jar" />
     
     <copy todir="${dist}" file="${core-lib}" />
-    <copy todir="${dist}/examples" file="${examples-lib}" />
     
     <copy todir="${dist}" file="README.md" />
     <copy todir="${dist}" file="CHANGELOG" />
