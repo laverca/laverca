@@ -55,10 +55,6 @@ public class AxisJContentHandler extends AxisContentHandler {
         throws SAXException
     {
         try {
-            if (log.isTraceEnabled()) {
-                log.trace("startElement " + super.elt2string(uri, localName, prefixedName, attributes));
-            }
-
             int pfixlen = prefixedName.indexOf(':');
             if (pfixlen >= 0 && (!prefixedName.startsWith("ns"))) {
 
@@ -71,21 +67,10 @@ public class AxisJContentHandler extends AxisContentHandler {
                 
                 // Resolve prefix from Axis SerializationContext register of prefixes (or get dynamic NS*)
                 final String pfix = super.context.getPrefixForURI(uri);
-                if (log.isTraceEnabled()) {
-                    log.trace("  startElement pfix=\"" + pfix + "\"");
-                }
-
                 if (pfix == null || "".equals(pfix)) {
                     this.context.startElement(new QName(uri, localName), attributes);
-                    if (log.isTraceEnabled()) {
-                        log.trace("  --> startElement " + localName);
-                    }
-                
                 } else {
                     this.context.startElement(new QName(uri, localName, pfix), attributes);
-                    if (log.isTraceEnabled()) {
-                        log.trace("  --> startElement " + pfix+":"+localName);
-                    }
                 }
             }
 
@@ -104,10 +89,6 @@ public class AxisJContentHandler extends AxisContentHandler {
                             final String prefixedName )
             throws SAXException
     {
-        if (log.isTraceEnabled()) {
-            log.trace("endElement "+ prefixedName);
-        }
-
         try {
             this.context.endElement();
         } catch (IOException ioe) {

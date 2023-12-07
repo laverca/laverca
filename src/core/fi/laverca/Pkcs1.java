@@ -38,7 +38,6 @@ import fi.laverca.util.X509Util;
  * A FiCom PKCS1 signature wrapper.
  */ 
 public class Pkcs1 implements Signature {
-    private static final Log log = LogFactory.getLog(Pkcs1.class);
 
     private PKCS1 pkcs1;
 
@@ -97,13 +96,12 @@ public class Pkcs1 implements Signature {
                         cn = r.getValue().toString();
                     }
                 }
-            } catch(InvalidNameException e) {
-                log.warn("Invalid name", e);
+            } catch (InvalidNameException e) {
+                // Ignore
             }
 
             return cn;
         } catch (Throwable t) {
-            log.error("Failed to get Signer cert " + t.getMessage());
             return null;
         }
     }

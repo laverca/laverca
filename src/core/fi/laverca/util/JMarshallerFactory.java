@@ -53,8 +53,6 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class JMarshallerFactory {
 
-    protected static final Log log = LogFactory.getLog(JMarshallerFactory.class);
-
     private static NSPfxMapper nsp;
 
     // JAXB-RI value, which disagrees with Java-8 runtime value
@@ -89,13 +87,6 @@ public class JMarshallerFactory {
             String pfx = null;
             synchronized (this) {
                 pfx = this.uri2pfx.get(nsUri);
-            }
-            if (log.isDebugEnabled()) {
-                if (suggestion != null) {
-                    log.debug("getPreferredPrefix('"+nsUri+"', '"+suggestion+"') -> '"+pfx+"'");
-                } else {
-                    log.debug("getPreferredPrefix('"+nsUri+"', null) -> '"+pfx+"'");
-                }
             }
             if (pfx != null) return pfx;
             pfx = suggestion;
@@ -173,7 +164,7 @@ public class JMarshallerFactory {
             Class.forName(JAXB_CONTEXT_FACTORY_VALUE);
             System.setProperty(JAXB_CONTEXT_FACTORY, JAXB_CONTEXT_FACTORY_VALUE);
         } catch (Exception e) {
-            log.warn("Could not initialize JAXB ContextFactory "+JAXB_CONTEXT_FACTORY_VALUE);
+            // Ignore
         }
     }
 
@@ -205,7 +196,7 @@ public class JMarshallerFactory {
             try {
                 m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",nsp);
             } catch (PropertyException e2) {
-                log.trace("Failed to set jaxb PrefixMapper");
+                // Ignore
             }
         }
     }
@@ -251,7 +242,6 @@ public class JMarshallerFactory {
                 // this.jaxbContext = JAXBContext.newInstance(String.join(":", globalJAXBPaths));
                 return this.jaxbContext;
             } catch (JAXBException e) {
-                log.error("Instantiating JAXBContext failed for class: "+this.clazz, e);
                 throw e;
             }
         }
@@ -281,7 +271,6 @@ public class JMarshallerFactory {
             synchronized (globalJAXBPaths) {
                 path = String.join(":", globalJAXBPaths);
             }
-            log.trace("JAXBContext path: "+path);
             // Create new GlobalContext with this new path
             globalJAXBContext = JAXBContext.newInstance(path);
             globalJAXBPathsModified = false;
@@ -358,9 +347,6 @@ public class JMarshallerFactory {
         m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 
         // Marshall the Jaxb object into the stream (sink)
-        if (log.isDebugEnabled()) {
-            log.debug("Running marshal(value,handler);  value="+value);
-        }
         m.marshal(value, hand);
     }
 

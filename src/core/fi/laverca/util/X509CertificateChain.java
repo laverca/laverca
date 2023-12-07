@@ -28,8 +28,7 @@ import fi.laverca.jaxb.mcs204ext1.CertificateType;
 public class X509CertificateChain implements Collection<X509Certificate>, Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Log log = LogFactory.getLog(X509CertificateChain.class);
-
+    
     private List<X509Certificate> certChain = new ArrayList<>();
     private List<String>          sigProfs  = new ArrayList<>();
     private String                signingMethod;
@@ -46,7 +45,6 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
         try {
             certFactory = CertificateFactory.getInstance("X.509");
         } catch (CertificateException e) {
-            log.error(e.getMessage(), e);
             return;
         }
 
@@ -64,10 +62,8 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
                     try (InputStream in = new ByteArrayInputStream((byte[]) val)) {
                         final X509Certificate x509cert = (X509Certificate) certFactory.generateCertificate(in);
                         this.add(x509cert);                                
-                    } catch (CertificateException e) {
-                        log.error(e.getMessage(), e);
-                    } catch (IOException ioe) {
-                        log.error(ioe.getMessage(), ioe);
+                    } catch (Exception ioe) {
+                         continue;
                     }
                 }
             }
@@ -219,9 +215,7 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
     public X509Certificate getSigningCert() {
         if (this.size() > 0) {
             return this.get(0);            
-        } 
-        
-        log.error("Certificate chain does not contain a singing certificate.");
+        }
         return null;
     }
     

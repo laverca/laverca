@@ -62,8 +62,6 @@ import org.apache.axis.handlers.BasicHandler;
 import org.apache.axis.message.SOAPFault;
 import org.apache.axis.utils.JavaUtils;
 import org.apache.axis.utils.NetworkUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
@@ -87,8 +85,6 @@ import fi.laverca.ErrorCodes;
 @SuppressWarnings({"serial"})
 public class ComponentsHTTPSender extends BasicHandler {
     
-    private static Log log = LogFactory.getLog(ComponentsHTTPSender.class);
-
     private static int connectionTimeout = 30000; // At most 30 seconds to wait for a socket connection to form
 
     boolean httpChunkStream = true; // Use HTTP chunking or not.
@@ -119,8 +115,6 @@ public class ComponentsHTTPSender extends BasicHandler {
     public void invoke(MessageContext msgContext)
         throws AxisFault
     {
-        final boolean debug = log.isDebugEnabled();
-
         // Know if the call is to a ONE_WAY end-point
         final boolean oneWay = (msgContext.getProperty("axis.one.way") != null);
 
@@ -139,7 +133,6 @@ public class ComponentsHTTPSender extends BasicHandler {
         if (httpClient == null) {
             final String msg = "Code bug: Calling convention error. Got NULL HttpClient object.";
             final NullPointerException npe = new NullPointerException(msg);
-            log.fatal(msg, npe);
             throw npe;
         }
 
@@ -164,10 +157,8 @@ public class ComponentsHTTPSender extends BasicHandler {
 
             final MessageRequestEntity requestEntity;
             if (msgContext.isPropertyTrue(HTTPConstants.MC_GZIP_REQUEST)) {
-                log.debug("Creating GzipMessageRequestEntity");
                 requestEntity = new GzipMessageRequestEntity(post, reqMessage, this.httpChunkStream);
             } else {
-                log.debug("Creating plain MessageRequestEntity");
                 requestEntity = new MessageRequestEntity(post, reqMessage, this.httpChunkStream);
             }
             post.setEntity(requestEntity);
@@ -183,22 +174,12 @@ public class ComponentsHTTPSender extends BasicHandler {
                     reqXML = reqXML.replace("FORM_SOAPENVELOPE:", "").trim();
                 }
                 msgContext.setProperty(RAW_REQUEST_XML, reqXML);
-                if (debug) {
-                    log.debug("Sending XML to: "+remoteURL);
-                    log.debug("-----------------------------------------------\n" +
-                              reqXML);
-                    log.debug("-----------------------------------------------");
-                    log.debug("..executing HTTP POST operation..");
-                }
             } catch (Throwable t) {
-                log.debug("Failed to dump request XML:", t);
+                // Ignore - not fatal
             }
-            
 
             httpContext.setRequestConfig(rcb.build());
             response = httpClient.execute(post, httpContext);
-
-            log.trace("..done executing HTTP POST operation, result is now at hand.");
 
             // Clear the expected server certificate set from this thread
             // (Also fault producers are doing this clearing.)
@@ -212,14 +193,8 @@ public class ComponentsHTTPSender extends BasicHandler {
             // Pick information out of response
             final String contentType     = this.getHeader(response, HTTPConstants.HEADER_CONTENT_TYPE);
             final String contentLocation = this.getHeader(response, HTTPConstants.HEADER_CONTENT_LOCATION);
-            final String contentLength   = this.getHeader(response, HTTPConstants.HEADER_CONTENT_LENGTH);
 
             msgContext.setProperty(HTTPConstants.HEADER_CONTENT_TYPE, contentType);
-
-            
-            if (debug) {
-                log.debug("HTTP status code: "+statusCode+", contentType: "+contentType);
-            }
 
             // Wrap the response body stream so that close() also releases
             // the connection back to the pool.
@@ -229,13 +204,11 @@ public class ComponentsHTTPSender extends BasicHandler {
 
             if (contentEncoding != null) {
                 if (contentEncoding.getValue().equalsIgnoreCase(HTTPConstants.COMPRESSION_GZIP)) {
-                    log.debug(" .. wrapping with GZIPInputStream()");
                     // Wrap the stream with GZIPInputStream ...
                     final GZIPInputStream gis = new GZIPInputStream(response.getEntity().getContent());
                     inputStream = new ReleasingFilterInputStream(httpClient, post, response, gis);
                 } else {
                     final String msg = ("Unsupported Content-Encoding of '"+ contentEncoding.getValue() + "' found");
-                    log.debug(msg);
                     httpClient.closeQuietly(post, response);
                     throw this.createFault(msgContext, AxisFault.soap12sender, msg);
                 }
@@ -298,109 +271,18 @@ public class ComponentsHTTPSender extends BasicHandler {
                 }
                 msgContext.setProperty(RAW_RESPONSE_XML, receivedXML);
                 
-                if (debug) {
-                    if (null == contentLength) {
-                        log.debug("No Content-Length header in the response");
-                    } else {
-                        log.debug("Content-Length: "+contentLength);
-                    }
-                    if (receivedXML != null && !receivedXML.isEmpty()) {
-                        log.debug("Received XML:");
-                        log.debug("-----------------------------------------------\n" +
-                                  receivedXML);
-                        log.debug("-----------------------------------------------");
-                    }
-                }
-                
             } catch (AxisFault af) {
                 throw this.makeFault(af, deadline, remoteURL, msgContext);
             }
 
-        } catch (final org.apache.http.conn.ConnectTimeoutException e) {
-            if (debug) {
-                log.debug("Connection(Pool)TimeoutException: " + e.getMessage());
-                log.trace(e);
-            }
-
-            httpClient.closeQuietly(post, response);
-
-            throw this.makeFault(e, deadline, remoteURL, msgContext);
-
-        } catch (final org.apache.http.conn.HttpHostConnectException e) {
-            if (debug) {
-                log.debug("HttpHostConnectException: " + e.getMessage());
-                log.trace(e);
-            }
-
-            httpClient.closeQuietly(post, response);
-
-            throw this.makeFault(e, deadline, remoteURL, msgContext);
-
-        } catch (final java.net.SocketException e) {
-            if (debug) {
-                log.debug("Connection(Pool)SocketException: " + e.getMessage());
-                log.trace(e);
-            }
-
-            httpClient.closeQuietly(post, response);
-
-            throw this.makeFault(e, deadline, remoteURL, msgContext);
-
-        } catch (final java.io.InterruptedIOException e) {
-            if (debug) {
-                log.debug("InterruptedIOException: " + e.getMessage());
-                log.trace("",e);
-            }
-
-            httpClient.closeQuietly(post, response);
-
-            throw this.makeFault(e, deadline, remoteURL, msgContext);
-
         } catch (final AxisFault e) {
-            if (debug) {
-                log.debug("AxisFault: " + e.getMessage());
-                log.trace("",e);
-            }
-
             httpClient.closeQuietly(post, response);
-
             msgContext.setProperty(ERROR_IN_HTTPSENDER, Boolean.TRUE);
-
             // Clear the expected server certificate set from this thread
             LavercaSSLTrustManager.getInstance().setExpectedServerCerts(null);
-
             throw e;
-
-        } catch (final IOException e) {
-            if (debug) {
-                log.debug("IOException: " + e.getMessage());
-                log.trace("",e);
-            }
-
-            httpClient.closeQuietly(post, response);
-
-            throw this.makeFault(e, deadline, remoteURL, msgContext);
-
         } catch (final Exception e) {
-            if (debug) {
-                log.debug("Catch-all of Exception: " + e.getMessage());
-                log.trace("",e);
-            }
-
             httpClient.closeQuietly(post, response);
-
-            throw this.makeFault(e, deadline, remoteURL, msgContext);
-
-        } catch (final Throwable t) {
-            if (debug) {
-                log.debug("Catch-all of Throwable: " + t.getMessage());
-                log.trace("",t);
-            }
-
-            // Includes memory overflow..  cleanup initially just to be sure.
-            httpClient.closeQuietly(post, response);
-
-            final Exception e = new Exception(t.getMessage(), t);
             throw this.makeFault(e, deadline, remoteURL, msgContext);
         }
     }
@@ -484,7 +366,7 @@ public class ComponentsHTTPSender extends BasicHandler {
             SOAPFault fault = new SOAPFault(af);
             msgContext.setProperty(RAW_RESPONSE_XML, fault.getAsString());
         } catch (Exception e2) {
-            log.warn("Failed to write response XML.", e2);
+            // Ignore
         }
         return af;
     }
@@ -666,14 +548,8 @@ public class ComponentsHTTPSender extends BasicHandler {
 
         @Override
         public synchronized void close() throws IOException {
-
-            if (log.isTraceEnabled())
-                log.trace("Close http response, and release post method connection");
-
             this.httpClient.closeQuietly(this.post, this.resp);
-
             super.close();
-            log.trace(" .. super.close() done.");
         }
     }
 

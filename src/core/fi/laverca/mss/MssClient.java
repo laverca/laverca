@@ -41,9 +41,8 @@ import javax.xml.rpc.ServiceException;
 import org.apache.axis.AxisFault;
 import org.apache.axis.EngineConfiguration;
 import org.apache.axis.configuration.FileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
+import fi.laverca.LavercaException;
 import fi.laverca.jaxb.mss.DataType;
 import fi.laverca.jaxb.mss.MSSHandshakeReq;
 import fi.laverca.jaxb.mss.MSSHandshakeResp;
@@ -84,7 +83,6 @@ import fi.laverca.util.ProxySettings;
  * A raw ETSI TS 102 204 client object.
  */ 
 public class MssClient {
-    private static Log log = LogFactory.getLog(MssClient.class);
 
     public static ObjectFactory mssObjFactory = new ObjectFactory();
     
@@ -136,6 +134,7 @@ public class MssClient {
      * Upon TrustStore load success, this will initialize LavercaSSLTrustStore collection of expected server certificates. 
      *
      * @param conf MSS Configuration object (not null)
+     * @throws LavercaException if SSL keystore fails to load
      */
     public MssClient(final MssConf conf) {
         this(conf.getApId(),
@@ -154,7 +153,7 @@ public class MssClient {
                 this.setSSLSocketFactory(ssf);
                 this.expectedServerCerts = LavercaSSLTrustManager.getInstance().getExpectedServerCerts();
             } catch (Exception e) {
-                log.error("Failed to load keystore and/or truststore", e);
+                throw new LavercaException("Failed to load keystore and/or truststore", e);
             }
         }
     }
@@ -214,8 +213,6 @@ public class MssClient {
         this.apId  = apId;
         this.apPwd = apPwd;
 
-        log.info("Initialized MssClient");
-        
         this.setAeAddress(msspSignatureUrl,
                           msspStatusUrl,
                           msspReceiptUrl,
@@ -230,7 +227,6 @@ public class MssClient {
         if (wsdd != null) {
             this.mssService = new MSS_SignatureServiceLocator(new FileProvider(wsdd));
         } else {
-            log.warn("Could not find " + CLIENT_CONFIG_WSDD_FILENAME + " in classpath");
             this.mssService = new MSS_SignatureServiceLocator();
         }
         
@@ -866,18 +862,18 @@ public class MssClient {
             }
             if (timeout != null) {
                 // ETSI TS 102 204 defines TimeOut in seconds instead of milliseconds
-                port.setTimeout(timeout.intValue()*1000);
+                int _timeout = timeout.intValue()*1000+5000; // Add 5 seconds to let the backend time out first
+                port.setTimeout(_timeout);
             }
         } catch (ServiceException se) {
-            log.error("Failed to get port: " + se.getMessage());
-            throw new IOException(se.getMessage());
+            throw new IOException(se.getMessage(), se);
         }
         try {
             if (port._getCall() == null) {
                 port._createCall();
             }
         } catch (Exception e) {
-            log.fatal("Could not do port._createCall()", e);
+            throw new IOException("Could not do port._createCall()", e);
         }
 
         // Set tools for each context.
@@ -906,7 +902,7 @@ public class MssClient {
             try {
                 context.setMessageContext(port.getMessageContext());
             } catch (ServiceException e) {
-                log.warn("Unable to pass context", e);
+                throw new IOException("Unable to pass context", e);
             }
         }
         

@@ -1,3 +1,22 @@
+/* ==========================================
+ * Laverca Project
+ * https://sourceforge.net/projects/laverca/
+ * ==========================================
+ * Copyright 2015 Laverca Project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fi.laverca.util;
 
 import java.io.ByteArrayInputStream;
@@ -44,8 +63,6 @@ import sun.security.x509.X509CertImpl;
 
 public class XmlDsigUtil {
 
-    private static Log log = LogFactory.getLog(XmlDsigUtil.class);
-
     /**
      * Validate XML signature of a message
      * @param xml String containing the XML document
@@ -81,20 +98,7 @@ public class XmlDsigUtil {
     
             // Check validation status
             if (validity == false) {
-                log.error("Signature failed core validation");
-                boolean sigValidity = signature.getSignatureValue().validate(ctx);
-                
-                log.info("Signature validation status: " + sigValidity);
-                
-                List<?> refs = signature.getSignedInfo().getReferences();
-                
-                for (int i = 0; i < refs.size(); i++) {
-                    boolean refValid = ((Reference) refs.get(i)).validate(ctx);
-                    log.info("Reference["+i+"] validity status: " + refValid);
-                }
                 throw new ValidationException("Signature failed core validation");
-            } else {
-                log.info("Signature passed core validation");
             }
         } catch (UnsupportedEncodingException | SAXException | ParserConfigurationException | MarshalException | XMLSignatureException e) {
             throw new IOException(e);
@@ -179,7 +183,6 @@ public class XmlDsigUtil {
                     List<X509CertImpl> certs = (List<X509CertImpl>) ((X509Data)xmlStructure).getContent();
                     pk = certs.get(0).getPublicKey();
                 } else  {
-                    log.error(xmlStructure + " not supported");
                     continue;
                 }
                 return new SimpleKeySelectorResult(pk);

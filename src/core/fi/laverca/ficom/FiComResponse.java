@@ -22,9 +22,6 @@ package fi.laverca.ficom;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import fi.laverca.StatusCodes;
 import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
@@ -44,8 +41,6 @@ import fi.laverca.util.Saml2Util;
  */
 public class FiComResponse extends MssResponse {
     
-    private static final Log log = LogFactory.getLog(FiComResponse.class);
-
     public FiComResponse( final MSSSignatureReq  originalSigReq,
                           final MSSSignatureResp originalSigResp,
                           final MSSStatusResp    finalStatusResp) { 
@@ -73,14 +68,9 @@ public class FiComResponse extends MssResponse {
             for (final Attribute samlAttribute : attrs) {
                 fiComAttrs.add(new PersonIdAttribute(samlAttribute));
             }
-            
             return fiComAttrs;
 
-        } catch (NullPointerException e){
-            log.error("Failed to fetch PersonID attributes");
-            return null;
-        } catch(Throwable t) {
-            log.error("Failed to fetch PersonID attributes: " + t.getMessage());
+        } catch (Exception e) {
             return null;
         }
     }
@@ -115,10 +105,8 @@ public class FiComResponse extends MssResponse {
             }
             return validationStatus;
         } catch (NullPointerException e){
-            log.error("Failed to fetch PersonID attributes");
             return null;        
         } catch (Throwable t) {
-            log.error("Failed to fetch PersonID attributes: " + t.getMessage());
             return null;
         }
     }
@@ -141,7 +129,6 @@ public class FiComResponse extends MssResponse {
     
             return statusCode == StatusCodes.VALID_SIGNATURE.getValue() && aeStatusOk; 
         } catch (Throwable t) {
-            log.error("Failed to check response validity: " + t.getMessage());
             return false;
         }
     }

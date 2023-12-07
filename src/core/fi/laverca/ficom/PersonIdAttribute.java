@@ -21,9 +21,6 @@ package fi.laverca.ficom;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import fi.laverca.jaxb.saml2a.Attribute;
 
 /**
@@ -31,8 +28,6 @@ import fi.laverca.jaxb.saml2a.Attribute;
  *
  */
 public class PersonIdAttribute {
-    
-    private static final Log log = LogFactory.getLog(PersonIdAttribute.class);
     
     private Attribute samlAttribute;
     
@@ -69,13 +64,8 @@ public class PersonIdAttribute {
                 return postalAddressToString(pa);       
             }
 
-            log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
-            return null;
-        } catch (IndexOutOfBoundsException ioe) {
-            log.debug("Failed getting String value from " + this.samlAttribute.getName() + ".");
             return null;
         } catch(Throwable t) {
-            log.warn("Failed getting String value from " + this.samlAttribute.getName() + "." , t);
             return null;
         }
     }

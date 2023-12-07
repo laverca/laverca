@@ -26,8 +26,6 @@ import javax.xml.namespace.QName;
 
 import org.apache.axis.MessageContext;
 import org.apache.axis.encoding.SerializationContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -38,8 +36,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * This is interface model compatible with SerializationContext methods.
  */
 public class AxisContentHandler extends DefaultHandler {
-
-    protected static final Log log = LogFactory.getLog(AxisContentHandler.class);
 
     // For passing the server request side context data to server response
     private static final ThreadLocal<MessageContext> tlCtx = new ThreadLocal<MessageContext>();
@@ -92,13 +88,8 @@ public class AxisContentHandler extends DefaultHandler {
         this.msgContext = MessageContext.getCurrentContext();
         this.setContext(context);
         this.isClient = this.msgContext != null ? this.msgContext.isClient() : false;
-        if (this.isClient) {
-            log.trace(" .. msgContext[C]  = "+this.msgContext);
-        } else {
-            // Must get saved messageContext from server input time processing side
-            // via ThreadLocal magic...
+        if (!this.isClient) {
             this.msgContext = AxisContentHandler.getMessageContext();
-            log.trace(" .. msgContext[S]  = "+this.msgContext);
         }
     }
 
@@ -127,12 +118,7 @@ public class AxisContentHandler extends DefaultHandler {
                               final Attributes attributes )
         throws SAXException
     {
-        final boolean trace = log.isTraceEnabled();
         try {
-            if (trace) {
-                log.trace("startElement " + elt2string(uri, localName, prefixedName, attributes));
-            }
-
             int pfixlen = prefixedName.indexOf(':');
             if (pfixlen >= 0 && (!prefixedName.startsWith("ns"))) {
 
@@ -145,20 +131,11 @@ public class AxisContentHandler extends DefaultHandler {
 
                 // Resolve prefix from Axis SerializationContext register of prefixes (or get dynamic NS*)
                 final String pfix = this.context.getPrefixForURI(uri);
-                if (trace) {
-                    log.trace("  startElement pfix=\"" + pfix + "\"");
-                }
+
 
                 if (pfix == null || "".equals(pfix)) {
-                    if (trace) {
-                        log.trace("  --> startElement " + localName);
-                    }
                     this.context.startElement(new QName(uri, localName), attributes);
-
                 } else {
-                    if (trace) {
-                        log.trace("  --> startElement " + pfix+":"+localName);
-                    }
                     this.context.startElement(new QName(uri, localName, pfix), attributes);
                 }
             }
@@ -172,10 +149,6 @@ public class AxisContentHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName)
             throws SAXException
     {
-        if (log.isTraceEnabled()) {
-            log.trace("endElement "+ localName);
-        }
-
         try {
             this.context.endElement();
         } catch (IOException ioe) {
@@ -187,19 +160,14 @@ public class AxisContentHandler extends DefaultHandler {
     public void startPrefixMapping (String prefix, String uri)
         throws SAXException
     {
-        if (log.isTraceEnabled()) {
-            log.trace("  startPrefixMapping '"+prefix+"' = "+uri);
-        }
+        // Ignore
     }
 
     @Override
     public void endPrefixMapping (String prefix)
         throws SAXException
     {
-        // no op
-        if (log.isTraceEnabled()) {
-            log.trace("  endPrefixMapping '"+prefix+"'");
-        }        
+        // Ignore    
     }
 
     @Override
