@@ -26,9 +26,6 @@ import java.util.List;
 
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * A custom singleton implementation of SSL TrustManager.
  * <p>
@@ -36,8 +33,6 @@ import org.apache.commons.logging.LogFactory;
  * If no expected ones are defined, no error happens.
  */
 public class LavercaSSLTrustManager implements X509TrustManager {
-
-    private static final Log log = LogFactory.getLog(LavercaSSLTrustManager.class);
 
     /** There can be a chain of trust managers in thread-local context! */
     private final ThreadLocal<X509TrustManager> nextTrustManager = new ThreadLocal<>();
@@ -106,8 +101,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
                                     final String authType )
         throws CertificateException
     {
-        log.trace("checkClientTrusted(3)");
-
         final X509TrustManager tm = this.nextTrustManager.get();
         if (tm != null) {
             tm.checkClientTrusted(((X509Certificate[])chain.toArray()), authType);
@@ -124,24 +117,9 @@ public class LavercaSSLTrustManager implements X509TrustManager {
                                     final String authType )
         throws CertificateException
     {
-        log.trace("checkClientTrusted(2)");
-
         if ((chain == null) || (chain.length == 0)) {
             throw new CertificateException("No certificates passed in!");
         }
-
-        if (log.isDebugEnabled()) {
-            for (int i = 0; i < chain.length; ++i) {
-                if (i > 0) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("  chain["+i+"] = "+chain[i]);
-                    }
-                } else {
-                    log.debug("  chain["+i+"] = "+chain[i]);
-                }
-            }
-        }
-
         final X509TrustManager tm = this.nextTrustManager.get();
         if (tm != null) {
             tm.checkClientTrusted(chain, authType);
@@ -160,7 +138,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
                                     final String authType )
         throws CertificateException
     {
-        log.trace("checkServerTrusted(2)");
 
         final X509TrustManager nextTm = this.nextTrustManager.get();
         if (nextTm != null) {
@@ -168,22 +145,8 @@ public class LavercaSSLTrustManager implements X509TrustManager {
         }
 
         if (chain == null || chain.length == 0) {
-            log.debug("No certificates received from server, no verification!");
             throw new CertificateException("No certificates received from server! Did it reject our connection?");
         }
-
-        if (log.isDebugEnabled()) {
-            for (int i = 0; i < chain.length; ++i) {
-                if (i > 0) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("  chain["+i+"] = "+chain[i]);
-                    }
-                } else {
-                    log.debug("  chain["+i+"] = "+chain[i]);
-                }
-            }
-        }
-
         checkExpectedServerCerts(chain[0]);
     }
 
@@ -203,12 +166,10 @@ public class LavercaSSLTrustManager implements X509TrustManager {
         final List<byte[]> escs = this.expectedServerCerts.get();
         if (escs == null) {
             // Nothing to verify against
-            log.debug("Server certificate match list is not defined.");
             return;
         }
         if (escs.size() == 0) {
             // Nothing to verify against
-            log.debug("Server certificate match list is empty.");
             return;
         }
 
@@ -216,13 +177,9 @@ public class LavercaSSLTrustManager implements X509TrustManager {
 
         for (final byte[] esc : escs) {
             if (Arrays.equals(esc, cert)) {
-                log.debug("Match on expected server certificate");
                 return;
             }
         }
-
-        log.warn("Received remote server certificate not found in expected certificates.");
-
         throw new CertificateException("No server cert match among expected certificates.");
     }
 
@@ -259,7 +216,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
                                    final String algorithm)
         throws CertificateException
     {
-        log.trace("checkClientTrusted(1)");
         this.checkClientTrusted( chain, authType );
     }
 
@@ -296,7 +252,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
                                    final String algorithm)
         throws CertificateException
     {
-        log.trace("checkServerTrusted(1) ");
         this.checkServerTrusted( chain, authType );
     }
 

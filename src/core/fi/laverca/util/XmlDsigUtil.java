@@ -1,3 +1,22 @@
+/* ==========================================
+ * Laverca Project
+ * https://sourceforge.net/projects/laverca/
+ * ==========================================
+ * Copyright 2015 Laverca Project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package fi.laverca.util;
 
 import java.io.ByteArrayInputStream;
@@ -7,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyException;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -19,7 +39,6 @@ import javax.xml.crypto.KeySelectorResult;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLCryptoContext;
 import javax.xml.crypto.XMLStructure;
-import javax.xml.crypto.dsig.Reference;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
@@ -30,8 +49,6 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -40,11 +57,8 @@ import org.xml.sax.SAXException;
 import fi.laverca.ficom.FiComResponse;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.mss.MSSStatusResp;
-import sun.security.x509.X509CertImpl;
 
 public class XmlDsigUtil {
-
-    private static Log log = LogFactory.getLog(XmlDsigUtil.class);
 
     /**
      * Validate XML signature of a message
@@ -81,20 +95,7 @@ public class XmlDsigUtil {
     
             // Check validation status
             if (validity == false) {
-                log.error("Signature failed core validation");
-                boolean sigValidity = signature.getSignatureValue().validate(ctx);
-                
-                log.info("Signature validation status: " + sigValidity);
-                
-                List<?> refs = signature.getSignedInfo().getReferences();
-                
-                for (int i = 0; i < refs.size(); i++) {
-                    boolean refValid = ((Reference) refs.get(i)).validate(ctx);
-                    log.info("Reference["+i+"] validity status: " + refValid);
-                }
                 throw new ValidationException("Signature failed core validation");
-            } else {
-                log.info("Signature passed core validation");
             }
         } catch (UnsupportedEncodingException | SAXException | ParserConfigurationException | MarshalException | XMLSignatureException e) {
             throw new IOException(e);
@@ -176,10 +177,9 @@ public class XmlDsigUtil {
                         throw new KeySelectorException(ke);
                     }
                 } else if (xmlStructure instanceof X509Data) {
-                    List<X509CertImpl> certs = (List<X509CertImpl>) ((X509Data)xmlStructure).getContent();
+                    List<X509Certificate> certs = (List<X509Certificate>) ((X509Data)xmlStructure).getContent();
                     pk = certs.get(0).getPublicKey();
                 } else  {
-                    log.error(xmlStructure + " not supported");
                     continue;
                 }
                 return new SimpleKeySelectorResult(pk);

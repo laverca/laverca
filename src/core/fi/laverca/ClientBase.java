@@ -30,8 +30,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.EngineConfiguration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import fi.laverca.jaxb.mss.MSSProfileReq;
 import fi.laverca.jaxb.mss.MSSReceiptReq;
@@ -57,8 +55,6 @@ import fi.laverca.util.SynchHandler.SynchHandlerException;
  *
  */
 public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssResponse> {
-
-    protected static final Log log = LogFactory.getLog(ClientBase.class);
 
     protected MssClient       mssClient;
     protected ExecutorService threadExecutor; 
@@ -192,24 +188,18 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         LavercaContext   _context = new LavercaContext();
         MSSSignatureResp _sigResp = null;
         try {
-            log.debug("Sending sigReq");
             _sigResp = this.mssClient.send(req.sigReq, _context);
-            log.debug("Got resp");
             req.sigResp = _sigResp;
             req.context = _context;
         } catch (AxisFault af) {
-            log.error("Got SOAP fault", af);
             handler.onError(req, af);
             return req;
         } catch (IOException ioe) {
-            log.error("Got IOException ", ioe);
             throw ioe;
         }
         
         // Init the task and add it to the Req object
         req.ft = this.initializeTask(req, _sigResp, handler);
-
-        log.debug("Starting calling");
         this.threadExecutor.execute(req.ft);
         
         return req;
@@ -252,9 +242,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         LavercaContext   _context = new LavercaContext();
         MSSSignatureResp _sigResp = null;
         try {
-            log.debug("Sending sigReq");
             _sigResp = this.mssClient.send(req.sigReq, _context);
-            log.debug("Got resp");
             req.sigResp = _sigResp;
             req.context = _context;
 
@@ -266,7 +254,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
             return req;
         }
 
-        log.debug("Starting calling");
         this.threadExecutor.execute(req.ft);
 
         return req;
@@ -297,9 +284,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         LavercaContext   _context = new LavercaContext();
         MSSSignatureResp _sigResp = null;
         
-        log.debug("Sending sigReq");
         _sigResp = this.mssClient.send(req.sigReq, _context);
-        log.debug("Got resp");
         
         if (req.isSynchronous()) {
             return this.createResp(req.sigReq, _sigResp, null);
@@ -315,7 +300,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                 else throw new IOException(e.getCause());
             }
     
-            log.debug("Starting calling");
             this.threadExecutor.execute(req.ft);
             
             try {
@@ -369,7 +353,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                     waitPeriod = ClientBase.this.subsequentWait; 
                     
                     if (now > deadline) {
-                        log.trace("Timed out");
                         handler.onError(req, new MssException("Timed out"));
                         break;
                     }
@@ -377,14 +360,11 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                     try {
                         statReq = ClientBase.this.mssClient.createStatusRequest(sigResp, req.sigReq.getAPInfo().getAPTransID());
                     } catch (Throwable t){
-                        log.trace("Failed creating status request", t);
                         handler.onError(req, t);
                         break;
                     }
                     try {
-                        log.trace("Sending statReq");
                         statResp = ClientBase.this.mssClient.send(statReq);
-                        log.trace("Got statResp");
 
                         resp = ClientBase.this.createResp(req.sigReq, sigResp, statResp);
                         
@@ -393,26 +373,21 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                         long    statusCode    = parseStatus(statResp.getStatus());
 
                         if (StatusCodes.OUTSTANDING_TRANSACTION.equals(statusCode) || !batchSignDone) {
-                            log.trace("Got an outstanding Status Response. Continuing to wait for a final answer.");
                             handler.onOutstandingProgress(req, update);
                             continue;
                         } else if (done) {
-                            log.info("Got a final Status Response. Ending the wait.");
                             handler.onResponse(req, resp);
                             break;                              
                         } else {
-                            log.warn("Got an abnormal Status Response. (" + statusCode  + ") Ending the wait.");
                             MssException fe = new MssException("Abnormal status code " + statusCode);
                             handler.onError(req, fe);
                             break;
                         }
 
                     } catch (AxisFault af) {
-                        log.trace("Got SOAP fault", af);
                         handler.onError(req, af);
                         break;
                     } catch (IOException ioe) {
-                        log.trace("Got IOException", ioe);
                         throw ioe;
                     }
                 }
@@ -440,8 +415,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         if (fiResp == null) {
             throw new IllegalArgumentException("Can't send receipt without a proper response");
         }
-        
-        log.debug("Sending receipt");
         final MSSReceiptReq receiptReq = this.mssClient.createReceiptRequest(fiResp.getMSS_SignatureResp(), 
                                                                              fiResp.getMSS_SignatureReq().getAPInfo().getAPTransID(), 
                                                                              message);
@@ -499,7 +472,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
         try {
             this.threadExecutor.shutdown();
         } catch (Throwable t) {
-            log.trace(this.getClass().getSimpleName() + " failed to shut down properly", t);
+            // Ignore
         }
     }
     

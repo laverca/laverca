@@ -30,8 +30,6 @@ import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
@@ -55,8 +53,6 @@ import fi.laverca.util.X509Util;
  */ 
 public class CmsSignature implements Signature {
     
-    private static final Log log = LogFactory.getLog(CmsSignature.class);
-
     private SignedData _sd;
     private byte[] rawSignature;
 
@@ -121,13 +117,12 @@ public class CmsSignature implements Signature {
                         cn = r.getValue().toString();
                     }
                 }
-            } catch(InvalidNameException e) {
-                log.warn("Invalid name", e);
+            } catch (InvalidNameException e) {
+                // Ignore
             }
 
             return cn;
         } catch(Throwable t) {
-            log.error("Failed to get signer CN: " + t.getMessage());
             return null;
         }
     }
@@ -238,7 +233,6 @@ public class CmsSignature implements Signature {
         List<X509Certificate> signerCerts = new ArrayList<X509Certificate>();
 
         // 1. Read PKCS7.Certificates to get all possible certs.
-        log.debug("Read all certs");
         List<X509Certificate> certs = readCerts(sd);
         
         if (certs.isEmpty()) {
@@ -246,7 +240,6 @@ public class CmsSignature implements Signature {
         }
 
         // 2. Read PKCS7.SignerInfo to get all signers.
-        log.debug("Read SignerInfo");
         List<SignerInfo> signerInfos = readSignerInfos(sd);
         
         if (signerInfos.isEmpty()) {
@@ -254,7 +247,6 @@ public class CmsSignature implements Signature {
         }
 
         // 3. Verify that signerInfo cert details match the cert on hand
-        log.debug("Matching cert and SignerInfo details");
         for (SignerInfo si : signerInfos) {
             for (X509Certificate c : certs) {
                 String siIssuer = readIssuer(si);
@@ -265,19 +257,11 @@ public class CmsSignature implements Signature {
     
                 if (dnsEqual(siIssuer, cIssuer) && siSerial.equals(cSerial)) {
                     signerCerts.add(c);
-                    log.debug("Cert does match signerInfo");
-                    log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
-                    log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
-                } else {
-                    log.debug("Cert does not match signerInfo");
-                    log.debug("SignerInfo   issuer:serial = " + siIssuer + ":" + siSerial);
-                    log.debug("Certificates issuer:serial = " + cIssuer  + ":" + cSerial);
                 }
             }
         }
 
         // 4. Return the list.
-        log.debug("Returning " + signerCerts.size() + " certs");
         return signerCerts;
     }
 
@@ -295,7 +279,7 @@ public class CmsSignature implements Signature {
 
         ASN1Set certSet = sd.getCertificates();
         Enumeration<?> en = certSet.getObjects();
-        while(en.hasMoreElements()) {
+        while (en.hasMoreElements()) {
             Object o = en.nextElement();
             try {
                 byte[] certDer = ((ASN1Sequence)o).getEncoded();
@@ -304,7 +288,7 @@ public class CmsSignature implements Signature {
                     certs.add(cert);                    
                 }
             } catch (IOException e) {
-                log.debug("Failed to read cert", e);
+                continue;
             }
         }
 
@@ -331,7 +315,7 @@ public class CmsSignature implements Signature {
                 SignerInfo si = SignerInfo.getInstance(o);
                 signerInfos.add(si);
             } catch (RuntimeException ex) {
-                log.trace("SignerInfo " + o + " not found");
+                continue;
             }
         }
 

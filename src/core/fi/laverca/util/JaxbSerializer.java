@@ -31,8 +31,6 @@ import org.apache.axis.Constants;
 import org.apache.axis.encoding.SerializationContext;
 import org.apache.axis.encoding.Serializer;
 import org.apache.axis.wsdl.fromJava.Types;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 
@@ -48,8 +46,6 @@ import org.xml.sax.Attributes;
 @SuppressWarnings("serial")
 public class JaxbSerializer implements Serializer {
 
-    protected static Log log = LogFactory.getLog(JaxbSerializer.class);
-
     /**
      * Serialize a Jaxb object.
      *
@@ -64,34 +60,20 @@ public class JaxbSerializer implements Serializer {
                           final SerializationContext context)
             throws IOException
     {
-        final boolean trace = log.isTraceEnabled();
         try {
-            if (trace) {
-                log.trace("JaxbSerializer.serialize() called name="+name+" attributes="+attributes+" value="+value);
-            }
-
-            // If DOM serialization was not done, fall back to original Jaxb serialize
-            log.trace("No DOM serialize, using our JaxbSerializer.");
-
             // Normal Jaxb type serialization
             final AxisJContentHandler hand = new AxisJContentHandler(context);
             JMarshallerFactory.marshal(value, hand);
 
         } catch (final MarshalException e) {
-            log.error("Unable to marshall between XML and Jaxb Objects:",e);
             throw new IOException("Unable to marshall between XML and Jaxb Objects: "
                                   + e.getMessage());
         } catch (final ValidationException e) {
-            log.error("Message does not comply with the associated XML schema:", e);
             throw new IOException("Message does not comply with the associated XML schema: "
                                   + e.getMessage());
         } catch (JAXBException e) {
-            log.error("Message does not comply with the associated XML schema:", e);
             throw new IOException("Message does not comply with the associated XML schema: "
                                    + e.getMessage());
-        } finally {
-            if (trace)
-                log.trace("serialize() done. name="+name);
         }
     }
 

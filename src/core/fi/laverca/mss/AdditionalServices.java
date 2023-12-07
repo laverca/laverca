@@ -21,9 +21,6 @@ package fi.laverca.mss;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.jaxb.mss.DataType;
 import fi.laverca.jaxb.mss.MssURIType;
@@ -35,8 +32,6 @@ import fi.methics.ts102204.ext.v1_0.BatchSignatureRequest;
 
 public class AdditionalServices {
 
-    private static final Log log = LogFactory.getLog(AdditionalServices.class);
-    
     // MISC AdditionalService URIs
     public static final String POP_URI             = "http://www.methics.fi/KiuruMSSP/v3.0.0#POP";
     public static final String ROLE_URI            = "http://www.methics.fi/KiuruMSSP/v5.0.0#role";
@@ -116,7 +111,6 @@ public class AdditionalServices {
             }
             // Check that there is only one...
             if (ret != null) {
-                log.warn("mss:StatusDetail contains multiple ServiceResponses instances. Returning the first.");
                 break;
             }
             ret = (ServiceResponses) o;

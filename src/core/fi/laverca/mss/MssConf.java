@@ -23,16 +23,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Class for reading and passing around the Laverca MSS configuration
  */
 public class MssConf {
 
-    private static final Log log = LogFactory.getLog(MssConf.class);
-    
     public static final String TRUSTSTORE_FILE = "ssl.truststore.file";
     public static final String TRUSTSTORE_PWD  = "ssl.truststore.password";
     public static final String TRUSTSTORE_TYPE = "ssl.truststore.type";
@@ -121,7 +116,6 @@ public class MssConf {
         try (FileInputStream is = new FileInputStream(f)) {
             p.load(is);
         } catch (Exception e) {
-            log.fatal("Could not load properties");
             throw new IllegalArgumentException(e);
         }
         return MssConf.fromProperties(p);

@@ -31,15 +31,11 @@ import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * A collection of helper methods for commonplace X509 tasks.
  */
 public class X509Util {
-    private static final Log log = LogFactory.getLog(X509Util.class);
-
+    
     /**
      * Convert a DER certificate to X509Certificate
      * @param der Certificate to convert
@@ -47,7 +43,6 @@ public class X509Util {
      */
     public static X509Certificate DERtoX509Certificate(final byte[] der) {
         if (der == null) {
-            log.error("Trying to convert a null DER to X509Certificate.");
             return null;
         }
         
@@ -56,7 +51,7 @@ public class X509Util {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate)cf.generateCertificate(bis);
         } catch (CertificateException e) {
-            log.error(e.getMessage(), e);
+            // Ignore
         }
         return null;
     }
@@ -68,14 +63,12 @@ public class X509Util {
      */
     public static byte[] X509CertificateToDER(final X509Certificate cert) {
         if (cert == null) {
-            log.error("Trying to convert null X509Cert to DER.");
             return null;
         }
-        
         try {
             return cert.getEncoded();
         } catch (CertificateException e) {
-            log.error(e.getMessage(), e);
+            // Ignore
         }
         return null;
     }
@@ -129,8 +122,8 @@ public class X509Util {
                     name = r.getValue().toString();
                 }
             }
-        } catch(InvalidNameException e) {
-            log.error(e);
+        } catch (InvalidNameException e) {
+            // Ignore
         }
         
         return name;

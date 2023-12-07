@@ -29,8 +29,6 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.axis.components.logger.LogFactory;
-import org.apache.commons.logging.Log;
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -76,8 +74,6 @@ import org.apache.http.util.EntityUtils;
 
 public class LavercaHttpClient {
 
-    private static final Log log = LogFactory.getLog(LavercaHttpClient.class);
-
     private final PoolingHttpClientConnectionManager  connectionManager;
     /** What authentication scheme? Currently only BasicAuth: */
     private final UsernamePasswordCredentials         targetAuthCredentials;
@@ -119,11 +115,6 @@ public class LavercaHttpClient {
                               final ProxySettings proxySettings,
                               final SSLSocketFactory ssf )
     {
-        if (log.isTraceEnabled()) {
-            log.trace("Creating HttpClient instance...");
-            log.trace("  URL " + poolUrl);
-        }
-
         this.poolUrl  = poolUrl;
         this.username = newUsername;
         this.password = newPassword;
@@ -172,41 +163,28 @@ public class LavercaHttpClient {
         if (proxySettings != null) {
 
             if (proxySettings.proxyHostName != null && proxySettings.proxyHostName.length() > 0) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Using a proxy. "+proxySettings.proxyHostName+ " : " + proxySettings.proxyPort);
-                }
                 this.proxyHost = new HttpHost(proxySettings.proxyHostName, proxySettings.proxyPort);
 
                 if (proxySettings.proxyUsername != null && proxySettings.proxyUsername.length() > 0) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("Setting up basic proxy authentication. "+proxySettings.proxyUsername+ " : " + proxySettings.proxyPassword);
-                    }
-                
                     this.proxyAuthScope = new AuthScope( proxySettings.proxyHostName, proxySettings.proxyPort );
                     this.proxyAuthCredentials = new UsernamePasswordCredentials( proxySettings.proxyUsername, proxySettings.proxyPassword );
 
                 } else {
                     this.proxyAuthScope = null;
                     this.proxyAuthCredentials = null;
-                    log.trace("Not defining proxy authentication.");
                 }
             } else {
                 this.proxyHost = null;
                 this.proxyAuthScope = null;
                 this.proxyAuthCredentials = null;
-                log.trace("Not defining a proxy.");
             }
         } else {
             this.proxyHost = null;
             this.proxyAuthScope = null;
             this.proxyAuthCredentials = null;
-            log.trace("Not defining a proxy.");
         }
 
         if (newUsername != null && newUsername.length() > 0) {
-            if (log.isTraceEnabled()) {
-                log.trace("Setting up basic server authentication. "+newUsername+ " : " + newPassword);
-            }
             this.targetAuthCredentials = new UsernamePasswordCredentials(newUsername, newPassword);
             this.targetAuthScheme = new BasicScheme();
         } else {
@@ -257,8 +235,6 @@ public class LavercaHttpClient {
         if (this.credentialsProvider  != null) this.httpClientContext.setCredentialsProvider(this.credentialsProvider);
         if (this.requestConfigBuilder != null) this.httpClientContext.setRequestConfig(this.requestConfigBuilder.build());
         this.httpClientContext.setAttribute(HttpClientContext.AUTH_CACHE, this.authCache);
-
-        log.trace("done creating.");
     }
 
     public String getURL() {
@@ -285,12 +261,6 @@ public class LavercaHttpClient {
     public CloseableHttpResponse execute( final HttpUriRequest req, final HttpContext ctx )
         throws ClientProtocolException, IOException
     {
-        if (req instanceof HttpPost) {
-            log.info("Sending POST to " + req.getURI());
-        }
-        if (req instanceof HttpGet) {
-            log.info("Sending GET to " + req.getURI());
-        }
         return this.client.execute(req, ctx);
     }
 
@@ -331,8 +301,9 @@ public class LavercaHttpClient {
         throws IOException
     {
         final HttpEntity ent = resp.getEntity();
-        if (ent == null)
+        if (ent == null) {
             throw new IOException();
+        }
         return ent.getContent();
     }
 
@@ -343,12 +314,13 @@ public class LavercaHttpClient {
      * @return A String containing the response body.
      * @throws IOException Bad input parameters
      */
-    public String getResponseBodyAsString( final CloseableHttpResponse resp )
+    public String getResponseBodyAsString(final CloseableHttpResponse resp)
         throws IOException
     {
         final HttpEntity ent = resp.getEntity();
-        if (ent == null)
+        if (ent == null) {
             throw new IOException();
+        }
         try {
             return EntityUtils.toString(ent, "UTF-8");
         } catch (IOException e) {
@@ -366,12 +338,13 @@ public class LavercaHttpClient {
      * @return A byte[] containing the response
      * @throws IOException Bad input parameters
      */
-    public byte[] getResponseBodyAsBytes( final CloseableHttpResponse resp )
+    public byte[] getResponseBodyAsBytes(final CloseableHttpResponse resp)
         throws IOException
     {
         final HttpEntity ent = resp.getEntity();
-        if (ent == null)
+        if (ent == null) {
             throw new IOException();
+        }
         return EntityUtils.toByteArray(ent);
     }
 
@@ -381,7 +354,7 @@ public class LavercaHttpClient {
      * @param _url Target URL, note: this is <b>not</b> the same one that class constructor used. 
      * @return result
      */
-    public HttpGet buildHttpGet( final String _url ) {
+    public HttpGet buildHttpGet(final String _url) {
         final HttpGet ret = new HttpGet(_url);
 
         // AuthCredentials, if any
@@ -393,8 +366,7 @@ public class LavercaHttpClient {
                 final AuthScope as = new AuthScope(hh.getHostName(), hh.getPort(), hh.getSchemeName());
                 this.credentialsProvider.setCredentials(as, this.targetAuthCredentials);
             } catch (URISyntaxException e) {
-                log.debug("Unable to set auth credentials. URISyntaxException for URL: " + _url);
-                log.trace("URISyntaxException", e);
+                // Ignore
             }
         }
         
@@ -414,7 +386,6 @@ public class LavercaHttpClient {
         // Note: Setting protocol version has the side-effect that
         //       the connection cannot be reused, but it also removes CLOSE_WAIT problems.
         ret.setProtocolVersion(HttpVersion.HTTP_1_0);
-
         return ret;
     }
 
@@ -437,8 +408,7 @@ public class LavercaHttpClient {
                 final AuthScope as = new AuthScope(hh.getHostName(), hh.getPort(), hh.getSchemeName());
                 this.credentialsProvider.setCredentials(as, this.targetAuthCredentials);
             } catch (URISyntaxException e) {
-                log.debug("Unable to set auth credentials. URISyntaxException for URL: " + _url);
-                log.trace("URISyntaxException", e);
+                // Ignore
             }
         }
         
@@ -458,7 +428,6 @@ public class LavercaHttpClient {
         // Note: Setting protocol version has the side-effect that
         //       the connection cannot be reused, but it also removes CLOSE_WAIT problems.
         ret.setProtocolVersion(HttpVersion.HTTP_1_0);
-        
         return ret;
     }
 
@@ -471,8 +440,9 @@ public class LavercaHttpClient {
         // Response needs to be closed
         HttpClientUtils.closeQuietly(resp);
         // Closing the request is not an absolute requirement
-        if (get != null)
+        if (get != null) {
             get.releaseConnection();
+        }
     }
 
     /**
@@ -480,12 +450,13 @@ public class LavercaHttpClient {
      * @param post Thing to be closed 
      * @param resp Thing to be closed
      */
-    public void closeQuietly( final HttpPost post, final CloseableHttpResponse resp ) {
+    public void closeQuietly(final HttpPost post, final CloseableHttpResponse resp ) {
         // Response needs to be closed
         HttpClientUtils.closeQuietly(resp);
         // Closing the request is not an absolute requirement
-        if (post != null)
+        if (post != null) {
             post.releaseConnection();
+        }
     }
 
     public PoolingHttpClientConnectionManager getConnectionManager() {
@@ -496,4 +467,5 @@ public class LavercaHttpClient {
     public String toString() {
         return "[URL=" + this.poolUrl + "]";
     }
+    
 }
