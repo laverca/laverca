@@ -49,6 +49,7 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
 
         final QName reqQN      = new QName(NS204, "MSS_StatusReq");
         final QName respQN     = new QName(NS204, "MSS_StatusResp");
+        final QName respQN2    = new QName("", "MSS_StatusResp");
 
         OperationDesc oper;
         ParameterDesc [] params;
@@ -82,6 +83,7 @@ public class MSS_StatusQueryBindingStub extends AbstractSoapBindingStub
 
         oper.registerType(MSSStatusReq.class,  reqQN, sf, df, null);
         oper.registerType(MSSStatusResp.class, respQN, sf, df, null);
+        oper.registerType(MSSStatusResp.class, respQN2, sf, df, null);
         oper.registerType(MSSMessageSignature.class, MESSAGESIGNATURE_HEADER, sf, df, null);
 
         MSS_StatusQueryBindingStub._operations[0] = oper;
