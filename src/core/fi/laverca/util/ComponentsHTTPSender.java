@@ -345,17 +345,17 @@ public class ComponentsHTTPSender extends BasicHandler {
         AxisFault af = null;
 
         if (e instanceof org.apache.http.conn.HttpHostConnectException) {
-            af = this.createFault( msgContext,
-                                   AxisFault.soap12receiver,
-                                   "Connection refused");
+            af = this.createFault(msgContext,
+                                  AxisFault.soap12receiver,
+                                  "Connection refused: " + e.getMessage());
         } else if (e instanceof InterruptedIOException) {
-            af = this.createFault( msgContext,
-                                   AxisFault.soap12receiver,
-                                   "Communication timed out");
+            af = this.createFault(msgContext,
+                                  AxisFault.soap12receiver,
+                                  "Communication timed out: " + e.getMessage());
         } else if (e instanceof java.io.IOException) {
-            af = this.createFault( msgContext,
-                                   AxisFault.soap12receiver,
-                                   "Connection failed");
+            af = this.createFault(msgContext,
+                                  AxisFault.soap12receiver,
+                                  "Connection failed: " + e.getMessage());
         }
 
         if (af == null) {
