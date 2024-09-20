@@ -48,6 +48,7 @@ public class MSS_SignatureBindingStub extends AbstractSoapBindingStub
 
         final QName reqQN      = new QName(NS204, "MSS_SignatureReq");
         final QName respQN     = new QName(NS204, "MSS_SignatureResp");
+        final QName respQN2    = new QName("", "MSS_SignatureResp");
         // MSSP-2230 - original Axis 1.4 defined element QName and Type QName for each parameter.
         final QName reqtypeQN  = new QName(NS204, "MSS_SignatureReq");
 
@@ -79,12 +80,10 @@ public class MSS_SignatureBindingStub extends AbstractSoapBindingStub
         // 4. dserClass
         // 5. encodingStyleURI
 
-        oper.registerType(MSSSignatureReq.class,
-                          reqQN, sf, df, null);
-        oper.registerType(MSSSignatureResp.class,
-                          respQN, sf, df, null);
-        oper.registerType(MSSMessageSignature.class,
-                          MESSAGESIGNATURE_HEADER, sf, df, null);
+        oper.registerType(MSSSignatureReq.class, reqQN, sf, df, null);
+        oper.registerType(MSSSignatureResp.class, respQN, sf, df, null);
+        oper.registerType(MSSSignatureResp.class, respQN2, sf, df, null);
+        oper.registerType(MSSMessageSignature.class, MESSAGESIGNATURE_HEADER, sf, df, null);
 
         MSS_SignatureBindingStub._operations[0] = oper;
 
