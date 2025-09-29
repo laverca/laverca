@@ -33,6 +33,7 @@ import fi.laverca.jaxb.mreg.TargetType;
 import fi.laverca.jaxb.mreg.WirelessOperation;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MeshMemberType;
+import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.jaxb.mss.MobileUserType;
 import fi.laverca.jaxb.wsssecext.Security;
 import fi.laverca.mss.MssClient;
@@ -107,6 +108,7 @@ public class MregRequest {
     private String senderApId;
     private String senderApPwd;
     
+    private String messagingMode;
     
     /**
      * Create a new MReg request wrapper
@@ -145,7 +147,9 @@ public class MregRequest {
         prop.setNameSpace(this.namespace);
         input.getMregRequests().add(mreq);
         input.setInputId("_1");
-        
+        if (this.messagingMode != null) {
+            input.setMssMessagingMode(MessagingModeType.fromValue(messagingMode));
+        }
         req.getRegistrationInputs().add(input);
         
         // Override AP ID and AP PWD if they are set for this req. 
@@ -231,6 +235,14 @@ public class MregRequest {
                 this.targetType = Target.MOBILEUSER;
                 break;
         }
+    }
+    
+    /**
+     * Set the ETSI TS 102 204 MessagingMode
+     * @param messagingMode
+     */
+    public void setMessagingMode(final String messagingMode) {
+        this.messagingMode = messagingMode;
     }
 
     /**
