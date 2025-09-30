@@ -148,7 +148,7 @@ public class MregRequest {
         input.getMregRequests().add(mreq);
         input.setInputId("_1");
         if (this.messagingMode != null) {
-            input.setMssMessagingMode(MessagingModeType.fromValue(messagingMode));
+            input.setMessagingMode(MessagingModeType.fromValue(messagingMode));
         }
         req.getRegistrationInputs().add(input);
         
