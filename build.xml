@@ -6,7 +6,7 @@
   <!-- Make sure the Java runtime system classpath does not mess compilation -->
   <property name="build.sysclasspath" value="last" />
 
-  <property name="project-version" value="2.2.4" />
+  <property name="project-version" value="2.2.5" />
   <property name="project-name"    value="laverca" />
   
   <property name="build"     location="build" />

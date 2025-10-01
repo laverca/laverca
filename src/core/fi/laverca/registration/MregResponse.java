@@ -161,9 +161,10 @@ public class MregResponse {
      * @throws IndexOutOfBoundsException if the output is malformed
      */
     public List<OperationOutput> getOperationOutputs() {
+        if (this.output == null) return Collections.emptyList();
         return this.output.stream()
-                          .map(o -> o.getMregResponses()
-                          .get(0).getOperationOutput())
+                          .flatMap(o -> o.getMregResponses().stream())
+                          .map(r -> r.getOperationOutput())
                           .collect(Collectors.toList());
     }
     
