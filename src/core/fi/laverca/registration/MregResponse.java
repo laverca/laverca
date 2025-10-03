@@ -29,6 +29,7 @@ import fi.laverca.jaxb.mreg.OperationOutput;
 import fi.laverca.jaxb.mreg.OperationStatusType;
 import fi.laverca.jaxb.mreg.RegistrationOutput;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
+import fi.laverca.jaxb.mss.StatusType;
 import fi.laverca.util.LavercaContext;
 
 /**
@@ -279,8 +280,33 @@ public class MregResponse {
      *         Returns -1 if no code is available in the response.
      */
     public long getStatusCode() {
-        if (this.getStatus() == null) return -1;
+        if (this.getStatus() == null) {
+            
+
+        }
         return this.getStatus().getOperationStatusCode();
+    }
+    
+    /**
+     * Get the MReg Response StatusCode.
+     * <p>Common responses:
+     * <ul>
+     * <li>100 - REQUEST_OK
+     * <li>408 - REGISTRATION_OK
+     * </ul>
+     * @return Status code
+     *         Returns -1 if no code is available in the response.
+     */
+    public long getResponseStatusCode() {
+        StatusType status = this.resp.getStatus();
+        if (status != null) {
+            if (status.getStatusCode() != null) {
+                if (status.getStatusCode().getValue() != null) {
+                    return status.getStatusCode().getValue();
+                }
+            }
+        }
+        return -1;
     }
     
     /**
@@ -289,7 +315,6 @@ public class MregResponse {
      * on the operation result 
      */
     public String getStatusDetail() {
-        if (this.getStatus() == null) return null;
         return this.getStatus().getOperationStatusDetail();
     }
     
@@ -298,7 +323,8 @@ public class MregResponse {
      * @return true if operation status code is 100
      */
     public boolean isSuccessful() {
-        return this.getStatusCode() == 100;
+        return this.getStatusCode() == 100 || // MReg OK 
+               this.getResponseStatusCode() == 100; // Async Response
     }
     
     /**
