@@ -72,6 +72,7 @@ public class MregResponse {
         }
         
         // Parse params
+        if (this.getOperationOutput() == null) return;
         if (this.getOperationOutput().getParameters() == null) return;
         
         String groupName  = null;
