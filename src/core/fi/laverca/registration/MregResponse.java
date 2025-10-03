@@ -280,10 +280,7 @@ public class MregResponse {
      *         Returns -1 if no code is available in the response.
      */
     public long getStatusCode() {
-        if (this.getStatus() == null) {
-            
-
-        }
+        if (this.getStatus() == null) return -1;
         return this.getStatus().getOperationStatusCode();
     }
     
