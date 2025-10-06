@@ -142,7 +142,6 @@ public class MregResponse {
     public OperationOutput getOperationOutput() {
         return this.getOperationOutput(0);
     }
-    
     /**
      * Get the raw {@link OperationOutput}
      * @param index Index of the output (if there are multiple)
@@ -168,6 +167,23 @@ public class MregResponse {
                           .flatMap(o -> o.getMregResponses().stream())
                           .map(r -> r.getOperationOutput())
                           .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the first raw {@link RegistrationOutput}
+     * @return first {@link RegistrationOutput}
+     */
+    public RegistrationOutput getRegistrationOutput() {
+        if (this.output.size() == 0) return null;
+        return this.output.get(0);
+    }
+
+    /**
+     * Get a list of all {@link RegistrationOutput}s
+     * @return {@link RegistrationOutput}s
+     */
+    public List<RegistrationOutput> getRegistrationOutputs() {
+        return this.output;
     }
     
     /**
