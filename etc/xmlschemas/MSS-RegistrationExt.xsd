@@ -33,6 +33,7 @@
     </xs:sequence>
     <xs:attribute name="InputId"          type="xs:ID"     use="optional"/>
     <xs:attribute name="DefaultNameSpace" type="xs:string" use="optional"/>
+    <xs:attribute name="MSSP_TransID"     type="xs:NCName" use="optional"/>
     </xs:complexType>
   </xs:element>
 
