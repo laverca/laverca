@@ -62,7 +62,9 @@ public class RegistrationClient {
      * @throws IOException
      */
     public MregResponse send(final MregRequest req) throws IOException {
-        req.context = new LavercaContext();
+        if (req.context == null) {
+            req.context = new LavercaContext();
+        }
         MSSRegistrationReq  _req  = req.toMSSReq(this.client);
         MSSRegistrationResp _resp = this.client.send(_req, req.context, req.security);
         return new MregResponse(_resp, req.context);
