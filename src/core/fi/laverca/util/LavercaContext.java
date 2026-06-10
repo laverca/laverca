@@ -31,6 +31,7 @@ import org.apache.axis.MessageContext;
 public class LavercaContext {
 
     private Map<String, Object> contents = new HashMap<>();
+    private Map<String, String> headers  = new HashMap<>();
     
     public void setMessageContext(final MessageContext messageContext) {
         Iterator<String> iter = messageContext.getPropertyNames();
@@ -41,18 +42,53 @@ public class LavercaContext {
         }
     }
 
+    /**
+     * Put a generic key to the context
+     * @param key   Key
+     * @param value Value
+     */
     public void put(final String key, final Object value) {
         this.contents.put(key, value);
     }
     
+    /**
+     * Get a generic value from the context
+     * @param key Key
+     * @return value
+     */
     public Object get(final String key) {
         return this.contents.get(key);
     }
     
+    /**
+     * Put a new header to the context. This shall be added to the SOAP request as HTTP header.
+     * @param name  Header name
+     * @param value Header value
+     */
+    public void putHeader(final String name, final String value) {
+        this.headers.put(name, value);
+    }
+    
+    /**
+     * Get the raw map of HTTP headers
+     * @return HTTP headers
+     */
+    public Map<String, String> getHeaders() {
+        return this.headers;
+    }
+    
+    /**
+     * Get raw XML request from the context
+     * @return XML request
+     */
     public String getRawXmlRequest() {
         return (String)this.get(ComponentsHTTPSender.RAW_REQUEST_XML);
     }
     
+    /**
+     * Set raw XML response to the context
+     * @return raw XML response
+     */
     public String getRawXmlResponse() {
         return (String)this.get(ComponentsHTTPSender.RAW_RESPONSE_XML);
     }

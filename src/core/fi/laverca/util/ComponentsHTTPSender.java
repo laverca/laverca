@@ -90,6 +90,7 @@ public class ComponentsHTTPSender extends BasicHandler {
     boolean httpChunkStream = true; // Use HTTP chunking or not.
 
     public static final String HTTPCLIENT_INSTANCE             = "laverca.HttpClient.instance";
+    public static final String LAVERCA_CONTEXT                 = "laverca.context";
     public static final String CONTENTTYPE_APPLICATION_SOAPXML = "application/soap+xml"; // SOAP 1.2
     public static final String CONTENTTYPE_TEXT_XML            = "text/xml";             // SOAP 1.1
 
@@ -127,7 +128,8 @@ public class ComponentsHTTPSender extends BasicHandler {
         HttpPost     post     = null;
         CloseableHttpResponse response = null;
         
-        final LavercaHttpClient httpClient = (LavercaHttpClient) msgContext.getProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE);
+        final LavercaHttpClient  httpClient = (LavercaHttpClient) msgContext.getProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE);
+        final LavercaContext lavercaContext = (LavercaContext)    msgContext.getProperty(ComponentsHTTPSender.LAVERCA_CONTEXT);
         final String remoteURL = msgContext.getStrProp(MessageContext.TRANS_URL);
 
         if (httpClient == null) {
@@ -143,7 +145,12 @@ public class ComponentsHTTPSender extends BasicHandler {
             final Message reqMessage = msgContext.getRequestMessage();
             
             post = httpClient.buildHttpPost(remoteURL);
-
+            if (lavercaContext != null) {
+                for (String header : lavercaContext.getHeaders().keySet()) {
+                    post.addHeader(header, lavercaContext.getHeaders().get(header));
+                }
+            }
+            
             final HttpClientContext httpContext = httpClient.buildContext();
             final RequestConfig.Builder rcb = RequestConfig.custom();
             

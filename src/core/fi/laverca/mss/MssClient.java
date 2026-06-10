@@ -878,6 +878,7 @@ public class MssClient {
 
         // Set tools for each context.
         port.setProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
+        port.setProperty(ComponentsHTTPSender.LAVERCA_CONTEXT, context);
         LavercaSSLTrustManager.getInstance().setExpectedServerCerts(this.expectedServerCerts);
 
         MessageAbstractType resp = null;
