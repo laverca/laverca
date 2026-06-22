@@ -129,8 +129,7 @@ public class MssClient {
      * Initialize the MssClient instance with supplied configuration.
      * <p>
      * <b>NOTE:</b> If the configuration contains keystore and/or truststore parameters,
-     * {@link #createSSLFactory(String, String, String, String, String, String)} and {@link #setSSLSocketFactory(SSLSocketFactory)}
-     * are automatically run. That call ignores any keystore loading problems.
+     * {@link #setSSLSocketFactory(SSLSocketFactory)} is automatically run.
      * Upon TrustStore load success, this will initialize LavercaSSLTrustStore collection of expected server certificates. 
      *
      * @param conf MSS Configuration object (not null)
@@ -148,9 +147,7 @@ public class MssClient {
         
         if (conf.getKeystore() != null) {
             try {
-                SSLSocketFactory ssf = MssClient.createSSLFactory(conf.getKeystore(),   conf.getKeystorePwd(),   conf.getKeystoreType(), 
-                                                                  conf.getTruststore(), conf.getTruststorePwd(), conf.getTruststoreType());
-                this.setSSLSocketFactory(ssf);
+                this.setSSLSocketFactory(conf.createSSLFactory());
                 this.expectedServerCerts = LavercaSSLTrustManager.getInstance().getExpectedServerCerts();
             } catch (Exception e) {
                 throw new LavercaException("Failed to load keystore and/or truststore", e);
@@ -270,11 +267,9 @@ public class MssClient {
     {
         KeyStore    ks = KeyStore.getInstance(ksType);
         KeyStore    ts = null;
-        InputStream kis = new FileInputStream(ksFile);
-        InputStream tis = null;
 
-        try {
-            KeyManagerFactory   kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        try (InputStream kis = new FileInputStream(ksFile)) {
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             
             ks.load(kis, ksPwd.toCharArray());
             kmf.init(ks, ksPwd.toCharArray());
@@ -283,33 +278,31 @@ public class MssClient {
             
             if (tsFile != null) {
                 ts = KeyStore.getInstance(tsType);
-                ts.load(new FileInputStream(tsFile), tsPwd.toCharArray());
-                
-                List<byte[]> certs = new ArrayList<>();
-                
-                for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
-                    String alias = aliases.nextElement();
-                    if (ts.isKeyEntry(alias)) {
-                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                        if (cert != null) certs.add(cert.getEncoded());
-                    } else if (ts.isCertificateEntry(alias)) {
-                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                        if (cert != null) certs.add(cert.getEncoded());
+                try (InputStream tis = new FileInputStream(tsFile)) {
+                    ts.load(tis, tsPwd.toCharArray());
+                    List<byte[]> certs = new ArrayList<>();
+                    
+                    for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
+                        String alias = aliases.nextElement();
+                        if (ts.isKeyEntry(alias)) {
+                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                            if (cert != null) certs.add(cert.getEncoded());
+                        } else if (ts.isCertificateEntry(alias)) {
+                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                            if (cert != null) certs.add(cert.getEncoded());
+                        }
                     }
+    
+                    // Note: Following is GLOBAL setting to all MssClient instances!
+                    // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
+                    LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
                 }
-
-                // Note: Following is GLOBAL setting to all MssClient instances!
-                // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
-                LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
             }
             
             TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
             ctx.init(kmf.getKeyManagers(), tms, null);
             
             return ctx.getSocketFactory();
-        } finally {
-            if (tis != null) tis.close();
-            kis.close();
         }
     }
   

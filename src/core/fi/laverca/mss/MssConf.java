@@ -21,7 +21,11 @@ package fi.laverca.mss;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Properties;
+
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Class for reading and passing around the Laverca MSS configuration
@@ -102,11 +106,11 @@ public class MssConf {
 
         conf.setTruststore(p.getProperty(TRUSTSTORE_FILE),
                            p.getProperty(TRUSTSTORE_PWD),
-                           p.getProperty(TRUSTSTORE_TYPE, "JKS"));
+                           p.getProperty(TRUSTSTORE_TYPE));
         
         conf.setKeystore(p.getProperty(KEYSTORE_FILE),
                          p.getProperty(KEYSTORE_PWD),
-                         p.getProperty(KEYSTORE_TYPE, "JKS"));        
+                         p.getProperty(KEYSTORE_TYPE));        
         return conf;
     }
     
@@ -160,6 +164,17 @@ public class MssConf {
     public String getHandshakeUrl() {
         return this.msspHandshakeUrl;
     }
+    
+    /**
+     * Create a new SSLSocketFactory from this configuration
+     * @return SSLSocketFactory
+     * @throws IOException if the keystore or truststore cannot be read
+     * @throws GeneralSecurityException if there is any security exception related to accessing the keystore or truststore
+     */
+    public SSLSocketFactory createSSLFactory() throws GeneralSecurityException, IOException {
+        return MssClient.createSSLFactory(this.getKeystore(), this.getKeystorePwd(), this.getKeystoreType(), 
+                                          this.getTruststore(), this.getTruststorePwd(), this.getTruststoreType());
+    }
 
     public String getTruststore() {
         return this.truststoreFile;
@@ -168,9 +183,20 @@ public class MssConf {
     public String getTruststorePwd() {
         return this.truststorePwd;
     }
-    
+
+    /**
+     * Get the configured truststore type (PKCS12 or JKS)
+     * @return truststore type (default is JKS)
+     */
     public String getTruststoreType() {
-        return (this.truststoreType != null ? this.truststoreType : "JKS");
+        if (this.truststoreType == null) {
+            if (this.truststoreFile != null) {
+                return this.truststoreFile.endsWith(".pfx") || this.truststoreFile.endsWith(".p12") ? "PKCS12" : "JKS"; 
+            } else {
+                return "JKS";
+            }
+        }
+        return this.truststoreType;
     }
     
     public String getKeystore() {
@@ -181,8 +207,19 @@ public class MssConf {
         return this.keystorePwd;
     }
     
+    /**
+     * Get the configured keystore type (PKCS12 or JKS)
+     * @return keystore type (default is JKS)
+     */
     public String getKeystoreType() {
-        return (this.keystoreType != null ? this.keystoreType : "JKS");
+        if (this.keystoreType == null) {
+            if (this.keystoreFile != null) {
+                return this.keystoreFile.endsWith(".pfx") || this.keystoreFile.endsWith(".p12") ? "PKCS12" : "JKS"; 
+            } else {
+                return "JKS";
+            }
+        }
+        return this.keystoreType;
     }
     
     public String getApId() {

@@ -71,7 +71,6 @@ public class LavercaSSLTrustManager implements X509TrustManager {
         return this.expectedServerCerts.get();
     }
 
-
     /**
      * Set new "next trust manager" to be called, return previous value.
      * This is applied only on server certificates, and happens in JRE
@@ -96,9 +95,9 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      * @param authType TrustManager authentication type
      * @throws CertificateException if client is not trusted
      */
-    public void checkClientTrusted( final List<X509Certificate> chain,
-                                    final List<byte[]> derChain,
-                                    final String authType )
+    public void checkClientTrusted(final List<X509Certificate> chain,
+                                   final List<byte[]> derChain,
+                                   final String authType)
         throws CertificateException
     {
         final X509TrustManager tm = this.nextTrustManager.get();
@@ -113,8 +112,8 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      */
     // from javax.net.ssl.X509TrustManager
     @Override
-    public void checkClientTrusted( final X509Certificate[] chain,
-                                    final String authType )
+    public void checkClientTrusted(final X509Certificate[] chain,
+                                   final String authType)
         throws CertificateException
     {
         if ((chain == null) || (chain.length == 0)) {
@@ -134,8 +133,8 @@ public class LavercaSSLTrustManager implements X509TrustManager {
      */
     // from javax.net.ssl.X509TrustManager
     @Override
-    public void checkServerTrusted( final X509Certificate[] chain,
-                                    final String authType )
+    public void checkServerTrusted(final X509Certificate[] chain,
+                                   final String authType)
         throws CertificateException
     {
 
@@ -147,7 +146,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
         if (chain == null || chain.length == 0) {
             throw new CertificateException("No certificates received from server! Did it reject our connection?");
         }
-        checkExpectedServerCerts(chain[0]);
+        this.checkExpectedServerCerts(chain[0]);
     }
 
 
@@ -252,7 +251,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
                                    final String algorithm)
         throws CertificateException
     {
-        this.checkServerTrusted( chain, authType );
+        this.checkServerTrusted(chain, authType);
     }
 
 
