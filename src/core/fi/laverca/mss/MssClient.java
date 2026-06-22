@@ -73,6 +73,7 @@ import fi.laverca.mss.ws.MSS_StatusQueryBindingStub;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.ComponentsHTTPSender;
 import fi.laverca.util.DTBS;
+import fi.laverca.util.IssuerTrustManager;
 import fi.laverca.util.JMarshallerFactory;
 import fi.laverca.util.LavercaContext;
 import fi.laverca.util.LavercaHttpClient;
@@ -124,6 +125,7 @@ public class MssClient {
     private LavercaHttpClient httpClient;
 
     private List<byte[]> expectedServerCerts;
+    private List<String> msspUri = new ArrayList<>();
     
     /**
      * Initialize the MssClient instance with supplied configuration.
@@ -153,6 +155,7 @@ public class MssClient {
                 throw new LavercaException("Failed to load keystore and/or truststore", e);
             }
         }
+        this.msspUri = conf.getMsspUri();
     }
 
     /**
@@ -260,6 +263,7 @@ public class MssClient {
      * @return Created SSLSocketFactory
      * @throws IOException if the keystore or truststore cannot be read
      * @throws GeneralSecurityException if there is any security exception related to accessing the keystore or truststore
+     * @deprecated Use {@link MssConf#createSSLFactory()} instead
      */
     public static SSLSocketFactory createSSLFactory(final String ksFile, final String ksPwd, final String ksType,
                                                     final String tsFile, final String tsPwd, final String tsType) 
@@ -875,7 +879,12 @@ public class MssClient {
             port.setProperty(ComponentsHTTPSender.LAVERCA_CONTEXT, context);
         }
         LavercaSSLTrustManager.getInstance().setExpectedServerCerts(this.expectedServerCerts);
-
+        // Add MSSP URI as expected SAN
+        IssuerTrustManager.getInstance().addExpectedMsspURI(this.msspUri);
+        if (req.getMSSPInfo() != null && req.getMSSPInfo().getMSSPID() != null) { 
+            IssuerTrustManager.getInstance().addExpectedMsspURI(req.getMSSPInfo().getMSSPID().getURI());
+        }
+        
         MessageAbstractType resp = null;
         
         if (port instanceof MSS_SignatureBindingStub) {
@@ -907,10 +916,18 @@ public class MssClient {
 
     /**
      * Set specific TLS protocol version name, if necessary.
-     * 
      * @param name  Use "TLSv1.3"  or later
      */
     public static void setTLSContextName(String name) {
         TLSContextName = name;
     }
+    
+    /**
+     * Get the specific TLS protocol version name
+     * @return TLS protocol version name
+     */
+    public static String getTLSContextName() {
+        return TLSContextName;
+    }
+    
 }

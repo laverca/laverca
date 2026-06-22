@@ -22,10 +22,23 @@ package fi.laverca.mss;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+
+import fi.laverca.util.IssuerTrustManager;
+import fi.laverca.util.LavercaSSLTrustManager;
 
 /**
  * Class for reading and passing around the Laverca MSS configuration
@@ -42,6 +55,8 @@ public class MssConf {
     
     public static final String AP_ID           = "ap.id";
     public static final String AP_PWD          = "ap.password";
+    public static final String MSSP_URI        = "mssp.uri";
+    public static final String CHECK_ISSUER    = "check.issuer";
     
     public static final String SIGNATURE_URL       = "mssp.signature.url";
     public static final String STATUS_URL          = "mssp.status.url";
@@ -66,6 +81,9 @@ public class MssConf {
     private String truststoreFile;
     private String truststorePwd;
     private String truststoreType;
+    
+    private boolean  checkIssuer = false;
+    private List<String> msspUri = new ArrayList<>();
 
     public MssConf() {
         // Empty constructor
@@ -90,13 +108,19 @@ public class MssConf {
         this.msspHandshakeUrl = msspHandshakeUrl;
     }
     
+    /**
+     * Construct an MSS Configuration object from Java properties
+     * @param p Properties
+     * @return new MssConf
+     */
     public static MssConf fromProperties(final Properties p) {
         
         final MssConf conf = new MssConf();
         
         conf.setApId(p.getProperty(AP_ID));
         conf.setApPwd(p.getProperty(AP_PWD));
-        
+        conf.setMsspUri(p.getProperty(MSSP_URI));
+
         conf.setSignatureUrl(p.getProperty(SIGNATURE_URL));
         conf.setStatusUrl(p.getProperty(STATUS_URL));
         conf.setReceiptUrl(p.getProperty(RECEIPT_URL));
@@ -110,10 +134,16 @@ public class MssConf {
         
         conf.setKeystore(p.getProperty(KEYSTORE_FILE),
                          p.getProperty(KEYSTORE_PWD),
-                         p.getProperty(KEYSTORE_TYPE));        
+                         p.getProperty(KEYSTORE_TYPE));
+        conf.setCheckIssuer(Boolean.getBoolean(p.getProperty(CHECK_ISSUER)));
         return conf;
     }
     
+    /**
+     * Construct an MSS Configuration object from the given property file
+     * @param fileName Java properties file
+     * @return new MssConf
+     */
     public static MssConf fromPropertyFile(final String fileName) {
         File f = new File(fileName);
         Properties p = new Properties();
@@ -149,6 +179,7 @@ public class MssConf {
         p.put(KEYSTORE_FILE, this.getKeystore());
         p.put(KEYSTORE_PWD,  this.getKeystorePwd());
         p.put(KEYSTORE_TYPE, this.getKeystoreType());
+        p.put(MSSP_URI,      String.join(",", this.getMsspUri()));
 
         return p;
     }
@@ -172,8 +203,67 @@ public class MssConf {
      * @throws GeneralSecurityException if there is any security exception related to accessing the keystore or truststore
      */
     public SSLSocketFactory createSSLFactory() throws GeneralSecurityException, IOException {
-        return MssClient.createSSLFactory(this.getKeystore(), this.getKeystorePwd(), this.getKeystoreType(), 
-                                          this.getTruststore(), this.getTruststorePwd(), this.getTruststoreType());
+        
+        final String ksType = this.getKeystoreType();
+        final String ksFile = this.getKeystore();
+        final String ksPwd  = this.getKeystorePwd();
+        final String tsType = this.getTruststoreType();
+        final String tsFile = this.getTruststore();
+        final String tsPwd  = this.getTruststorePwd();
+        
+        KeyStore    ks = KeyStore.getInstance(ksType);
+        KeyStore    ts = null;
+
+        try (InputStream kis = new FileInputStream(ksFile)) {
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            
+            ks.load(kis, ksPwd.toCharArray());
+            kmf.init(ks, ksPwd.toCharArray());
+
+            final SSLContext ctx = SSLContext.getInstance(MssClient.getTLSContextName());
+            
+            if (tsFile != null) {
+                ts = KeyStore.getInstance(tsType);
+                try (InputStream tis = new FileInputStream(tsFile)) {
+                    ts.load(tis, tsPwd.toCharArray());
+                    List<byte[]> certs = new ArrayList<>();
+                    List<X509Certificate> _certs = new ArrayList<>();
+                    
+                    for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
+                        String alias = aliases.nextElement();
+                        if (ts.isKeyEntry(alias)) {
+                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                            if (cert != null) {
+                                certs.add(cert.getEncoded());
+                                _certs.add(cert);
+                            }
+                        } else if (ts.isCertificateEntry(alias)) {
+                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                            if (cert != null) {
+                                certs.add(cert.getEncoded());
+                                _certs.add(cert);
+                            }
+                        }
+                    }
+    
+                    // Note: Following is GLOBAL setting to all MssClient instances!
+                    // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
+                    LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
+                    IssuerTrustManager.getInstance().setIssuerCerts(_certs);
+                }
+            }
+            
+            // Use issuer trust manager
+            if (this.isCheckIssuer()) {
+                TrustManager[] tms = new TrustManager[] {IssuerTrustManager.getInstance()};
+                ctx.init(kmf.getKeyManagers(), tms, null);
+            } else {
+                TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
+                ctx.init(kmf.getKeyManagers(), tms, null);
+            }
+            
+            return ctx.getSocketFactory();
+        }
     }
 
     public String getTruststore() {
@@ -274,16 +364,61 @@ public class MssConf {
         this.msspHandshakeUrl = msspHandshakeUrl;
     }
     
+    /**
+     * Set the list of known MSSP URIs
+     * @param msspUri MSSP URI as comma separated String
+     */
+    public void setMsspUri(final String msspUri) {
+        if (msspUri == null) return;
+        this.msspUri = Arrays.asList(msspUri.split(","));
+    }
+
+    /**
+     * Set the keystore
+     * @param file Keystore file
+     * @param pwd  Keystore password
+     * @param type Keystore type (jks or pkcs12)
+     */
     public void setKeystore(final String file, final String pwd, final String type) {
         this.keystoreFile = file;
         this.keystorePwd  = pwd;
         this.keystoreType = type;
     }
     
+    /**
+     * Set the truststore
+     * @param file Truststore file
+     * @param pwd  Truststore password
+     * @param type Truststore type (jks or pkcs12)
+     */
     public void setTruststore(final String file, final String pwd, final String type) {
         this.truststoreFile = file;
         this.truststorePwd  = pwd;
         this.truststoreType = type;
+    }
+    
+    /**
+     * Get a list of known MSSP URIs
+     * <p>This is primarily used for certificate SAN validation. 
+     * @return MSSP URIs
+     */
+    public List<String> getMsspUri() {
+        return this.msspUri;
+    }
+
+    /**
+     * Should we check server certificate issuer instead of explicit certificate?
+     * @param checkIssuer true to match issuer to truststore
+     */
+    public void setCheckIssuer(boolean checkIssuer) {
+        this.checkIssuer = true;
+    }
+
+    /**
+     * @return Should we check server certificate issuer instead of explicit certificate?
+     */
+    public boolean isCheckIssuer() {
+        return this.checkIssuer;
     }
     
 }
