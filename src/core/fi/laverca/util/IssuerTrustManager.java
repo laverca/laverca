@@ -208,36 +208,32 @@ public class IssuerTrustManager implements X509TrustManager {
             throw new CertificateException("No matching certificate found!");
         }
         
-        for (final X509Certificate expectedIssCert : expectedIssuerCerts) {
-            if (Arrays.equals(issuerCert.getEncoded(), expectedIssCert.getEncoded())) {
-                // Found a cert with good issuer
-                if (this.expectedServerSAN.get().isEmpty()) {
-                    // No configured MSSP URI to check from SAN - we are OK
-                    return;
-                }
-                
-                // Check that server cert SAN matches one of the expected MSSP URI values
-                try {
-                    Collection<List<?>> sanEntries = cert.getSubjectAlternativeNames();
-                    if (sanEntries == null) {
-                        throw new CertificateException("No server cert match among expected certificates.");
+        // Found a cert with good issuer
+        if (this.expectedServerSAN.get().isEmpty()) {
+            // No configured MSSP URI to check from SAN - we are OK
+            return;
+        }
+        
+        // Check that server cert SAN matches one of the expected MSSP URI values
+        try {
+            Collection<List<?>> sanEntries = cert.getSubjectAlternativeNames();
+            if (sanEntries == null) {
+                throw new CertificateException("No server cert match among expected certificates.");
+            }
+            for (List<?> sanEntry : sanEntries) {
+                Integer type = (Integer) sanEntry.get(0);
+                if (type != null && type == SAN_TYPE_URI) {
+                    String sanValue = (String) sanEntry.get(1);
+                    if (this.expectedServerSAN.get().contains(sanValue)) {
+                        // GOOD!
+                        return;
                     }
-                    for (List<?> sanEntry : sanEntries) {
-                        Integer type = (Integer) sanEntry.get(0);
-                        if (type != null && type == SAN_TYPE_URI) {
-                            String sanValue = (String) sanEntry.get(1);
-                            if (this.expectedServerSAN.get().contains(sanValue)) {
-                                // GOOD!
-                                return;
-                            }
-                        }
-                    }
-                } catch (CertificateParsingException e) {
-                    throw new CertificateException("No issuer/SAN match among expected certificates: " + e.getMessage(), e);
-                } catch (Exception e) {
-                    throw new CertificateException("Failed to parse SAN: " + e.getMessage(), e);
                 }
             }
+        } catch (CertificateParsingException e) {
+            throw new CertificateException("No issuer/SAN match among expected certificates: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new CertificateException("Failed to parse SAN: " + e.getMessage(), e);
         }
         throw new CertificateException("No issuer/SAN match among expected certificates.");
     }
