@@ -85,7 +85,12 @@
      <echo>Generating JAXB datatypes with XJC</echo>
      <java classname="com.sun.tools.xjc.XJCFacade"
             failonerror="true"
-            classpathref="xjc.classpath">
+            classpathref="xjc.classpath"
+            fork="true">
+       <!-- pre-java-11 tools need explicit opens -->
+        <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+        <jvmarg value="--add-opens=java.xml/com.sun.org.apache.xml.internal.serialize=ALL-UNNAMED"/>
+
         <arg line="-npa -no-header -nv" />
         <arg line="-d @{todir}"/>
         <arg line="-extension"/>
@@ -110,15 +115,6 @@
   </target>
 
   <target name="generate-datatypes" >
-    <!--
-        For an unknown reason, earlier embedded datatype class generation fails with Java-21.
-        For now:
-          1) ant clean
-          2) ant generate-datatypes
-          3) ant dist
-        The result is fully generated source, and binaries
-    -->
-
     <mkdir dir="${datatypes-src}" />
     <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
                       todir="${datatypes-src}" />
@@ -127,8 +123,8 @@
 
   <target name="build" depends="build-core" />  
 
-  <target name="build-core">
-<!--          depends="generate-datatypes" > -->
+  <target name="build-core"
+          depends="generate-datatypes" >
     <mkdir dir="${build}/core" />
     <javac debug="true"
            optimize="true"
