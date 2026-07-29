@@ -11,6 +11,7 @@
 hs_err_pid*
 # Build time material
 /bin/
+/src/jaxb-datatypes/
 /dist/
 /apidocs/
 /build/
