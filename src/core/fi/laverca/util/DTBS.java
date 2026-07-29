@@ -21,9 +21,9 @@ package fi.laverca.util;
 
 import java.io.UnsupportedEncodingException;
 
-import org.apache.axis.encoding.Base64;
-
 import fi.laverca.jaxb.mss.DataType;
+
+import methics.axis.encoding.Base64;
 
 /**
  * Dual-mode mapper class for "DataToBeSigned"

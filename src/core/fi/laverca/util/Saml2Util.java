@@ -25,8 +25,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import fi.laverca.jaxb.saml2a.Assertion;
-import fi.laverca.jaxb.saml2a.AttributeStatement;
 import fi.laverca.jaxb.saml2a.Attribute;
+import fi.laverca.jaxb.saml2a.AttributeStatement;
 import fi.laverca.jaxb.saml2a.NameIDType;
 import fi.laverca.jaxb.saml2a.ObjectFactory;
 import fi.laverca.jaxb.saml2a.StatementAbstractType;

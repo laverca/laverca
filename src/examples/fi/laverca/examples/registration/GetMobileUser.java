@@ -2,13 +2,13 @@ package fi.laverca.examples.registration;
 
 import java.io.IOException;
 
-import org.apache.axis.AxisFault;
-
 import fi.laverca.mss.MssConf;
 import fi.laverca.registration.MregParam;
 import fi.laverca.registration.MregRequest;
 import fi.laverca.registration.MregResponse;
 import fi.laverca.registration.RegistrationClient;
+
+import methics.axis.AxisFault;
 
 /**
  * MSS Registration example for getting details of a single MobileUser

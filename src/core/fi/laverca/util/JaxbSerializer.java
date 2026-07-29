@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-//package org.apache.axis.encoding.ser.castor;
+//package methics.axis.encoding.ser.castor;
 package fi.laverca.util;
 
 import java.io.IOException;
@@ -27,12 +27,13 @@ import javax.xml.bind.MarshalException;
 import javax.xml.bind.ValidationException;
 import javax.xml.namespace.QName;
 
-import org.apache.axis.Constants;
-import org.apache.axis.encoding.SerializationContext;
-import org.apache.axis.encoding.Serializer;
-import org.apache.axis.wsdl.fromJava.Types;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
+
+import methics.axis.Constants;
+import methics.axis.encoding.SerializationContext;
+import methics.axis.encoding.Serializer;
+import methics.axis.wsdl.fromJava.Types;
 
 /**
  * Jaxb serializer
@@ -91,7 +92,7 @@ public class JaxbSerializer implements Serializer {
      * @param types    the Java2WSDL Types object which holds the context
      *                 for the WSDL being generated.
      * @return a type element containing a schema simpleType/complexType
-     * @see org.apache.axis.wsdl.fromJava.Types
+     * @see methics.axis.wsdl.fromJava.Types
      */
     @Override
     @SuppressWarnings("rawtypes")
