@@ -85,8 +85,7 @@
      <echo>Generating JAXB datatypes with XJC</echo>
      <java classname="com.sun.tools.xjc.XJCFacade"
             failonerror="true"
-            classpathref="xjc.classpath"
-            fork="true">
+            classpathref="xjc.classpath">
        <!-- pre-java-11 tools need explicit opens -->
         <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
         <jvmarg value="--add-opens=java.xml/com.sun.org.apache.xml.internal.serialize=ALL-UNNAMED"/>
