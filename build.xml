@@ -6,9 +6,9 @@
   <!-- Make sure the Java runtime system classpath does not mess compilation -->
   <property name="build.sysclasspath" value="last" />
 
-  <property name="project-version" value="2.3.0" />
+  <property name="project-version" value="3.0.0" />
   <property name="project-name"    value="laverca" />
-  
+
   <property name="build"     location="build" />
   <property name="dist"      location="dist" />
   <property name="apidocs"   location="apidocs" />
@@ -38,12 +38,12 @@
   <path id="laverca-libs">
     <fileset dir="${libs}">
       <include name="*.jar" />
-      <exclude name="axis-1.4.patched.jar" />
+      <exclude name="axis14methics.jar" />
     </fileset>
     <pathelement location="${jlibs}/jaxb-api.jar" />
     <pathelement location="${jlibs}/jaxb-runtime.jar" />
     <pathelement location="${jlibs}/istack-commons-runtime.jar" />
-    <pathelement location="${libs}/axis-1.4.patched.jar" />
+    <pathelement location="${libs}/axis14methics.jar" />
   </path>
 
   <path id="anttasks.classpath">
@@ -106,10 +106,18 @@
     <delete dir="${build}"         failonerror="false" />
     <delete dir="${dist}"          failonerror="false" />
     <delete dir="${apidocs}"       failonerror="false" />
-    <delete dir="${datatypes-src}" failonerror="false" />
+    <!-- <delete dir="${datatypes-src}" failonerror="false" /> -->
   </target>
 
   <target name="generate-datatypes" >
+    <!--
+        For an unknown reason, earlier embedded datatype class generation fails with Java-21.
+        For now:
+          1) ant clean
+          2) ant generate-datatypes
+          3) ant dist
+        The result is fully generated source, and binaries
+    -->
 
     <mkdir dir="${datatypes-src}" />
     <jaxb-xsd2src-gen file="${xmlschemas}/MSS-plus.xsd"
@@ -119,8 +127,8 @@
 
   <target name="build" depends="build-core" />  
 
-  <target name="build-core"
-          depends="generate-datatypes">
+  <target name="build-core">
+<!--          depends="generate-datatypes" > -->
     <mkdir dir="${build}/core" />
     <javac debug="true"
            optimize="true"
@@ -158,7 +166,10 @@
   <!-- DIST -->
   
   <target name="dist" depends="build, apidocs">
-    
+    <mkdir dir="${dist}" />
+    <mkdir dir="${dist}/examples" />
+    <mkdir dir="${dist}/examples/conf" />
+
     <copy tofile="${dist}/examples/build.xml" file="build-examples.xml" />
     <copy todir="${dist}/examples/conf">   <fileset dir="${conf}"/>         </copy>
     <copy todir="${dist}/examples/etc">    <fileset dir="${etc}"/>          </copy>
