@@ -20,8 +20,8 @@
 
 package fi.laverca.util;
 
-import javax.xml.bind.MarshalException;
-import javax.xml.bind.ValidationException;
+import jakarta.xml.bind.MarshalException;
+import jakarta.xml.bind.ValidationException;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;

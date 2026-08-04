@@ -19,7 +19,7 @@
 
 package fi.laverca.swisscom;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.mss.AdditionalServices;
