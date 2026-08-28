@@ -29,6 +29,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import fi.laverca.CmsSignature;
+import fi.laverca.MSS_Formats;
+import fi.laverca.SignatureProfiles;
+import fi.laverca.etsi.EtsiClient;
+import fi.laverca.etsi.EtsiRequest;
+import fi.laverca.etsi.EtsiResponse;
+import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.mss.MssConf;
+import fi.laverca.mss.ProfileQueryResponse;
+import fi.laverca.util.DTBS;
+import fi.laverca.util.X509CertificateChain;
+
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -42,17 +54,6 @@ import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import fi.laverca.CmsSignature;
-import fi.laverca.MSS_Formats;
-import fi.laverca.SignatureProfiles;
-import fi.laverca.etsi.EtsiClient;
-import fi.laverca.etsi.EtsiRequest;
-import fi.laverca.etsi.EtsiResponse;
-import fi.laverca.jaxb.mss.MessagingModeType;
-import fi.laverca.mss.MssConf;
-import fi.laverca.mss.ProfileQueryResponse;
-import fi.laverca.util.DTBS;
-import fi.laverca.util.X509CertificateChain;
 
 /**
  * ASiC signing example

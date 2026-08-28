@@ -23,7 +23,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import org.apache.axis.AxisFault;
+import methics.axis.AxisFault;
 
 /**
  * MSS Error Codes

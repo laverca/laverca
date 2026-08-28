@@ -29,9 +29,21 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+
+import fi.laverca.CmsSignature;
+import fi.laverca.MSS_Formats;
+import fi.laverca.SignatureProfiles;
+import fi.laverca.etsi.EtsiClient;
+import fi.laverca.etsi.EtsiRequest;
+import fi.laverca.etsi.EtsiResponse;
+import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.mss.MssConf;
+import fi.laverca.mss.ProfileQueryResponse;
+import fi.laverca.util.DTBS;
+import fi.laverca.util.X509CertificateChain;
 
 import eu.europa.esig.dss.detailedreport.DetailedReport;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -51,17 +63,6 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import fi.laverca.CmsSignature;
-import fi.laverca.MSS_Formats;
-import fi.laverca.SignatureProfiles;
-import fi.laverca.etsi.EtsiClient;
-import fi.laverca.etsi.EtsiRequest;
-import fi.laverca.etsi.EtsiResponse;
-import fi.laverca.jaxb.mss.MessagingModeType;
-import fi.laverca.mss.MssConf;
-import fi.laverca.mss.ProfileQueryResponse;
-import fi.laverca.util.DTBS;
-import fi.laverca.util.X509CertificateChain;
 
 /**
  * XAdES signing example

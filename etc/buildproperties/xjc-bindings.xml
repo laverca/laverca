@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<bindings version="2.1" xmlns="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" >
+<bindings version="3.0" xmlns="https://jakarta.ee/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" >
   <!--
       Important bits are:
       * <bindings ... if-exists="true" ..>
@@ -18,14 +18,14 @@
         Here we override those to easier to use types.
     -->
     <javaType name="java.util.Calendar" xmlType="xs:dateTime"
-              parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-              printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+              parseMethod="jakarta.xml.bind.DatatypeConverter.parseDateTime"
+              printMethod="jakarta.xml.bind.DatatypeConverter.printDateTime" />
     <javaType name="java.util.Calendar" xmlType="xs:date"
-              parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
-              printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+              parseMethod="jakarta.xml.bind.DatatypeConverter.parseDateTime"
+              printMethod="jakarta.xml.bind.DatatypeConverter.printDateTime" />
     <javaType name="long" xmlType="xs:integer"
-              parseMethod="javax.xml.bind.DatatypeConverter.parseLong"
-              printMethod="javax.xml.bind.DatatypeConverter.printLong" />
+              parseMethod="jakarta.xml.bind.DatatypeConverter.parseLong"
+              printMethod="jakarta.xml.bind.DatatypeConverter.printLong" />
   </globalBindings>
 
   <bindings scd="x-schema::tns" if-exists="true" xmlns:tns="http://www.w3.org/2001/04/xmlenc#">

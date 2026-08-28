@@ -4,7 +4,7 @@
 
 package fi.laverca.registration;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import fi.laverca.jaxb.wsssecext.AttributedString;

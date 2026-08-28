@@ -31,11 +31,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.Unmarshaller;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.PropertyException;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.w3c.dom.Element;
 import org.xml.sax.helpers.DefaultHandler;
@@ -54,14 +55,15 @@ public class JMarshallerFactory {
     private static NSPfxMapper nsp;
 
     // JAXB-RI value, which disagrees with Java-8 runtime value
-    private static final String JAXB_CONTEXT_FACTORY       = "javax.xml.bind.context.factory";
-    private static final String JAXB_CONTEXT_FACTORY_VALUE = "com.sun.xml.bind.v2.ContextFactory";
-    private static final String NAMESPACE_PREFIX_MAPPER    = "com.sun.xml.bind.namespacePrefixMapper";
+    private static final String JAXB_CONTEXT_FACTORY_JAXBRI  = "jakarta.xml.bind.JAXBContextFactory";
+    //private static final String JAXB_CONTEXT_FACTORY_JAVA8   = "jakarta.xml.bind.context.factory";
+    private static final String JAXB_CONTEXT_FACTORY_VALUE   = "org.glassfish.jaxb.runtime.v2.ContextFactory";
+    private static final String JAXB_NAMESPACE_PREFIX_MAPPER = "org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper";
 
     /**
-     * JAXB RI NamespacePrefixMapper 
+     * JAXB RI NamespacePrefixMapper, Jakarta-EE9
      */
-    private static class NSPfxMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  {
+    private static class NSPfxMapper extends org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper  {
 
         private HashMap<String,String> uri2pfx = new HashMap<>();
         private HashMap<String,String> pfx2uri = new HashMap<>();
@@ -160,7 +162,7 @@ public class JMarshallerFactory {
         try {
             // Setup JAXB-RI context factory -- make sure it exists
             Class.forName(JAXB_CONTEXT_FACTORY_VALUE);
-            System.setProperty(JAXB_CONTEXT_FACTORY, JAXB_CONTEXT_FACTORY_VALUE);
+            System.setProperty(JAXB_CONTEXT_FACTORY_JAXBRI, JAXB_CONTEXT_FACTORY_VALUE);
         } catch (Exception e) {
             // Ignore
         }
@@ -189,13 +191,9 @@ public class JMarshallerFactory {
         throws JAXBException
     {
         try {
-            m.setProperty(NAMESPACE_PREFIX_MAPPER,nsp);
+            m.setProperty(JAXB_NAMESPACE_PREFIX_MAPPER,nsp);
         } catch (PropertyException e) {
-            try {
-                m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",nsp);
-            } catch (PropertyException e2) {
-                // Ignore
-            }
+            // Ignore
         }
     }
 
@@ -301,7 +299,7 @@ public class JMarshallerFactory {
      * Make unmarshaller with globally shared mapping database
      *
      * @param clazz Expected unmarshalling output class.
-     *              It must be pointing to a class with JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotation.
+     *              It must be pointing to a class with JAXB {@link jakarta.xml.bind.annotation.XmlRootElement} annotation.
      * @return Created unmarshaller
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
@@ -314,7 +312,7 @@ public class JMarshallerFactory {
     }
 
     /**
-     * @param clazz A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated class reference.
+     * @param clazz A JAXB {@link jakarta.xml.bind.annotation.XmlRootElement} annotated class reference.
      * @return JAXB Marshaller instance
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
@@ -330,7 +328,7 @@ public class JMarshallerFactory {
     /**
      * Marshal given object using JAXB Marshaller to SAX(2) DefaultHandler.
      *
-     * @param value A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated object instance.
+     * @param value A JAXB {@link jakarta.xml.bind.annotation.XmlRootElement} annotated object instance.
      * @param hand A SAX2 Event Handler receiving serialization events.
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
@@ -349,7 +347,7 @@ public class JMarshallerFactory {
     }
 
     /**
-     * @param object A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated object instance.
+     * @param object A JAXB {@link jakarta.xml.bind.annotation.XmlRootElement} annotated object instance.
      * @param writer A Writer instance receiving marshalling output as characters
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */
@@ -363,7 +361,7 @@ public class JMarshallerFactory {
     /**
      * Marshall the JAXB object to a String with XML headers and all.
      *
-     * @param object A JAXB {@link javax.xml.bind.annotation.XmlRootElement} annotated object instance.
+     * @param object A JAXB {@link jakarta.xml.bind.annotation.XmlRootElement} annotated object instance.
      * @return Marshalled string representation of the input data
      * @throws JAXBException base type for JAXB exceptions, many possible reasons
      */

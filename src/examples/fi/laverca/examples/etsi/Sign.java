@@ -23,8 +23,6 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.axis.AxisFault;
-
 import fi.laverca.MSS_Formats;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.etsi.EtsiClient;
@@ -34,6 +32,8 @@ import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
+
+import methics.axis.AxisFault;
 
 
 /**

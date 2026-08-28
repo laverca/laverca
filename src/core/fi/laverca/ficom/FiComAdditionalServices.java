@@ -22,7 +22,7 @@ package fi.laverca.ficom;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import fi.laverca.jaxb.mss.AdditionalServiceType;
 import fi.laverca.jaxb.mssfi.NoSpamCode;
