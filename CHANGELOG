@@ -6,6 +6,8 @@ Laverca Changelog
         - Same wire format: SOAP 1.2, RPC/literal wrapper elements, SOAPAction "#<operation>"
         - laverca-client-config.wsdd replaced by an optional laverca-axis2-client.xml
       Replaced HttpClient 4.5 with HttpClient 5.6 (pooled connections are reused also with a client certificate)
+      SOAP answers are parsed with the JDK's StAX parser, DTDs and external entities off, whatever the classpath registers
+        (e.g. Woodstox in esig-dss-all rejects attributes over 512 KB, such as a CRL in an MReg answer)
       SOAP faults are thrown as fi.laverca.LavercaSoapFaultException instead of Axis AxisFault
         - ErrorCodes.StatusCode.is(Throwable) matches it
       Removed MssClient/ClientBase.setEngineConfiguration(EngineConfiguration) and LavercaContext.setMessageContext()

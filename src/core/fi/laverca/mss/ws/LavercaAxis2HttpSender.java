@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 
 
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.soap.SOAPEnvelope;
 import org.apache.axiom.soap.SOAPHeader;
@@ -81,6 +84,16 @@ public class LavercaAxis2HttpSender implements TransportSender {
 
     private static final String CONTENTTYPE_SOAP12 = "application/soap+xml; charset=utf-8";
     private static final String CONTENTTYPE_SOAP11 = "text/xml; charset=utf-8";
+
+    /**
+     * The JDK's own StAX parser, whatever the classpath registers: e.g. Woodstox, bundled in some libraries, rejects
+     * attributes over 512 KB, such as a CRL in an MReg answer. No DTDs or external entities are read (XXE).
+     */
+    private static final XMLInputFactory SOAP_PARSER = XMLInputFactory.newDefaultFactory();
+    static {
+        SOAP_PARSER.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        SOAP_PARSER.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+    }
 
     private final LavercaHttpClient httpClient;
 
@@ -251,8 +264,8 @@ public class LavercaAxis2HttpSender implements TransportSender {
 
         final SOAPEnvelope inEnv;
         try {
-            // Axiom's SOAP parser settings reject a DOCTYPE before any external DTD or entity is fetched (XXE)
-            inEnv = OMXMLBuilderFactory.createSOAPModelBuilder(new ByteArrayInputStream(answer.body), null).getSOAPEnvelope();
+            final XMLStreamReader reader = SOAP_PARSER.createXMLStreamReader(new ByteArrayInputStream(answer.body));
+            inEnv = OMXMLBuilderFactory.createStAXSOAPModelBuilder(reader).getSOAPEnvelope();
             inEnv.build();
         } catch (Exception e) {
             // Not a SOAP message, e.g. an HTML error page
