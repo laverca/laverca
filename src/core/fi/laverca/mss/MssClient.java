@@ -19,24 +19,17 @@
 
 package fi.laverca.mss;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 
 import fi.laverca.LavercaException;
 import fi.laverca.jaxb.mss.DataType;
@@ -69,6 +62,7 @@ import fi.laverca.util.LavercaSSLTrustManager;
 import fi.laverca.util.ProxySettings;
 import fi.laverca.util.ReloadingKeyManager;
 import fi.laverca.util.ReloadingSSLSocketFactory;
+import fi.laverca.util.ReloadingTrustManager;
 
 /**
  * A raw ETSI TS 102 204 client object.
@@ -143,7 +137,7 @@ public class MssClient {
              conf.getProfileUrl(),
              conf.getHandshakeUrl());
         
-        if (conf.getKeystore() != null) {
+        if (conf.getKeystore() != null || conf.getTruststore() != null) {
             try {
                 this.setSSLSocketFactory(conf.createSSLFactory());
                 this.expectedServerCerts = LavercaSSLTrustManager.getInstance().getExpectedServerCerts();
@@ -238,8 +232,8 @@ public class MssClient {
     /**
      * Create an SSLSocketFactory.
      * <p>
-     * <b>NOTE:</b> This fills the set of expected server certificate set to LavercaSSLTrustManager in <i>global</i> context.
-     * If you instantiate multiple MssClient's, they must have identical TrustStore files.
+     * The server certificate must be one of the truststore's certificates; without a truststore the JVM's default
+     * PKIX check is used. The keystore and the truststore are reloaded when their files change.
      * 
      * @param ksFile Keystore filename
      * @param ksPwd  Keystore password
@@ -256,39 +250,21 @@ public class MssClient {
                                                     final String tsFile, final String tsPwd, final String tsType) 
         throws GeneralSecurityException, IOException 
     {
-        KeyStore    ts = null;
-
-        final ReloadingKeyManager km = new ReloadingKeyManager(ksFile, ksPwd, ksType, ReloadingKeyManager.DEFAULT_CHECK_INTERVAL);
-
-        final SSLContext ctx = SSLContext.getInstance(TLSContextName);
-        
-        if (tsFile != null) {
-            ts = KeyStore.getInstance(tsType);
-            try (InputStream tis = new FileInputStream(tsFile)) {
-                ts.load(tis, tsPwd.toCharArray());
-                List<byte[]> certs = new ArrayList<>();
-                
-                for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
-                    String alias = aliases.nextElement();
-                    if (ts.isKeyEntry(alias)) {
-                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                        if (cert != null) certs.add(cert.getEncoded());
-                    } else if (ts.isCertificateEntry(alias)) {
-                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                        if (cert != null) certs.add(cert.getEncoded());
-                    }
-                }
-    
-                // Note: Following is GLOBAL setting to all MssClient instances!
-                // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
-                LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
+        final ReloadingKeyManager km = (ksFile != null)
+            ? new ReloadingKeyManager(ksFile, ksPwd, ksType, ReloadingKeyManager.DEFAULT_CHECK_INTERVAL)
+            : null;
+        final ReloadingTrustManager tm = (tsFile != null)
+            ? new ReloadingTrustManager(tsFile, tsPwd, tsType, ReloadingTrustManager.DEFAULT_CHECK_INTERVAL, false, null)
+            : null;
+        if (tm != null) {
+            // For callers of the global trust manager, as before 4.0.0; MssClient no longer uses it with this factory
+            final List<byte[]> certs = new ArrayList<>();
+            for (final X509Certificate c : tm.getCertificates()) {
+                certs.add(c.getEncoded());
             }
+            LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
         }
-        
-        TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
-        ctx.init(new KeyManager[] {km}, tms, null);
-        
-        return new ReloadingSSLSocketFactory(ctx, km);
+        return ReloadingSSLSocketFactory.create(TLSContextName, km, tm);
     }
   
     /**

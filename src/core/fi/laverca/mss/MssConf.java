@@ -22,25 +22,20 @@ package fi.laverca.mss;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 
 import fi.laverca.util.IssuerTrustManager;
 import fi.laverca.util.LavercaSSLTrustManager;
 import fi.laverca.util.ReloadingKeyManager;
 import fi.laverca.util.ReloadingSSLSocketFactory;
+import fi.laverca.util.ReloadingTrustManager;
 
 /**
  * Class for reading and passing around the Laverca MSS configuration
@@ -50,6 +45,8 @@ public class MssConf {
     public static final String TRUSTSTORE_FILE = "ssl.truststore.file";
     public static final String TRUSTSTORE_PWD  = "ssl.truststore.password";
     public static final String TRUSTSTORE_TYPE = "ssl.truststore.type";
+    /** How often the truststore file is checked for changes, in seconds; 0 to load it only once. */
+    public static final String TRUSTSTORE_RELOAD_INTERVAL = "ssl.truststore.reload.interval";
     
     public static final String KEYSTORE_FILE   = "ssl.keystore.file";
     public static final String KEYSTORE_PWD    = "ssl.keystore.password";
@@ -87,6 +84,7 @@ public class MssConf {
     private String truststoreFile;
     private String truststorePwd;
     private String truststoreType;
+    private int    truststoreReloadInterval = ReloadingTrustManager.DEFAULT_CHECK_INTERVAL;
     
     private boolean  checkIssuer = false;
     private List<String> msspUri = new ArrayList<>();
@@ -145,6 +143,10 @@ public class MssConf {
         if (reload != null && !reload.isBlank()) {
             conf.setKeystoreReloadInterval(Integer.parseInt(reload.trim()));
         }
+        final String tsReload = p.getProperty(TRUSTSTORE_RELOAD_INTERVAL);
+        if (tsReload != null && !tsReload.isBlank()) {
+            conf.setTruststoreReloadInterval(Integer.parseInt(tsReload.trim()));
+        }
         // Unset means true: before 4.0.0 fromProperties() always turned the issuer check on
         conf.setCheckIssuer(Boolean.parseBoolean(p.getProperty(CHECK_ISSUER, "true")));
         return conf;
@@ -172,28 +174,43 @@ public class MssConf {
      * @return Java Properties containing the configuration
      */
     public Properties getProperties() {
-        Properties p = new Properties();
-        p.put(AP_ID,  this.getApId());
-        p.put(AP_PWD, this.getApPwd());
+        final Properties p = new Properties();
+        put(p, AP_ID,  this.getApId());
+        put(p, AP_PWD, this.getApPwd());
         
-        p.put(SIGNATURE_URL,    this.getSignatureUrl());
-        p.put(STATUS_URL,       this.getStatusUrl());
-        p.put(RECEIPT_URL,      this.getReceiptUrl());
-        p.put(REGISTRATION_URL, this.getRegistrationUrl());
-        p.put(PROFILE_URL,      this.getProfileUrl());
-        p.put(HANDSHAKE_URL,    this.getHandshakeUrl());
+        put(p, SIGNATURE_URL,    this.getSignatureUrl());
+        put(p, STATUS_URL,       this.getStatusUrl());
+        put(p, RECEIPT_URL,      this.getReceiptUrl());
+        put(p, REGISTRATION_URL, this.getRegistrationUrl());
+        put(p, PROFILE_URL,      this.getProfileUrl());
+        put(p, HANDSHAKE_URL,    this.getHandshakeUrl());
         
-        p.put(TRUSTSTORE_FILE, this.getTruststore());
-        p.put(TRUSTSTORE_PWD,  this.getTruststorePwd());
-        p.put(TRUSTSTORE_TYPE, this.getTruststoreType());
+        put(p, TRUSTSTORE_FILE, this.getTruststore());
+        put(p, TRUSTSTORE_PWD,  this.getTruststorePwd());
+        put(p, TRUSTSTORE_TYPE, this.getTruststoreType());
         
-        p.put(KEYSTORE_FILE, this.getKeystore());
-        p.put(KEYSTORE_PWD,  this.getKeystorePwd());
-        p.put(KEYSTORE_TYPE, this.getKeystoreType());
-        p.put(KEYSTORE_RELOAD_INTERVAL, String.valueOf(this.getKeystoreReloadInterval()));
-        p.put(MSSP_URI,      String.join(",", this.getMsspUri()));
+        put(p, KEYSTORE_FILE, this.getKeystore());
+        put(p, KEYSTORE_PWD,  this.getKeystorePwd());
+        put(p, KEYSTORE_TYPE, this.getKeystoreType());
+        put(p, KEYSTORE_RELOAD_INTERVAL, String.valueOf(this.getKeystoreReloadInterval()));
+        put(p, TRUSTSTORE_RELOAD_INTERVAL, String.valueOf(this.getTruststoreReloadInterval()));
+        put(p, MSSP_URI,      this.getMsspUri().isEmpty() ? null : String.join(",", this.getMsspUri()));
+        put(p, CHECK_ISSUER,  String.valueOf(this.isCheckIssuer()));
 
         return p;
+    }
+
+    /**
+     * Puts a value unless it is null: Properties refuses null values.
+     *
+     * @param p the properties
+     * @param key the key
+     * @param value the value, or null to leave the key out
+     */
+    private static void put(final Properties p, final String key, final String value) {
+        if (value != null) {
+            p.setProperty(key, value);
+        }
     }
 
     public String getProfileUrl() {
@@ -210,68 +227,33 @@ public class MssConf {
     
     /**
      * Create a new SSLSocketFactory from this configuration.
-     * Its client key comes from a {@link ReloadingKeyManager} that follows changes to the keystore file.
+     * <p>
+     * The client key comes from a {@link ReloadingKeyManager} over the keystore, if one is set. The server is checked
+     * by a {@link ReloadingTrustManager} over the truststore, if one is set, else by the JVM's default PKIX check.
+     * Both follow changes to their files.
+     *
      * @return SSLSocketFactory
      * @throws IOException if the keystore or truststore cannot be read
      * @throws GeneralSecurityException if there is any security exception related to accessing the keystore or truststore
      */
     public SSLSocketFactory createSSLFactory() throws GeneralSecurityException, IOException {
-        
-        final String ksType = this.getKeystoreType();
-        final String ksFile = this.getKeystore();
-        final String ksPwd  = this.getKeystorePwd();
-        final String tsType = this.getTruststoreType();
-        final String tsFile = this.getTruststore();
-        final String tsPwd  = this.getTruststorePwd();
-        
-        KeyStore    ts = null;
-
-        final ReloadingKeyManager km = new ReloadingKeyManager(ksFile, ksPwd, ksType, this.getKeystoreReloadInterval());
-        final KeyManager[] kms = new KeyManager[] {km};
-
-        final SSLContext ctx = SSLContext.getInstance(MssClient.getTLSContextName());
-        
-        if (tsFile != null) {
-            ts = KeyStore.getInstance(tsType);
-            try (InputStream tis = new FileInputStream(tsFile)) {
-                ts.load(tis, tsPwd.toCharArray());
-                List<byte[]> certs = new ArrayList<>();
-                List<X509Certificate> _certs = new ArrayList<>();
-                
-                for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
-                    String alias = aliases.nextElement();
-                    if (ts.isKeyEntry(alias)) {
-                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                        if (cert != null) {
-                            certs.add(cert.getEncoded());
-                            _certs.add(cert);
-                        }
-                    } else if (ts.isCertificateEntry(alias)) {
-                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                        if (cert != null) {
-                            certs.add(cert.getEncoded());
-                            _certs.add(cert);
-                        }
-                    }
-                }
-    
-                // Note: Following is GLOBAL setting to all MssClient instances!
-                // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
-                LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
-                IssuerTrustManager.getInstance().setIssuerCerts(_certs);
+        final ReloadingKeyManager km = (this.getKeystore() != null)
+            ? new ReloadingKeyManager(this.getKeystore(), this.getKeystorePwd(), this.getKeystoreType(), this.getKeystoreReloadInterval())
+            : null;
+        final ReloadingTrustManager tm = (this.getTruststore() != null)
+            ? new ReloadingTrustManager(this.getTruststore(), this.getTruststorePwd(), this.getTruststoreType(),
+                                        this.getTruststoreReloadInterval(), this.isCheckIssuer(), this.getMsspUri())
+            : null;
+        if (tm != null) {
+            // For callers of the global trust managers, as before 4.0.0; MssClient no longer uses them with this factory
+            final List<byte[]> certs = new ArrayList<>();
+            for (final X509Certificate c : tm.getCertificates()) {
+                certs.add(c.getEncoded());
             }
+            LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
+            IssuerTrustManager.getInstance().setIssuerCerts(new ArrayList<>(tm.getCertificates()));
         }
-        
-        // Use issuer trust manager
-        if (this.isCheckIssuer()) {
-            TrustManager[] tms = new TrustManager[] {IssuerTrustManager.getInstance()};
-            ctx.init(kms, tms, null);
-        } else {
-            TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
-            ctx.init(kms, tms, null);
-        }
-        
-        return new ReloadingSSLSocketFactory(ctx, km);
+        return ReloadingSSLSocketFactory.create(MssClient.getTLSContextName(), km, tm);
     }
 
     public String getTruststore() {
@@ -410,6 +392,24 @@ public class MssConf {
      */
     public void setKeystoreReloadInterval(final int seconds) {
         this.keystoreReloadInterval = Math.max(seconds, 0);
+    }
+
+    /**
+     * Get how often the truststore file is checked for changes.
+     *
+     * @return the interval in seconds; 0 when the truststore is loaded only once
+     */
+    public int getTruststoreReloadInterval() {
+        return this.truststoreReloadInterval;
+    }
+
+    /**
+     * Set how often the truststore file is checked for changes; a changed file is reloaded.
+     *
+     * @param seconds the interval in seconds, default 30; 0 to load the truststore only once
+     */
+    public void setTruststoreReloadInterval(final int seconds) {
+        this.truststoreReloadInterval = Math.max(seconds, 0);
     }
 
     /**

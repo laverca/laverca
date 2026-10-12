@@ -22,48 +22,106 @@ package fi.laverca.util;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Collections;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 /**
- * TLS socket factory whose client key comes from a {@link ReloadingKeyManager}.
- * MssClient calls {@link #refresh()} before each call and rebuilds its connection pool when the client key changes.
+ * TLS socket factory whose client key comes from a {@link ReloadingKeyManager} and whose server check from a
+ * {@link ReloadingTrustManager}, or from the JVM's default PKIX check without a truststore.
+ * MssClient calls {@link #refresh()} before each call and rebuilds its connection pool when the key or the trusted certificates change.
  */
 public class ReloadingSSLSocketFactory extends SSLSocketFactory {
 
-    private final SSLContext          context;
-    private final SSLSocketFactory    delegate;
-    private final ReloadingKeyManager keyManager;
+    private final SSLContext            context;
+    private final SSLSocketFactory      delegate;
+    private final ReloadingKeyManager   keyManager;
+    private final ReloadingTrustManager trustManager;
 
-    /** The key generation whose TLS sessions the context's session cache holds. */
+    /** The key and trust generation whose TLS sessions the context's session cache holds. */
     private long sessionGeneration;
 
     /**
-     * Wraps the socket factory of an SSLContext initialized with the given key manager.
+     * Creates the SSLContext and its socket factory.
      *
-     * @param context the SSLContext
-     * @param keyManager the key manager the SSLContext uses
+     * @param protocol the SSLContext protocol, e.g. TLSv1.3
+     * @param keyManager the client key; null to send no client certificate
+     * @param trustManager the server check; null for the JVM's default PKIX check
+     * @return the socket factory
+     * @throws GeneralSecurityException if the SSLContext cannot be created
      */
-    public ReloadingSSLSocketFactory(final SSLContext context, final ReloadingKeyManager keyManager) {
-        this.context           = context;
-        this.delegate          = context.getSocketFactory();
-        this.keyManager        = keyManager;
-        this.sessionGeneration = keyManager.getGeneration();
+    public static ReloadingSSLSocketFactory create(final String protocol,
+                                                   final ReloadingKeyManager keyManager,
+                                                   final ReloadingTrustManager trustManager)
+        throws GeneralSecurityException
+    {
+        final SSLContext ctx = SSLContext.getInstance(protocol);
+        final KeyManager[] kms = (keyManager != null) ? new KeyManager[] {keyManager} : null;
+        final TrustManager tm = (trustManager != null) ? trustManager : defaultTrustManager();
+        ctx.init(kms, new TrustManager[] {tm}, null);
+        return new ReloadingSSLSocketFactory(ctx, keyManager, trustManager);
     }
 
     /**
-     * Refreshes the key manager. When the client key changed, also drops the cached TLS sessions:
-     * a resumed session would keep authenticating with the old client certificate.
+     * Gets the JVM's default PKIX trust manager, which checks the server against the JVM's CA certificates.
      *
-     * @return the generation of the client key in use
+     * @return the trust manager
+     * @throws GeneralSecurityException if there is none
+     */
+    public static X509TrustManager defaultTrustManager() throws GeneralSecurityException {
+        final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init((KeyStore) null);
+        for (final TrustManager tm : tmf.getTrustManagers()) {
+            if (tm instanceof X509TrustManager x) {
+                return x;
+            }
+        }
+        throw new GeneralSecurityException("No default X509TrustManager");
+    }
+
+    /**
+     * Wraps the socket factory of an SSLContext initialized with the given managers.
+     *
+     * @param context the SSLContext
+     * @param keyManager the key manager the SSLContext uses; null for none
+     * @param trustManager the trust manager the SSLContext uses; null if it is not a reloading one
+     */
+    public ReloadingSSLSocketFactory(final SSLContext context, final ReloadingKeyManager keyManager, final ReloadingTrustManager trustManager) {
+        this.context           = context;
+        this.delegate          = context.getSocketFactory();
+        this.keyManager        = keyManager;
+        this.trustManager      = trustManager;
+        this.sessionGeneration = this.generation();
+    }
+
+    private long generation() {
+        return ((this.keyManager != null) ? this.keyManager.getGeneration() : 0)
+             + ((this.trustManager != null) ? this.trustManager.getGeneration() : 0);
+    }
+
+    /**
+     * Refreshes the key and trust managers. When either changed, also drops the cached TLS sessions:
+     * a resumed session would skip the new client certificate and the new server check.
+     *
+     * @return a counter that changes whenever the client key or the trusted certificates change
      */
     public synchronized long refresh() {
-        this.keyManager.refresh();
-        final long generation = this.keyManager.getGeneration();
+        if (this.keyManager != null) {
+            this.keyManager.refresh();
+        }
+        if (this.trustManager != null) {
+            this.trustManager.refresh();
+        }
+        final long generation = this.generation();
         if (generation != this.sessionGeneration) {
             final SSLSessionContext sessions = this.context.getClientSessionContext();
             for (final byte[] id : Collections.list(sessions.getIds())) {
@@ -80,10 +138,19 @@ public class ReloadingSSLSocketFactory extends SSLSocketFactory {
     /**
      * Gets the key manager that chooses the client key.
      *
-     * @return the key manager
+     * @return the key manager, or null if no client certificate is sent
      */
     public ReloadingKeyManager getKeyManager() {
         return this.keyManager;
+    }
+
+    /**
+     * Gets the trust manager that checks the server.
+     *
+     * @return the trust manager, or null if the JVM's default PKIX check is used
+     */
+    public ReloadingTrustManager getTrustManager() {
+        return this.trustManager;
     }
 
     @Override

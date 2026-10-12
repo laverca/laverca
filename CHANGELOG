@@ -13,8 +13,12 @@ Laverca Changelog
       MssClient setters for TLS, proxy, credentials, timeouts and pool size take effect on the next call: the connection pool is rebuilt and the old one closes after its calls in progress
       Client key from a reloading keystore (MssConf, ssl.keystore.reload.interval, default 30 s): a changed file is reloaded,
         the oldest unexpired key is used, an expired key is replaced by the next one; with no newer key the last one stays in use
+      Server check from a reloading truststore (ssl.truststore.reload.interval, default 30 s), per client instead of thread-local:
+        exact certificate match, or with check.issuer the issuer signature and an mssp.uri SubjectAltName;
+        without a truststore the JVM's default PKIX check is used (before 4.0.0 any server certificate was accepted)
       Fixed the JAXB namespace prefix mapper (e.g. "mss" prefix) after the Jakarta change
       Fixed MssConf check.issuer: fromProperties() parses the value (it read a system property; unset still means true) and setCheckIssuer() honours its argument (it always set true)
+      Fixed MssConf.getProperties() failing with NullPointerException on unset values; it now also writes check.issuer
       Updated BouncyCastle to 1.85 (jdk18on: bcprov, bcpkix, bcutil); requires Java 21
       Removed the xml-apis jars: Java 21 provides those APIs
       Added a Maven pom.xml for the core library
