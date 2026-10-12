@@ -6,7 +6,7 @@
   <!-- Make sure the Java runtime system classpath does not mess compilation -->
   <property name="build.sysclasspath" value="last" />
 
-  <property name="project-version" value="3.0.0" />
+  <property name="project-version" value="4.0.0" />
   <property name="project-name"    value="laverca" />
 
   <property name="build"     location="build" />
@@ -35,16 +35,22 @@
   <property name="datatypes-lib" location="${build}/laverca-datatypes.jar" />
   <property name="examples-lib"  location="${build}/laverca-examples.jar" />
 
+  <!-- JAXB runtime and Jakarta Activation (also needed by Axis2), shipped in dist/libs -->
+  <patternset id="jaxb-runtime-jars">
+    <include name="istack-commons-runtime-4.2.0.jar" />
+    <include name="jakarta.activation-api-2.1.4.jar" />
+    <include name="jakarta.xml.bind-api-4.0.5.jar" />
+    <include name="jaxb-core-4.0.9.jar" />
+    <include name="jaxb-runtime-4.0.9.jar" />
+  </patternset>
+
   <path id="laverca-libs">
     <fileset dir="${libs}">
       <include name="*.jar" />
-      <exclude name="axis14methics.jar" />
     </fileset>
-    <pathelement location="${jlibs}/istack-commons-runtime-4.2.0.jar" />
-    <pathelement location="${jlibs}/jakarta.xml.bind-api-4.0.5.jar" />
-    <pathelement location="${jlibs}/jaxb-core-4.0.9.jar" />
-    <pathelement location="${jlibs}/jaxb-runtime-4.0.9.jar" />
-    <pathelement location="${libs}/axis14methics.jar" />
+    <fileset dir="${jlibs}">
+      <patternset refid="jaxb-runtime-jars" />
+    </fileset>
   </path>
 
   <path id="anttasks.classpath">
@@ -57,7 +63,6 @@
     <fileset dir="${libs}/jaxb-ri-409">
       <include name="*.jar" />
     </fileset>
-    <pathelement location="${libs}/xml-apis-2.11.0-20110622.jar" />
   </path>
 
 
@@ -133,6 +138,7 @@
            deprecation="true"
            destdir="${build}/core"
            encoding="UTF-8"
+           release="21"
            includeantruntime="false">
       <src path="${core-src}"/>
       <src path="${datatypes-src}"/>
@@ -146,15 +152,16 @@
         <include name="**" />
       </fileset>
       <fileset dir="${core-src}">
-        <include name="laverca-client-config.wsdd" />
+        <include name="**/*.xml" />
       </fileset>
     </jar>
 
 
-    <copy todir="${dist}/libs" file="${jlibs}/istack-commons-runtime-4.2.0.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/jakarta.xml.bind-api-4.0.5.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/jaxb-core-4.0.9.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/jaxb-runtime-4.0.9.jar" />
+    <copy todir="${dist}/libs">
+      <fileset dir="${jlibs}">
+        <patternset refid="jaxb-runtime-jars" />
+      </fileset>
+    </copy>
 
   </target>
 
@@ -179,10 +186,11 @@
     <copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
     <copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
 
-    <copy todir="${dist}/libs" file="${jlibs}/istack-commons-runtime-4.2.0.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/jakarta.xml.bind-api-4.0.5.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/jaxb-core-4.0.9.jar" />
-    <copy todir="${dist}/libs" file="${jlibs}/jaxb-runtime-4.0.9.jar" />
+    <copy todir="${dist}/libs">
+      <fileset dir="${jlibs}">
+        <patternset refid="jaxb-runtime-jars" />
+      </fileset>
+    </copy>
     
     <copy todir="${dist}" file="${core-lib}" />
     

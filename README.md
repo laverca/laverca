@@ -20,14 +20,25 @@ specified in Finland.
 
 Laverca API
 
-    Java 11+ (21+)
+    Java 21+
 
     JDK SE
         http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-    Laverca requires the libraries found under libs directory in the release root.
+    Laverca requires the libraries found under libs directory in the release root:
+    Apache Axis2 2.0.1 (axis2-kernel) with Axiom 2.0.0 and their dependencies
+    (neethi, wsdl4j, xmlschema-core, commons-logging, commons-io),
+    Apache HttpClient 5.6 / HttpCore 5.4 (with slf4j-api),
+    BouncyCastle (bcprov, bcpkix, bcutil; jdk18on),
+    and JAXB 4 (jakarta.xml.bind) with Jakarta Activation.
     All of them should be possible to update to newer versions of the same major
-    release number, except for the axis14methics.jar  which must be this version.
+    release number.
+
+    Laverca 4 no longer uses Axis 1.4. SOAP faults are thrown as
+    fi.laverca.LavercaSoapFaultException (an IOException); use
+    ErrorCodes.<CODE>.is(fault) to check the ETSI status code.
+    An Axis2 client engine configuration can be supplied as
+    laverca-axis2-client.xml on the classpath; by default a built-in one is used.
 
     Source branch "preJAXB" is possible to use on Java6.
     It is our old version.
@@ -35,9 +46,6 @@ Laverca API
     Source branch "preJava11" is before Java11+ work
 
     Laverca does not use Servlet API (callbacks), that layer the user must implement.
-    But also the javax -> jakarta changes do not affect here.
-    Should the JAXB changes (javax.xml.bind -> jakarta.xml.bind) be done, that will
-    have some visible effect on Laverca.
 
 Examples
   

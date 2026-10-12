@@ -32,13 +32,15 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
 import fi.laverca.util.IssuerTrustManager;
 import fi.laverca.util.LavercaSSLTrustManager;
+import fi.laverca.util.ReloadingKeyManager;
+import fi.laverca.util.ReloadingSSLSocketFactory;
 
 /**
  * Class for reading and passing around the Laverca MSS configuration
@@ -52,10 +54,13 @@ public class MssConf {
     public static final String KEYSTORE_FILE   = "ssl.keystore.file";
     public static final String KEYSTORE_PWD    = "ssl.keystore.password";
     public static final String KEYSTORE_TYPE   = "ssl.keystore.type";
+    /** How often the keystore file is checked for changes, in seconds; 0 to load it only once. */
+    public static final String KEYSTORE_RELOAD_INTERVAL = "ssl.keystore.reload.interval";
     
     public static final String AP_ID           = "ap.id";
     public static final String AP_PWD          = "ap.password";
     public static final String MSSP_URI        = "mssp.uri";
+    /** Match the server certificate to its issuer in the truststore instead of to the exact certificate; default true. */
     public static final String CHECK_ISSUER    = "check.issuer";
     
     public static final String SIGNATURE_URL       = "mssp.signature.url";
@@ -77,6 +82,7 @@ public class MssConf {
     private String keystoreFile;
     private String keystorePwd;
     private String keystoreType;
+    private int    keystoreReloadInterval = ReloadingKeyManager.DEFAULT_CHECK_INTERVAL;
     
     private String truststoreFile;
     private String truststorePwd;
@@ -135,7 +141,12 @@ public class MssConf {
         conf.setKeystore(p.getProperty(KEYSTORE_FILE),
                          p.getProperty(KEYSTORE_PWD),
                          p.getProperty(KEYSTORE_TYPE));
-        conf.setCheckIssuer(Boolean.getBoolean(p.getProperty(CHECK_ISSUER)));
+        final String reload = p.getProperty(KEYSTORE_RELOAD_INTERVAL);
+        if (reload != null && !reload.isBlank()) {
+            conf.setKeystoreReloadInterval(Integer.parseInt(reload.trim()));
+        }
+        // Unset means true: before 4.0.0 fromProperties() always turned the issuer check on
+        conf.setCheckIssuer(Boolean.parseBoolean(p.getProperty(CHECK_ISSUER, "true")));
         return conf;
     }
     
@@ -179,6 +190,7 @@ public class MssConf {
         p.put(KEYSTORE_FILE, this.getKeystore());
         p.put(KEYSTORE_PWD,  this.getKeystorePwd());
         p.put(KEYSTORE_TYPE, this.getKeystoreType());
+        p.put(KEYSTORE_RELOAD_INTERVAL, String.valueOf(this.getKeystoreReloadInterval()));
         p.put(MSSP_URI,      String.join(",", this.getMsspUri()));
 
         return p;
@@ -197,7 +209,8 @@ public class MssConf {
     }
     
     /**
-     * Create a new SSLSocketFactory from this configuration
+     * Create a new SSLSocketFactory from this configuration.
+     * Its client key comes from a {@link ReloadingKeyManager} that follows changes to the keystore file.
      * @return SSLSocketFactory
      * @throws IOException if the keystore or truststore cannot be read
      * @throws GeneralSecurityException if there is any security exception related to accessing the keystore or truststore
@@ -211,59 +224,54 @@ public class MssConf {
         final String tsFile = this.getTruststore();
         final String tsPwd  = this.getTruststorePwd();
         
-        KeyStore    ks = KeyStore.getInstance(ksType);
         KeyStore    ts = null;
 
-        try (InputStream kis = new FileInputStream(ksFile)) {
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            
-            ks.load(kis, ksPwd.toCharArray());
-            kmf.init(ks, ksPwd.toCharArray());
+        final ReloadingKeyManager km = new ReloadingKeyManager(ksFile, ksPwd, ksType, this.getKeystoreReloadInterval());
+        final KeyManager[] kms = new KeyManager[] {km};
 
-            final SSLContext ctx = SSLContext.getInstance(MssClient.getTLSContextName());
-            
-            if (tsFile != null) {
-                ts = KeyStore.getInstance(tsType);
-                try (InputStream tis = new FileInputStream(tsFile)) {
-                    ts.load(tis, tsPwd.toCharArray());
-                    List<byte[]> certs = new ArrayList<>();
-                    List<X509Certificate> _certs = new ArrayList<>();
-                    
-                    for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
-                        String alias = aliases.nextElement();
-                        if (ts.isKeyEntry(alias)) {
-                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                            if (cert != null) {
-                                certs.add(cert.getEncoded());
-                                _certs.add(cert);
-                            }
-                        } else if (ts.isCertificateEntry(alias)) {
-                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                            if (cert != null) {
-                                certs.add(cert.getEncoded());
-                                _certs.add(cert);
-                            }
+        final SSLContext ctx = SSLContext.getInstance(MssClient.getTLSContextName());
+        
+        if (tsFile != null) {
+            ts = KeyStore.getInstance(tsType);
+            try (InputStream tis = new FileInputStream(tsFile)) {
+                ts.load(tis, tsPwd.toCharArray());
+                List<byte[]> certs = new ArrayList<>();
+                List<X509Certificate> _certs = new ArrayList<>();
+                
+                for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
+                    String alias = aliases.nextElement();
+                    if (ts.isKeyEntry(alias)) {
+                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                        if (cert != null) {
+                            certs.add(cert.getEncoded());
+                            _certs.add(cert);
+                        }
+                    } else if (ts.isCertificateEntry(alias)) {
+                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                        if (cert != null) {
+                            certs.add(cert.getEncoded());
+                            _certs.add(cert);
                         }
                     }
-    
-                    // Note: Following is GLOBAL setting to all MssClient instances!
-                    // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
-                    LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
-                    IssuerTrustManager.getInstance().setIssuerCerts(_certs);
                 }
+    
+                // Note: Following is GLOBAL setting to all MssClient instances!
+                // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
+                LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
+                IssuerTrustManager.getInstance().setIssuerCerts(_certs);
             }
-            
-            // Use issuer trust manager
-            if (this.isCheckIssuer()) {
-                TrustManager[] tms = new TrustManager[] {IssuerTrustManager.getInstance()};
-                ctx.init(kmf.getKeyManagers(), tms, null);
-            } else {
-                TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
-                ctx.init(kmf.getKeyManagers(), tms, null);
-            }
-            
-            return ctx.getSocketFactory();
         }
+        
+        // Use issuer trust manager
+        if (this.isCheckIssuer()) {
+            TrustManager[] tms = new TrustManager[] {IssuerTrustManager.getInstance()};
+            ctx.init(kms, tms, null);
+        } else {
+            TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
+            ctx.init(kms, tms, null);
+        }
+        
+        return new ReloadingSSLSocketFactory(ctx, km);
     }
 
     public String getTruststore() {
@@ -386,6 +394,25 @@ public class MssConf {
     }
     
     /**
+     * Get how often the keystore file is checked for changes.
+     *
+     * @return the interval in seconds; 0 when the keystore is loaded only once
+     */
+    public int getKeystoreReloadInterval() {
+        return this.keystoreReloadInterval;
+    }
+
+    /**
+     * Set how often the keystore file is checked for changes. A changed file is reloaded, and the oldest unexpired key
+     * in it becomes the client key; a key that expires is replaced by the next one also without a file change.
+     *
+     * @param seconds the interval in seconds, default 30; 0 to load the keystore only once
+     */
+    public void setKeystoreReloadInterval(final int seconds) {
+        this.keystoreReloadInterval = Math.max(seconds, 0);
+    }
+
+    /**
      * Set the truststore
      * @param file Truststore file
      * @param pwd  Truststore password
@@ -411,7 +438,7 @@ public class MssConf {
      * @param checkIssuer true to match issuer to truststore
      */
     public void setCheckIssuer(boolean checkIssuer) {
-        this.checkIssuer = true;
+        this.checkIssuer = checkIssuer;
     }
 
     /**

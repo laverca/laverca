@@ -19,6 +19,13 @@
     <fileset dir="${ex-libs}">
       <include name="*.jar"/>
     </fileset>
+    <fileset dir="${libs}/jaxb-ri-409">
+      <include name="istack-commons-runtime-4.2.0.jar"/>
+      <include name="jakarta.activation-api-2.1.4.jar"/>
+      <include name="jakarta.xml.bind-api-4.0.5.jar"/>
+      <include name="jaxb-core-4.0.9.jar"/>
+      <include name="jaxb-runtime-4.0.9.jar"/>
+    </fileset>
     <pathelement location="${core-lib}" />
     <pathelement location="${datatypes-lib}" />
   </path>
@@ -36,6 +43,7 @@
            deprecation="true"
            destdir="${build}/examples" 
            encoding="ISO-8859-15"
+           release="21"
            includeantruntime="false">
       <src path="${examples-src}" />
       <classpath>

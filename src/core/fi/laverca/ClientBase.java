@@ -47,8 +47,6 @@ import fi.laverca.util.LavercaContext;
 import fi.laverca.util.SynchHandler;
 import fi.laverca.util.SynchHandler.SynchHandlerException;
 
-import methics.axis.AxisFault;
-import methics.axis.EngineConfiguration;
 
 /**
  * Abstract base class for ETSI TS 102 204 Signature operations
@@ -191,7 +189,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
             _sigResp = this.mssClient.send(req.sigReq, _context);
             req.sigResp = _sigResp;
             req.context = _context;
-        } catch (AxisFault af) {
+        } catch (LavercaSoapFaultException af) {
             handler.onError(req, af);
             return req;
         } catch (IOException ioe) {
@@ -384,7 +382,7 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
                             break;
                         }
 
-                    } catch (AxisFault af) {
+                    } catch (LavercaSoapFaultException af) {
                         handler.onError(req, af);
                         break;
                     } catch (IOException ioe) {
@@ -498,14 +496,6 @@ public abstract class ClientBase<Req extends MssRequest<Resp>, Resp extends MssR
      */
     public void setSSLSocketFactory(final SSLSocketFactory ssf) {
         this.mssClient.setSSLSocketFactory(ssf);
-    }
-    
-    /**
-     * Set a custom Axis EngineConfiguration
-     * @param conf Axis EngineConfiguration
-     */
-    public void setEngineConfiguration(final EngineConfiguration conf) {
-        this.mssClient.setEngineConfiguration(conf);
     }
     
     /**

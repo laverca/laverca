@@ -19,11 +19,10 @@
 
 package fi.laverca;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.namespace.QName;
-
-import methics.axis.AxisFault;
 
 /**
  * MSS Error Codes
@@ -32,12 +31,15 @@ import methics.axis.AxisFault;
  * <li>ETSI TS 102 204
  * <li>MSS FiCom Implementation Guideline v2.1
  * </ul>
- * <p>This class can be used to check whether the received Fault is a specific error.
+ * <p>This class can be used to check whether the received fault is a specific error.
  * <p>For example:
  * <pre>
  * {@code
- * AxisFault af = new AxisFault();
- * ErrorCodes.WRONG_PARAM.is(af); // false
+ * try {
+ *     client.send(req);
+ * } catch (LavercaSoapFaultException fault) {
+ *     if (ErrorCodes.WRONG_PARAM.is(fault)) { ... }
+ * }
  * }
  * </pre>
  */
@@ -151,25 +153,37 @@ public class ErrorCodes {
         }
 
         /**
-         * Check if this StatusCode matches the given AxisFault
-         * @param af AxisFault
-         * @return true 
+         * Check if this StatusCode matches the given fault.
+         *
+         * @param t a {@link LavercaSoapFaultException}; anything else, or null, never matches
+         * @return true if the fault's first subcode is this status code
          */
-        public boolean is(final AxisFault af) {
-            if(af == null) {
-                return false;
-            }
-            List<QName> subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.size() == 0) {
+        public boolean is(final Throwable t) {
+            final List<QName> subcodes = subcodesOf(t);
+            if (subcodes.isEmpty()) {
                 return false;
             }
             return subcodeMatch(this.primaryCode, subcodes.get(0));
         }
-        
+
         /**
-         * Match the {@link StatusCode#primaryCode} to the AxisFault subcode QName
+         * Gets the subcodes of a fault.
+         *
+         * @param t a {@link LavercaSoapFaultException}, or anything else
+         * @return the fault's subcodes, or an empty list if {@code t} is no fault
+         */
+        protected static List<QName> subcodesOf(final Throwable t) {
+            if (t instanceof LavercaSoapFaultException fault) {
+                return fault.getFaultSubCodes();
+            }
+            return Collections.emptyList();
+        }
+
+        /**
+         * Match the {@link StatusCode#primaryCode} to a fault subcode QName.
+         *
          * @param primaryCode Primary code of a {@link StatusCode} object
-         * @param subcode QName of the AxisFault subcode element
+         * @param subcode QName of the fault subcode element
          * @return true if the codes match
          */
         protected boolean subcodeMatch(final int primaryCode, 
@@ -193,9 +207,9 @@ public class ErrorCodes {
         }
         
         @Override
-        public boolean is(final AxisFault af) {
-            List<QName> subcodes = af.getFaultSubCodes();
-            if(subcodes == null || subcodes.size() < 2) {
+        public boolean is(final Throwable t) {
+            final List<QName> subcodes = subcodesOf(t);
+            if (subcodes.size() < 2) {
                 return false;
             }
             return subcodeMatch(this.primaryCode,   subcodes.get(0)) &&

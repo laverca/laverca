@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Maven build of the Laverca core library; build.xml stays the build for the release package and examples -->
+  <groupId>fi.laverca</groupId>
+  <artifactId>laverca-core</artifactId>
+  <version>4.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>Laverca</name>
+  <description>Java API for requesting signatures from ETSI TS 102 204 mobile signature services</description>
+  <url>https://github.com/laverca/laverca</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/laverca/laverca</url>
+    <connection>scm:git:https://github.com/laverca/laverca.git</connection>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>21</maven.compiler.release>
+
+    <axis2.version>2.0.1</axis2.version>
+    <axiom.version>2.0.0</axiom.version>
+    <httpclient5.version>5.6.4</httpclient5.version>
+    <httpcore5.version>5.4.4</httpcore5.version>
+    <bouncycastle.version>1.85</bouncycastle.version>
+    <bcprov.version>1.85.2</bcprov.version>
+    <jaxb.version>4.0.9</jaxb.version>
+    <jaxb-api.version>4.0.5</jaxb-api.version>
+    <activation.version>2.1.4</activation.version>
+    <slf4j.version>2.0.16</slf4j.version>
+  </properties>
+
+  <!-- Transitive versions that libs/ ships newer than Axis2 and JAXB declare -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.neethi</groupId>
+        <artifactId>neethi</artifactId>
+        <version>3.2.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ws.xmlschema</groupId>
+        <artifactId>xmlschema-core</artifactId>
+        <version>2.3.3</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.istack</groupId>
+        <artifactId>istack-commons-runtime</artifactId>
+        <version>4.2.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- SOAP stack; the kernel's server-side dependencies are excluded, as in libs/ -->
+    <dependency>
+      <groupId>org.apache.axis2</groupId>
+      <artifactId>axis2-kernel</artifactId>
+      <version>${axis2.version}</version>
+      <exclusions>
+        <exclusion><groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId></exclusion>
+        <exclusion><groupId>jakarta.transaction</groupId><artifactId>jakarta.transaction-api</artifactId></exclusion>
+        <exclusion><groupId>jakarta.ws.rs</groupId><artifactId>jakarta.ws.rs-api</artifactId></exclusion>
+        <exclusion><groupId>javax.ws.rs</groupId><artifactId>jsr311-api</artifactId></exclusion>
+        <exclusion><groupId>org.apache.commons</groupId><artifactId>commons-fileupload2-core</artifactId></exclusion>
+        <exclusion><groupId>org.apache.commons</groupId><artifactId>commons-fileupload2-jakarta-servlet6</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons.axiom</groupId>
+      <artifactId>axiom-api</artifactId>
+      <version>${axiom.version}</version>
+      <!-- XPath and MIME multipart parsing: Laverca uses no XPath and gets no MTOM or SwA answers -->
+      <exclusions>
+        <exclusion><groupId>jaxen</groupId><artifactId>jaxen</artifactId></exclusion>
+        <exclusion><groupId>org.apache.james</groupId><artifactId>apache-mime4j-core</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons.axiom</groupId>
+      <artifactId>axiom-impl</artifactId>
+      <version>${axiom.version}</version>
+      <scope>runtime</scope>
+      <!-- Axiom uses the JDK's StAX parser, as with libs/ -->
+      <exclusions>
+        <exclusion><groupId>com.fasterxml.woodstox</groupId><artifactId>woodstox-core</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons.axiom</groupId>
+      <artifactId>axiom-legacy-attachments</artifactId>
+      <version>${axiom.version}</version>
+      <scope>runtime</scope>
+      <!-- Activation data sources for attachments: Laverca sends and gets none -->
+      <exclusions>
+        <exclusion><groupId>org.apache.ws.commons.axiom</groupId><artifactId>axiom-jakarta-activation</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- HTTP transport -->
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>${httpclient5.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+      <artifactId>httpcore5</artifactId>
+      <version>${httpcore5.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+      <artifactId>httpcore5-h2</artifactId>
+      <version>${httpcore5.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <!-- JAXB datatypes -->
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>${jaxb-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>${jaxb.version}</version>
+      <!-- Schema generation and the activation provider: not used at run time -->
+      <exclusions>
+        <exclusion><groupId>org.glassfish.jaxb</groupId><artifactId>txw2</artifactId></exclusion>
+        <exclusion><groupId>org.eclipse.angus</groupId><artifactId>angus-activation</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+      <version>${activation.version}</version>
+    </dependency>
+
+    <!-- Certificates and CMS -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bcprov.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcutil-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/core</sourceDirectory>
+    <resources>
+      <!-- laverca-axis2-default.xml and the other XML resources next to the sources -->
+      <resource>
+        <directory>src/core</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <!-- Same XJC run as build.xml's generate-datatypes -->
+      <plugin>
+        <groupId>org.jvnet.jaxb</groupId>
+        <artifactId>jaxb-maven-plugin</artifactId>
+        <version>4.0.16</version>
+        <executions>
+          <execution>
+            <id>generate-datatypes</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <schemaDirectory>etc/xmlschemas</schemaDirectory>
+          <schemaIncludes>
+            <include>MSS-plus.xsd</include>
+          </schemaIncludes>
+          <bindingDirectory>etc/buildproperties</bindingDirectory>
+          <bindingIncludes>
+            <include>xjc-bindings.xml</include>
+          </bindingIncludes>
+          <extension>true</extension>
+          <!-- build.xml passes -nv: the bundled WS-Security and MSS schemas are not strictly valid -->
+          <strict>false</strict>
+          <noFileHeader>true</noFileHeader>
+          <episode>false</episode>
+          <encoding>UTF-8</encoding>
+          <args>
+            <arg>-npa</arg>
+            <arg>-XexplicitAnnotation</arg>
+            <arg>-Xlocator</arg>
+          </args>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>${jaxb.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>

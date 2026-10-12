@@ -1,6 +1,24 @@
 Laverca Changelog
 =================
 
+    2026-10-12 4.0.0
+      Ported the SOAP client from Methics Axis 1.4 (axis14methics.jar) to Apache Axis2 2.0.1 / Axiom 2.0.0
+        - Same wire format: SOAP 1.2, RPC/literal wrapper elements, SOAPAction "#<operation>"
+        - laverca-client-config.wsdd replaced by an optional laverca-axis2-client.xml
+      Replaced HttpClient 4.5 with HttpClient 5.6 (pooled connections are reused also with a client certificate)
+      SOAP faults are thrown as fi.laverca.LavercaSoapFaultException instead of Axis AxisFault
+        - ErrorCodes.StatusCode.is(Throwable) matches it
+      Removed MssClient/ClientBase.setEngineConfiguration(EngineConfiguration) and LavercaContext.setMessageContext()
+      Added MssClient.setProxySettings() and setHttpCredentials(); LavercaContext records the HTTP status of the answer
+      MssClient setters for TLS, proxy, credentials, timeouts and pool size take effect on the next call: the connection pool is rebuilt and the old one closes after its calls in progress
+      Client key from a reloading keystore (MssConf, ssl.keystore.reload.interval, default 30 s): a changed file is reloaded,
+        the oldest unexpired key is used, an expired key is replaced by the next one; with no newer key the last one stays in use
+      Fixed the JAXB namespace prefix mapper (e.g. "mss" prefix) after the Jakarta change
+      Fixed MssConf check.issuer: fromProperties() parses the value (it read a system property; unset still means true) and setCheckIssuer() honours its argument (it always set true)
+      Updated BouncyCastle to 1.85 (jdk18on: bcprov, bcpkix, bcutil); requires Java 21
+      Removed the xml-apis jars: Java 21 provides those APIs
+      Added a Maven pom.xml for the core library
+
     2026-07-29 3.0
       Matching to forked  Methics axis14methics.jar
 

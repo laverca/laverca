@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.regex.Pattern;
 
-import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-import javax.xml.rpc.ServiceException;
 
 import fi.laverca.LavercaException;
 import fi.laverca.jaxb.mss.DataType;
@@ -59,15 +59,7 @@ import fi.laverca.jaxb.mss.MobileUserType;
 import fi.laverca.jaxb.mss.MssURIType;
 import fi.laverca.jaxb.mss.ObjectFactory;
 import fi.laverca.jaxb.wsssecext.Security;
-import fi.laverca.mss.ws.MSS_HandshakeBindingStub;
-import fi.laverca.mss.ws.MSS_ProfileQueryBindingStub;
-import fi.laverca.mss.ws.MSS_ReceiptBindingStub;
-import fi.laverca.mss.ws.MSS_RegistrationBindingStub;
-import fi.laverca.mss.ws.MSS_SignatureBindingStub;
-import fi.laverca.mss.ws.MSS_SignatureServiceLocator;
-import fi.laverca.mss.ws.MSS_StatusQueryBindingStub;
-import fi.laverca.util.AbstractSoapBindingStub;
-import fi.laverca.util.ComponentsHTTPSender;
+import fi.laverca.mss.ws.LavercaAxis2Client;
 import fi.laverca.util.DTBS;
 import fi.laverca.util.IssuerTrustManager;
 import fi.laverca.util.JMarshallerFactory;
@@ -75,10 +67,8 @@ import fi.laverca.util.LavercaContext;
 import fi.laverca.util.LavercaHttpClient;
 import fi.laverca.util.LavercaSSLTrustManager;
 import fi.laverca.util.ProxySettings;
-
-import methics.axis.AxisFault;
-import methics.axis.EngineConfiguration;
-import methics.axis.configuration.FileProvider;
+import fi.laverca.util.ReloadingKeyManager;
+import fi.laverca.util.ReloadingSSLSocketFactory;
 
 /**
  * A raw ETSI TS 102 204 client object.
@@ -86,8 +76,14 @@ import methics.axis.configuration.FileProvider;
 public class MssClient {
 
     public static ObjectFactory mssObjFactory = new ObjectFactory();
-    
-    public static final String CLIENT_CONFIG_WSDD_FILENAME = "laverca-client-config.wsdd";
+
+    /** XML 1.0 (5th edition) NameStartChar without ':'. */
+    private static final String NCNAME_START =
+        "A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D"
+        + "\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\x{10000}-\\x{EFFFF}";
+    /** xs:NCName: an XML Name without ':'. */
+    private static final Pattern NCNAME =
+        Pattern.compile("[" + NCNAME_START + "][" + NCNAME_START + "\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*");
     
     /**
      * Note: TLSv1.2 is obsolete by 2020..  but it depends upon your Java runtime what you can use.
@@ -102,7 +98,6 @@ public class MssClient {
     private String apPwd = null;
     
     // MSSP AE connection settings
-    private final MSS_SignatureServiceLocator mssService;
     private URL MSSP_SI_URL = null;
     private URL MSSP_RC_URL = null;
     private URL MSSP_HS_URL = null;
@@ -122,7 +117,8 @@ public class MssClient {
     private ProxySettings     proxySettings;
     private SSLSocketFactory  sslSocketFactory;
 
-    private LavercaHttpClient httpClient;
+    /** The current connection pool, built on the first call; null until then and after a setter changed its settings. */
+    private PoolUse pool;
 
     private List<byte[]> expectedServerCerts;
     private List<String> msspUri = new ArrayList<>();
@@ -221,15 +217,6 @@ public class MssClient {
                           msspHandshakeUrl);
 
         MssClient.marshallerInit();
-
-        // Load laverca-client-config.wsdd
-        InputStream wsdd = Thread.currentThread().getContextClassLoader().getResourceAsStream(CLIENT_CONFIG_WSDD_FILENAME);
-        if (wsdd != null) {
-            this.mssService = new MSS_SignatureServiceLocator(new FileProvider(wsdd));
-        } else {
-            this.mssService = new MSS_SignatureServiceLocator();
-        }
-        
     }
     
     /**
@@ -269,45 +256,39 @@ public class MssClient {
                                                     final String tsFile, final String tsPwd, final String tsType) 
         throws GeneralSecurityException, IOException 
     {
-        KeyStore    ks = KeyStore.getInstance(ksType);
         KeyStore    ts = null;
 
-        try (InputStream kis = new FileInputStream(ksFile)) {
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            
-            ks.load(kis, ksPwd.toCharArray());
-            kmf.init(ks, ksPwd.toCharArray());
+        final ReloadingKeyManager km = new ReloadingKeyManager(ksFile, ksPwd, ksType, ReloadingKeyManager.DEFAULT_CHECK_INTERVAL);
 
-            final SSLContext ctx = SSLContext.getInstance(TLSContextName);
-            
-            if (tsFile != null) {
-                ts = KeyStore.getInstance(tsType);
-                try (InputStream tis = new FileInputStream(tsFile)) {
-                    ts.load(tis, tsPwd.toCharArray());
-                    List<byte[]> certs = new ArrayList<>();
-                    
-                    for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
-                        String alias = aliases.nextElement();
-                        if (ts.isKeyEntry(alias)) {
-                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                            if (cert != null) certs.add(cert.getEncoded());
-                        } else if (ts.isCertificateEntry(alias)) {
-                            X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
-                            if (cert != null) certs.add(cert.getEncoded());
-                        }
+        final SSLContext ctx = SSLContext.getInstance(TLSContextName);
+        
+        if (tsFile != null) {
+            ts = KeyStore.getInstance(tsType);
+            try (InputStream tis = new FileInputStream(tsFile)) {
+                ts.load(tis, tsPwd.toCharArray());
+                List<byte[]> certs = new ArrayList<>();
+                
+                for (Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements();) {
+                    String alias = aliases.nextElement();
+                    if (ts.isKeyEntry(alias)) {
+                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                        if (cert != null) certs.add(cert.getEncoded());
+                    } else if (ts.isCertificateEntry(alias)) {
+                        X509Certificate cert = (X509Certificate)ts.getCertificate(alias);
+                        if (cert != null) certs.add(cert.getEncoded());
                     }
-    
-                    // Note: Following is GLOBAL setting to all MssClient instances!
-                    // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
-                    LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
                 }
+    
+                // Note: Following is GLOBAL setting to all MssClient instances!
+                // Only one form of MssClient constructor handles the cert list pickup correctly for future client calls
+                LavercaSSLTrustManager.getInstance().setExpectedServerCerts(certs);
             }
-            
-            TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
-            ctx.init(kmf.getKeyManagers(), tms, null);
-            
-            return ctx.getSocketFactory();
         }
+        
+        TrustManager[] tms = new TrustManager[] {LavercaSSLTrustManager.getInstance()};
+        ctx.init(new KeyManager[] {km}, tms, null);
+        
+        return new ReloadingSSLSocketFactory(ctx, km);
     }
   
     /**
@@ -319,9 +300,8 @@ public class MssClient {
     public static boolean isNCName(final String s) {
         if (s == null) {
             return false;
-        } else {
-            return methics.axis.types.NCName.isValid(s);
         }
+        return NCNAME.matcher(s).matches();
     }
     
     private static synchronized void marshallerInit() {
@@ -724,14 +704,7 @@ public class MssClient {
      */
     public void setConnectionTimeout(final int connTimeout) {
         this.newConnTimeout = connTimeout;
-    }
-
-    /**
-     * Set a custom Axis EngineConfiguration
-     * @param conf Axis EngineConfiguration
-     */
-    public void setEngineConfiguration(final EngineConfiguration conf) {
-        this.mssService.setEngineConfiguration(conf);
+        this.rebuildHttpClient();
     }
 
     /**
@@ -740,6 +713,7 @@ public class MssClient {
      */
     public void setPoolSize(final int poolSize) {
         this.poolSize = poolSize;
+        this.rebuildHttpClient();
     }
 
     /**
@@ -748,38 +722,155 @@ public class MssClient {
      */
     public void setSocketTimeout(final int socketTimeout) {
         this.newSoTimeout = socketTimeout;
+        this.rebuildHttpClient();
     }
 
     /**
-     * Set this socket factory before calling MSS operations,
-     * if you want to e.g. inclusion of your client certificate
-     * on the outgoing calls.
+     * Set the TLS socket factory for the MSS calls, e.g. to send your client certificate.
      *
      * @param ssf Define a SSL SocketFactory with a client side key
      */
     public void setSSLSocketFactory(final SSLSocketFactory ssf) {
         this.sslSocketFactory = ssf;
+        this.rebuildHttpClient();
     }
 
-    private LavercaHttpClient getHttpClient() {
+    /**
+     * Set an HTTP proxy for the MSS calls.
+     *
+     * @param proxySettings proxy host, port and optional credentials; null for none
+     */
+    public void setProxySettings(final ProxySettings proxySettings) {
+        this.proxySettings = proxySettings;
+        this.rebuildHttpClient();
+    }
+
+    /**
+     * Set HTTP Basic authentication credentials for the MSS calls, sent preemptively.
+     * Without them, credentials in the AE URL's user info part are used.
+     *
+     * @param username user name; null for none
+     * @param password password
+     */
+    public void setHttpCredentials(final String username, final String password) {
+        this.newUsername = username;
+        this.newPassword = password;
+        this.rebuildHttpClient();
+    }
+
+    /**
+     * A connection pool and the calls in progress on it.
+     */
+    private static final class PoolUse {
+        final LavercaHttpClient client;
+        /** The client key generation the pool was built with. */
+        final long keyGeneration;
+        int     calls;
+        boolean retired;
+
+        PoolUse(final LavercaHttpClient client, final long keyGeneration) {
+            this.client        = client;
+            this.keyGeneration = keyGeneration;
+        }
+    }
+
+    /**
+     * Gets the current connection pool for a call, building it with the current settings if needed.
+     * A pool whose connections were made with an older client key is retired first.
+     * Each call must be followed by {@link #releaseHttpClient(PoolUse)}.
+     *
+     * @return the pool, with this call counted on it
+     */
+    private PoolUse borrowHttpClient() {
+        final long generation = (this.sslSocketFactory instanceof ReloadingSSLSocketFactory r) ? r.refresh() : 0;
+
+        final PoolUse use;
+        PoolUse toClose = null;
         synchronized (this) {
-            if (this.httpClient == null) {
+            if (this.pool != null && this.pool.keyGeneration != generation) {
+                toClose = this.retirePool();
+            }
+            if (this.pool == null) {
                 // If SSLSocketFactory is set, use it, otherwise use system default
                 SSLSocketFactory ssf = this.sslSocketFactory;
                 if (ssf == null) {
                     ssf = (SSLSocketFactory)SSLSocketFactory.getDefault();
                 }
-                this.httpClient = new LavercaHttpClient("mssClientPool",
-                                                        this.poolSize,
-                                                        this.newConnTimeout,
-                                                        this.newSoTimeout,
-                                                        this.newUsername,
-                                                        this.newPassword,
-                                                        this.proxySettings,
-                                                        ssf);
+                this.pool = new PoolUse(new LavercaHttpClient("mssClientPool",
+                                                                    this.poolSize,
+                                                                    this.newConnTimeout,
+                                                                    this.newSoTimeout,
+                                                                    this.newUsername,
+                                                                    this.newPassword,
+                                                                    this.proxySettings,
+                                                                    ssf),
+                                        generation);
             }
+            this.pool.calls++;
+            use = this.pool;
         }
-        return this.httpClient;
+        if (toClose != null) {
+            closeQuietly(toClose.client);
+        }
+        return use;
+    }
+
+    /**
+     * Ends a call on a pool from {@link #borrowHttpClient()}, closing the pool if it was retired and this was its last call.
+     *
+     * @param use the pool the call used
+     */
+    private void releaseHttpClient(final PoolUse use) {
+        final boolean close;
+        synchronized (this) {
+            use.calls--;
+            close = use.retired && use.calls == 0;
+        }
+        if (close) {
+            closeQuietly(use.client);
+        }
+    }
+
+    /**
+     * Retires the current connection pool after a settings change: the next call builds a new one.
+     * The old pool is closed now, or when its last call in progress ends.
+     */
+    private void rebuildHttpClient() {
+        final PoolUse toClose;
+        synchronized (this) {
+            toClose = this.retirePool();
+        }
+        if (toClose != null) {
+            closeQuietly(toClose.client);
+        }
+    }
+
+    /**
+     * Retires the current connection pool; the caller holds this object's lock.
+     *
+     * @return the old pool if it has no calls in progress and should be closed now, else null
+     */
+    private PoolUse retirePool() {
+        final PoolUse old = this.pool;
+        if (old == null) {
+            return null;
+        }
+        this.pool = null;
+        old.retired = true;
+        return (old.calls == 0) ? old : null;
+    }
+
+    /**
+     * Closes a retired connection pool.
+     *
+     * @param client the pool's client
+     */
+    private static void closeQuietly(final LavercaHttpClient client) {
+        try {
+            client.close();
+        } catch (IOException e) {
+            // Nothing to do: the pool is no longer used
+        }
     }
 
     /**
@@ -815,11 +906,12 @@ public class MssClient {
      * Sends an MSS request.
      *
      * @param req Abstract request type
-     * @param context Context
-     * @throws IOException if a HTTP communication error occurred i.e. a SOAP fault was generated by the <i>local</i> SOAP client stub.
+     * @param context Context, may be null
+     * @return the response
+     * @throws IOException if the call fails; a {@link fi.laverca.LavercaSoapFaultException} for a SOAP fault or a failed connection
      */
     private MessageAbstractType sendMat(final MessageAbstractType req, final LavercaContext context)
-        throws AxisFault, IOException
+        throws IOException
     {
         return this.sendMat(req, context, null);
     }
@@ -828,90 +920,69 @@ public class MssClient {
      * Sends an MSS request.
      *
      * @param req Abstract request type
-     * @param context Context
-     * @param security WSSE security headers
-     * @throws IOException if a HTTP communication error occurred i.e. a SOAP fault was generated by the <i>local</i> SOAP client stub.
+     * @param context Context, may be null
+     * @param security WSSE security header, may be null
+     * @return the response
+     * @throws IOException if the call fails; a {@link fi.laverca.LavercaSoapFaultException} for a SOAP fault or a failed connection
      */
     private MessageAbstractType sendMat(final MessageAbstractType req, final LavercaContext context, final Security security)
-        throws AxisFault, IOException
+        throws IOException
     {
-        AbstractSoapBindingStub port = null;
-        try {
-            Long timeout = null;
+        final String operation;
+        final URL url;
+        final Class<? extends MessageAbstractType> respClass;
+        long timeout = 0;
 
-            if (req instanceof MSSSignatureReq) {
-                timeout = ((MSSSignatureReq)req).getTimeOut();
-                port = (MSS_SignatureBindingStub)this.mssService.getMSS_SignaturePort(this.MSSP_SI_URL);
-            } else if (req instanceof MSSReceiptReq) {
-                port = (MSS_ReceiptBindingStub)this.mssService.getMSS_ReceiptPort(this.MSSP_RC_URL);
-            } else if (req instanceof MSSHandshakeReq) {
-                port = (MSS_HandshakeBindingStub)this.mssService.getMSS_HandshakePort(this.MSSP_HS_URL);
-            } else if (req instanceof MSSStatusReq) {
-                port = (MSS_StatusQueryBindingStub)this.mssService.getMSS_StatusQueryPort(this.MSSP_ST_URL);
-            } else if (req instanceof MSSProfileReq) {
-                port = (MSS_ProfileQueryBindingStub)this.mssService.getMSS_ProfileQueryPort(this.MSSP_PR_URL);
-            } else if (req instanceof MSSRegistrationReq) {
-                port = (MSS_RegistrationBindingStub)this.mssService.getMSS_RegistrationPort(this.MSSP_RG_URL);
+        if (req instanceof MSSSignatureReq sigReq) {
+            operation = "MSS_Signature";
+            url       = this.MSSP_SI_URL;
+            respClass = MSSSignatureResp.class;
+            if (sigReq.getTimeOut() != null) {
+                // ETSI TS 102 204 defines TimeOut in seconds; add 5 seconds to let the backend time out first
+                timeout = sigReq.getTimeOut().longValue() * 1000 + 5000;
             }
+        } else if (req instanceof MSSReceiptReq) {
+            operation = "MSS_Receipt";
+            url       = this.MSSP_RC_URL;
+            respClass = MSSReceiptResp.class;
+        } else if (req instanceof MSSHandshakeReq) {
+            operation = "MSS_Handshake";
+            url       = this.MSSP_HS_URL;
+            respClass = MSSHandshakeResp.class;
+        } else if (req instanceof MSSStatusReq) {
+            operation = "MSS_StatusQuery";
+            url       = this.MSSP_ST_URL;
+            respClass = MSSStatusResp.class;
+        } else if (req instanceof MSSProfileReq) {
+            operation = "MSS_ProfileQuery";
+            url       = this.MSSP_PR_URL;
+            respClass = MSSProfileResp.class;
+        } else if (req instanceof MSSRegistrationReq) {
+            operation = "MSS_Registration";
+            url       = this.MSSP_RG_URL;
+            respClass = MSSRegistrationResp.class;
+        } else {
+            throw new IOException("Invalid request type");
+        }
+        if (timeout == 0 && this.newSoTimeout > 0) {
+            timeout = this.newSoTimeout;
+        }
 
-            if (port == null) {
-                throw new IOException("Invalid request type");
-            }
-            if (timeout != null) {
-                // ETSI TS 102 204 defines TimeOut in seconds instead of milliseconds
-                int _timeout = timeout.intValue()*1000+5000; // Add 5 seconds to let the backend time out first
-                port.setTimeout(_timeout);
-            }
-        } catch (ServiceException se) {
-            throw new IOException(se.getMessage(), se);
-        }
-        try {
-            if (port._getCall() == null) {
-                port._createCall();
-            }
-        } catch (Exception e) {
-            throw new IOException("Could not do port._createCall()", e);
-        }
-
-        // Set tools for each context.
-        port.setProperty(ComponentsHTTPSender.HTTPCLIENT_INSTANCE, this.getHttpClient());
-        if (context != null) {
-            port.setProperty(ComponentsHTTPSender.LAVERCA_CONTEXT, context);
-        }
         LavercaSSLTrustManager.getInstance().setExpectedServerCerts(this.expectedServerCerts);
         // Add MSSP URI as expected SAN
         IssuerTrustManager.getInstance().addExpectedMsspURI(this.msspUri);
         if (req.getMSSPInfo() != null && req.getMSSPInfo().getMSSPID() != null) { 
             IssuerTrustManager.getInstance().addExpectedMsspURI(req.getMSSPInfo().getMSSPID().getURI());
         }
-        
-        MessageAbstractType resp = null;
-        
-        if (port instanceof MSS_SignatureBindingStub) {
-            resp = ((MSS_SignatureBindingStub)port).MSS_Signature((MSSSignatureReq)req);
-        } else if (port instanceof MSS_StatusQueryBindingStub) {
-            resp = ((MSS_StatusQueryBindingStub)port).MSS_StatusQuery((MSSStatusReq)req);
-        } else if (port instanceof MSS_ReceiptBindingStub) {
-            resp = ((MSS_ReceiptBindingStub)port).MSS_Receipt((MSSReceiptReq)req);
-        } else if (port instanceof MSS_HandshakeBindingStub) {
-            resp = ((MSS_HandshakeBindingStub)port).MSS_Handshake((MSSHandshakeReq)req);
-        } else if (port instanceof MSS_ProfileQueryBindingStub) {
-            resp = ((MSS_ProfileQueryBindingStub)port).MSS_ProfileQuery((MSSProfileReq)req);
-        } else if (port instanceof MSS_RegistrationBindingStub) {
-            resp = ((MSS_RegistrationBindingStub)port).MSS_Registration((MSSRegistrationReq)req, security);
-        } else {
-            throw new IOException("Invalid call parameters");
+        final PoolUse pool = this.borrowHttpClient();
+        try {
+            final Object header = (req instanceof MSSRegistrationReq) ? security : null;
+            return LavercaAxis2Client.send(operation, req, respClass, url, pool.client, timeout, header, context);
+        } finally {
+            this.releaseHttpClient(pool);
+            // Clear the expected server certificate set from this thread
+            LavercaSSLTrustManager.getInstance().setExpectedServerCerts(null);
         }
-        
-        if (context != null) {
-            try {
-                context.setMessageContext(port.getMessageContext());
-            } catch (ServiceException e) {
-                throw new IOException("Unable to pass context", e);
-            }
-        }
-        
-        return resp;
     }
 
     /**

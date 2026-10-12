@@ -33,12 +33,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.XMLConstants;
 
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.PropertyException;
 import jakarta.xml.bind.Unmarshaller;
 
 import org.w3c.dom.Element;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
 
@@ -58,7 +60,7 @@ public class JMarshallerFactory {
     private static final String JAXB_CONTEXT_FACTORY_JAXBRI  = "jakarta.xml.bind.JAXBContextFactory";
     //private static final String JAXB_CONTEXT_FACTORY_JAVA8   = "jakarta.xml.bind.context.factory";
     private static final String JAXB_CONTEXT_FACTORY_VALUE   = "org.glassfish.jaxb.runtime.v2.ContextFactory";
-    private static final String JAXB_NAMESPACE_PREFIX_MAPPER = "org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper";
+    private static final String JAXB_NAMESPACE_PREFIX_MAPPER = "org.glassfish.jaxb.namespacePrefixMapper";
 
     /**
      * JAXB RI NamespacePrefixMapper, Jakarta-EE9
@@ -344,6 +346,22 @@ public class JMarshallerFactory {
 
         // Marshall the Jaxb object into the stream (sink)
         m.marshal(value, hand);
+    }
+
+    /**
+     * Marshal given object to a SAX ContentHandler with each namespace declared on the element that uses it,
+     * as Axis 1.4 wrote it, instead of all namespaces of the JAXB context on the root.
+     *
+     * @param value  A JAXB root element object, or a JAXBElement
+     * @param target A SAX ContentHandler receiving the events, e.g. an Axiom SAXResult's handler
+     * @throws JAXBException base type for JAXB exceptions, many possible reasons
+     */
+    public static void marshalWhereUsed(final Object value, final ContentHandler target)
+        throws JAXBException
+    {
+        final Class<?> contextType = (value instanceof JAXBElement<?> je) ? je.getDeclaredType() : value.getClass();
+        final Marshaller m = JMarshallerFactory.createMarshaller(contextType);
+        m.marshal(value, new WhereUsedNamespaceHandler(target));
     }
 
     /**
