@@ -23,7 +23,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 
 import javax.net.ssl.KeyManager;
@@ -32,12 +33,11 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSessionContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 /**
  * TLS socket factory whose client key comes from a {@link ReloadingKeyManager} and whose server check from a
- * {@link ReloadingTrustManager}, or from the JVM's default PKIX check without a truststore.
+ * {@link ReloadingTrustManager}; without a truststore any server certificate is accepted.
  * MssClient calls {@link #refresh()} before each call and rebuilds its connection pool when the key or the trusted certificates change.
  */
 public class ReloadingSSLSocketFactory extends SSLSocketFactory {
@@ -55,7 +55,7 @@ public class ReloadingSSLSocketFactory extends SSLSocketFactory {
      *
      * @param protocol the SSLContext protocol, e.g. TLSv1.3
      * @param keyManager the client key; null to send no client certificate
-     * @param trustManager the server check; null for the JVM's default PKIX check
+     * @param trustManager the server check; null to accept any server certificate
      * @return the socket factory
      * @throws GeneralSecurityException if the SSLContext cannot be created
      */
@@ -66,27 +66,30 @@ public class ReloadingSSLSocketFactory extends SSLSocketFactory {
     {
         final SSLContext ctx = SSLContext.getInstance(protocol);
         final KeyManager[] kms = (keyManager != null) ? new KeyManager[] {keyManager} : null;
-        final TrustManager tm = (trustManager != null) ? trustManager : defaultTrustManager();
+        final TrustManager tm = (trustManager != null) ? trustManager : ACCEPT_ANY;
         ctx.init(kms, new TrustManager[] {tm}, null);
         return new ReloadingSSLSocketFactory(ctx, keyManager, trustManager);
     }
 
     /**
-     * Gets the JVM's default PKIX trust manager, which checks the server against the JVM's CA certificates.
-     *
-     * @return the trust manager
-     * @throws GeneralSecurityException if there is none
+     * Accepts any server certificate: the server check when no truststore is given, as before Laverca 4.0.0.
      */
-    public static X509TrustManager defaultTrustManager() throws GeneralSecurityException {
-        final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init((KeyStore) null);
-        for (final TrustManager tm : tmf.getTrustManagers()) {
-            if (tm instanceof X509TrustManager x) {
-                return x;
-            }
+    private static final X509TrustManager ACCEPT_ANY = new X509TrustManager() {
+        @Override
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+            throw new CertificateException("Client certificates are not accepted: this trust manager is for TLS clients");
         }
-        throw new GeneralSecurityException("No default X509TrustManager");
-    }
+
+        @Override
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType) {
+            // No truststore: any server certificate is accepted
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    };
 
     /**
      * Wraps the socket factory of an SSLContext initialized with the given managers.
@@ -147,7 +150,7 @@ public class ReloadingSSLSocketFactory extends SSLSocketFactory {
     /**
      * Gets the trust manager that checks the server.
      *
-     * @return the trust manager, or null if the JVM's default PKIX check is used
+     * @return the trust manager, or null if any server certificate is accepted
      */
     public ReloadingTrustManager getTrustManager() {
         return this.trustManager;

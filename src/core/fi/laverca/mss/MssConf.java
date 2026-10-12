@@ -229,7 +229,7 @@ public class MssConf {
      * Create a new SSLSocketFactory from this configuration.
      * <p>
      * The client key comes from a {@link ReloadingKeyManager} over the keystore, if one is set. The server is checked
-     * by a {@link ReloadingTrustManager} over the truststore, if one is set, else by the JVM's default PKIX check.
+     * by a {@link ReloadingTrustManager} over the truststore, if one is set; without one any server certificate is accepted.
      * Both follow changes to their files.
      *
      * @return SSLSocketFactory

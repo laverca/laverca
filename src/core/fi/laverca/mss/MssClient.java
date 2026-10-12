@@ -120,9 +120,9 @@ public class MssClient {
     /**
      * Initialize the MssClient instance with supplied configuration.
      * <p>
-     * <b>NOTE:</b> If the configuration contains keystore and/or truststore parameters,
-     * {@link #setSSLSocketFactory(SSLSocketFactory)} is automatically run.
-     * Upon TrustStore load success, this will initialize LavercaSSLTrustStore collection of expected server certificates. 
+     * <b>NOTE:</b> {@link #setSSLSocketFactory(SSLSocketFactory)} is automatically run with {@link MssConf#createSSLFactory()}:
+     * the keystore's key, if any, is the client certificate, and the server is checked against the truststore, if any;
+     * without a truststore any server certificate is accepted. 
      *
      * @param conf MSS Configuration object (not null)
      * @throws LavercaException if SSL keystore fails to load
@@ -137,13 +137,12 @@ public class MssClient {
              conf.getProfileUrl(),
              conf.getHandshakeUrl());
         
-        if (conf.getKeystore() != null || conf.getTruststore() != null) {
-            try {
-                this.setSSLSocketFactory(conf.createSSLFactory());
-                this.expectedServerCerts = LavercaSSLTrustManager.getInstance().getExpectedServerCerts();
-            } catch (Exception e) {
-                throw new LavercaException("Failed to load keystore and/or truststore", e);
-            }
+        // Also without a keystore and a truststore: then no client certificate is sent and any server certificate is accepted
+        try {
+            this.setSSLSocketFactory(conf.createSSLFactory());
+            this.expectedServerCerts = LavercaSSLTrustManager.getInstance().getExpectedServerCerts();
+        } catch (Exception e) {
+            throw new LavercaException("Failed to load keystore and/or truststore", e);
         }
         this.msspUri = conf.getMsspUri();
     }
@@ -232,8 +231,8 @@ public class MssClient {
     /**
      * Create an SSLSocketFactory.
      * <p>
-     * The server certificate must be one of the truststore's certificates; without a truststore the JVM's default
-     * PKIX check is used. The keystore and the truststore are reloaded when their files change.
+     * The server certificate must be one of the truststore's certificates; without a truststore any server certificate
+     * is accepted. The keystore and the truststore are reloaded when their files change.
      * 
      * @param ksFile Keystore filename
      * @param ksPwd  Keystore password
