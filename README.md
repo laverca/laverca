@@ -25,14 +25,25 @@ Laverca API
     JDK SE
         http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-    Laverca requires the libraries found under libs directory in the release root:
-    Apache Axis2 2.0.1 (axis2-kernel) with Axiom 2.0.0 and their dependencies
-    (neethi, wsdl4j, xmlschema-core, commons-logging, commons-io),
-    Apache HttpClient 5.6 / HttpCore 5.4 (with slf4j-api),
-    BouncyCastle (bcprov, bcpkix, bcutil; jdk18on),
-    and JAXB 4 (jakarta.xml.bind) with Jakarta Activation.
-    All of them should be possible to update to newer versions of the same major
-    release number.
+    Laverca requires the libraries found under the libs directory in the release root:
+
+      SOAP        axis2-kernel 2.0.1, axiom-api, axiom-impl and
+                  axiom-legacy-attachments 2.0.0, neethi 3.2.4, wsdl4j 1.6.3,
+                  xmlschema-core 2.3.3, commons-logging 1.2, commons-io 2.19.0
+      HTTP        httpclient5 5.6.4, httpcore5 and httpcore5-h2 5.4.4,
+                  slf4j-api 2.0.16
+      Crypto      bcprov-jdk18on 1.85.2, bcpkix-jdk18on and bcutil-jdk18on 1.85
+      JAXB        jakarta.xml.bind-api 4.0.5, jaxb-runtime and jaxb-core 4.0.9,
+                  istack-commons-runtime 4.2.0, jakarta.activation-api 2.1.4
+                  (in libs/jaxb-ri-409; the build copies these to the release's libs)
+
+    The other jars in libs/jaxb-ri-409 (jaxb-xjc and its helpers) are needed only to
+    build Laverca, for generating the JAXB datatypes. Java 21 provides the XML APIs
+    (no xml-apis jar). All libraries should be possible to update to newer versions of
+    the same major release number.
+
+    With Maven, pom.xml builds the core library (fi.laverca:laverca-core) and lists the
+    same runtime dependencies.
 
     Laverca 4 no longer uses Axis 1.4. SOAP faults are thrown as
     fi.laverca.LavercaSoapFaultException (an IOException); use
