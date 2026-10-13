@@ -167,6 +167,11 @@ public final class LavercaAxis2Client {
      * @return the payload, or null if there is none
      */
     private static OMElement payloadOf(final OMElement respWrapper, final Class<?> respClass) {
+        // Document style answer: the Body holds the response element itself, e.g. MSS_SignatureResp
+        final String respName = respClass.getSimpleName().replaceFirst("^MSS", "MSS_");
+        if (respName.equals(respWrapper.getLocalName())) {
+            return respWrapper;
+        }
         for (OMNode n = respWrapper.getFirstOMChild(); n != null; n = n.getNextOMSibling()) {
             if (n instanceof OMElement el) {
                 final OMNamespace ns = el.getNamespace();
@@ -176,9 +181,7 @@ public final class LavercaAxis2Client {
                 }
             }
         }
-        // Document style answer: the Body holds the response element itself, e.g. MSS_SignatureResp
-        final String respName = respClass.getSimpleName().replaceFirst("^MSS", "MSS_");
-        return respName.equals(respWrapper.getLocalName()) ? respWrapper : null;
+        return null;
     }
 
     /**

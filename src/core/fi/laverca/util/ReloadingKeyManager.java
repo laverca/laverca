@@ -142,6 +142,7 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
         }
         this.nextCheck = now + ((this.intervalMillis > 0) ? this.intervalMillis : Long.MAX_VALUE / 2);
 
+        boolean reloaded = false;
         if (this.intervalMillis > 0) {
             try {
                 final byte[] content = Files.readAllBytes(this.file);
@@ -151,6 +152,7 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
                     this.previousEntries = this.entries;
                     this.entries = loaded;
                     this.digest  = newDigest;
+                    reloaded = true;
                     log.info("Reloaded " + this.file + ": " + this.entries.size() + " private key(s)");
                 }
             } catch (IOException | GeneralSecurityException e) {
@@ -164,11 +166,14 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
             this.selected   = chosen;
             this.generation++;
             log.info("Client key changed to " + describe(chosen));
+        } else if (reloaded) {
+            // A key chosen by the issuers a server names may have changed although the default key didn't
+            this.generation++;
         }
     }
 
     /**
-     * Gets a counter that changes whenever the key in use changes.
+     * Gets a counter that changes whenever the key in use changes or the keystore file is reloaded with new content.
      *
      * @return the generation of the key in use
      */

@@ -65,12 +65,16 @@ class TrustTest {
     }
 
     private static MssClient client(final Path ts, final String checkIssuer, final String msspUri) {
+        return client(s.url(), ts, checkIssuer, msspUri);
+    }
+
+    private static MssClient client(final String url, final Path ts, final String checkIssuer, final String msspUri) {
         final Properties p = new Properties();
         p.setProperty(MssConf.AP_ID, "ap");
         p.setProperty(MssConf.AP_PWD, "pwd");
         for (final String k : new String[] {MssConf.SIGNATURE_URL, MssConf.STATUS_URL, MssConf.RECEIPT_URL,
                                             MssConf.REGISTRATION_URL, MssConf.PROFILE_URL, MssConf.HANDSHAKE_URL}) {
-            p.setProperty(k, s.url());
+            p.setProperty(k, url);
         }
         if (ts != null) {
             p.setProperty(MssConf.TRUSTSTORE_FILE, ts.toString());
@@ -130,6 +134,24 @@ class TrustTest {
         accepted(client(tsCa, null, "http://mssp.test"));
         rejected(client(tsCa, null, "http://other.test"));
         rejected(client(tsOther, "true", "http://mssp.test"));
+    }
+
+    @Test
+    void issuerCheckValidityAndCa() throws Exception {
+        final TestPki.Cert expired = TestPki.issue("server", ca, TestPki.daysFromNow(-10), TestPki.daysFromNow(-1), "http://mssp.test", false);
+        final TestPki.Cert leaf = TestPki.cert("leaf", ca);
+        final TestPki.Cert byLeaf = TestPki.issue("server", leaf, TestPki.daysFromNow(-1), TestPki.daysFromNow(30), "http://mssp.test", false);
+        final TestPki.Cert self = TestPki.cert("self", null);
+        try (SoapServer e = SoapServer.https(TestPki.serverContext(expired), false)) {
+            rejected(client(e.url(), tsCa, "true", null));
+            accepted(client(e.url(), TestPki.truststore(dir.resolve("expired.p12"), expired.cert), "true", null));
+        }
+        try (SoapServer l = SoapServer.https(TestPki.serverContext(byLeaf), false)) {
+            rejected(client(l.url(), TestPki.truststore(dir.resolve("leaf.p12"), leaf.cert), "true", null));
+        }
+        try (SoapServer p = SoapServer.https(TestPki.serverContext(self), false)) {
+            accepted(client(p.url(), TestPki.truststore(dir.resolve("self.p12"), self.cert), "true", null));
+        }
     }
 
     @Test

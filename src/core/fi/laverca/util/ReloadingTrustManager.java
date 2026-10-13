@@ -213,15 +213,19 @@ public class ReloadingTrustManager extends X509ExtendedTrustManager {
             throw new CertificateException("Server certificate " + server.getSubjectX500Principal() + " is not in the truststore");
         }
 
-        boolean signed = false;
-        for (final X509Certificate t : trusted) {
-            if (t.getSubjectX500Principal().equals(server.getIssuerX500Principal()) && isSignedBy(server, t)) {
-                signed = true;
-                break;
-            }
-        }
+        // A certificate pinned in the truststore needs no issuer; one trusted through its issuer must be valid now and its issuer a CA
+        boolean signed = trusted.contains(server);
         if (!signed) {
-            throw new CertificateException("Server certificate " + server.getSubjectX500Principal() + " is not signed by a truststore certificate");
+            for (final X509Certificate t : trusted) {
+                if (t.getSubjectX500Principal().equals(server.getIssuerX500Principal()) && isCa(t) && isSignedBy(server, t)) {
+                    signed = true;
+                    break;
+                }
+            }
+            if (!signed) {
+                throw new CertificateException("Server certificate " + server.getSubjectX500Principal() + " is not signed by a truststore CA certificate");
+            }
+            server.checkValidity();
         }
         if (this.msspUris.isEmpty()) {
             return;
@@ -239,6 +243,17 @@ public class ReloadingTrustManager extends X509ExtendedTrustManager {
             throw new CertificateException("Cannot read the server certificate's SubjectAltNames: " + e.getMessage(), e);
         }
         throw new CertificateException("Server certificate carries none of the MSSP URIs " + this.msspUris);
+    }
+
+    /**
+     * Tells whether a truststore certificate may issue certificates: a CA in its basic constraints, or an X.509 v1
+     * certificate, which has no extensions.
+     *
+     * @param cert the truststore certificate
+     * @return true if it may issue certificates
+     */
+    private static boolean isCa(final X509Certificate cert) {
+        return cert.getBasicConstraints() >= 0 || cert.getVersion() < 3;
     }
 
     private static boolean isSignedBy(final X509Certificate cert, final X509Certificate issuer) {

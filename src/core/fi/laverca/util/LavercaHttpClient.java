@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -122,7 +123,7 @@ public class LavercaHttpClient implements Closeable {
      * @param newUsername if set, use this to authenticate to the remote service with HTTP Basic authentication. Use null to not authenticate.
      * @param newPassword see user.
      * @param proxySettings Optional proxy parameters, null for none.
-     * @param ssf SSL Socket factory with specific client certificate and key, null for use of system wide default.
+     * @param ssf SSL Socket factory with specific client certificate and key, null for use of system wide default (which also verifies the host name).
      */
     public LavercaHttpClient( final String poolUrl,
                               final int newPoolSize,
@@ -151,7 +152,7 @@ public class LavercaHttpClient implements Closeable {
 
         // Multiple threads (workers) share the HTTP connection pool
         this.connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-            .setTlsSocketStrategy(new SocketFactoryTlsStrategy(tlsFactory))
+            .setTlsSocketStrategy(new SocketFactoryTlsStrategy(tlsFactory, ssf == null))
             .setMaxConnTotal(newPoolSize)
             .setMaxConnPerRoute(newPoolSize)
             .setDefaultConnectionConfig(ccb.build())
@@ -183,6 +184,8 @@ public class LavercaHttpClient implements Closeable {
         hcb.setRetryStrategy(NO_RESPONSE_RETRY);
         // One client identity per pool: a client-certificate tag on pooled connections would keep requests from reusing them
         hcb.disableConnectionState();
+        // A redirect would resend the request, AP password included, to another URL, possibly plain HTTP
+        hcb.disableRedirectHandling();
         if (this.proxyHost != null) {
             hcb.setRoutePlanner(new DefaultProxyRoutePlanner(this.proxyHost));
         }
@@ -351,7 +354,7 @@ public class LavercaHttpClient implements Closeable {
      * @param url the URL
      * @return the URL without user info
      */
-    private static String withoutUserInfo(final String url) {
+    public static String withoutUserInfo(final String url) {
         final URI uri = parseUri(url);
         if (uri == null || uri.getRawUserInfo() == null) {
             return url;
@@ -499,15 +502,18 @@ public class LavercaHttpClient implements Closeable {
 
     /**
      * TLS for pooled connections from a plain {@link SSLSocketFactory}: its key and trust managers decide the
-     * client certificate and the server's acceptance. The host name is not verified, as in Laverca 3; the trust
-     * managers check the server certificate.
+     * client certificate and the server's acceptance. With the JVM's default factory the host name is verified too,
+     * as its trust managers accept any publicly trusted certificate; Laverca's own factories check the server
+     * certificate themselves (exact match, or issuer and mssp.uri).
      */
     private static final class SocketFactoryTlsStrategy implements TlsSocketStrategy {
 
         private final SSLSocketFactory ssf;
+        private final boolean verifyHost;
 
-        SocketFactoryTlsStrategy(final SSLSocketFactory ssf) {
-            this.ssf = ssf;
+        SocketFactoryTlsStrategy(final SSLSocketFactory ssf, final boolean verifyHost) {
+            this.ssf        = ssf;
+            this.verifyHost = verifyHost;
         }
 
         /**
@@ -530,6 +536,11 @@ public class LavercaHttpClient implements Closeable {
             throws IOException
         {
             final SSLSocket ssl = (SSLSocket) this.ssf.createSocket(socket, target, port, true);
+            if (this.verifyHost) {
+                final SSLParameters params = ssl.getSSLParameters();
+                params.setEndpointIdentificationAlgorithm("HTTPS");
+                ssl.setSSLParameters(params);
+            }
             ssl.startHandshake();
             return ssl;
         }

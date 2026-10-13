@@ -26,6 +26,11 @@ Laverca Changelog
       Removed the xml-apis jars: Java 21 provides those APIs
       Added a Maven pom.xml for the core library
       Added JUnit tests (src/test/java; mvn test, ant test): wire format, connection reuse, key choice, trust checks, answer parsing, MssConf
+      Redirects are not followed: a 3xx answer is an error, so a request (AP password included) is never resent elsewhere
+      Without an SSLSocketFactory (JVM default TLS) the server certificate must also name the host; Laverca's own factories check the certificate themselves
+      check.issuer: a server certificate trusted through its issuer must be valid now and the issuer a CA; a certificate pinned in the truststore is accepted as before
+      A changed keystore file always rebuilds the connection pool, also when only a key chosen by the server's named issuers changed
+      Fixed: the Axis2 in flow ran twice per answer; a document-style answer (response element directly in the Body) was read as empty; DEBUG logs no longer show a password in the URL
 
     2026-07-29 3.0
       Matching to forked  Methics axis14methics.jar

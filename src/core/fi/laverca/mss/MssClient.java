@@ -766,11 +766,8 @@ public class MssClient {
                 toClose = this.retirePool();
             }
             if (this.pool == null) {
-                // If SSLSocketFactory is set, use it, otherwise use system default
-                SSLSocketFactory ssf = this.sslSocketFactory;
-                if (ssf == null) {
-                    ssf = (SSLSocketFactory)SSLSocketFactory.getDefault();
-                }
+                // Without an SSLSocketFactory LavercaHttpClient uses the JVM's default and verifies the host name
+                final SSLSocketFactory ssf = this.sslSocketFactory;
                 this.pool = new PoolUse(new LavercaHttpClient("mssClientPool",
                                                                     this.poolSize,
                                                                     this.newConnTimeout,

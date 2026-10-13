@@ -105,6 +105,23 @@ class KeyChoiceTest {
     }
 
     @Test
+    void matchingKeyReplacedWhileTheDefaultStays() throws Exception {
+        final TestPki.Cert caX = TestPki.ca("caX");
+        final TestPki.Cert caY = TestPki.ca("caY");
+        final TestPki.Cert dflt = TestPki.issue("keyS", caX, TestPki.daysFromNow(-3), TestPki.daysFromNow(30), null, false);
+        final TestPki.Cert m1 = TestPki.issue("keyM1", caY, TestPki.daysFromNow(-1), TestPki.daysFromNow(30), null, false);
+        final TestPki.Cert m2 = TestPki.issue("keyM2", caY, TestPki.daysFromNow(-1), TestPki.daysFromNow(30), null, false);
+        final Path ks = TestPki.keystore(this.dir.resolve("client.p12"), dflt, m1);
+        try (SoapServer s = SoapServer.https(TestPki.serverContext(TestPki.cert("server", caX), caY.cert), true)) {
+            final MssClient c = this.client(s, ks);
+            assertEquals("CN=keyM1", call(s, c));
+            TestPki.keystore(ks, dflt, m2);
+            Thread.sleep(1500);
+            assertEquals("CN=keyM2", call(s, c), "the replaced key, also on a pooled connection");
+        }
+    }
+
+    @Test
     void keyMatchingTheRequestedIssuers() throws Exception {
         final TestPki.Cert caX = TestPki.ca("caX");
         final TestPki.Cert caY = TestPki.ca("caY");

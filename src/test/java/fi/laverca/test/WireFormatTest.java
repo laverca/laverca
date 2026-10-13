@@ -24,6 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.axis2.context.MessageContext;
+import org.apache.axis2.description.HandlerDescription;
+import org.apache.axis2.engine.Phase;
+import org.apache.axis2.handlers.AbstractHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +42,7 @@ import fi.laverca.jaxb.mss.MSSSignatureReq;
 import fi.laverca.jaxb.mss.MSSSignatureResp;
 import fi.laverca.jaxb.wsssecext.Security;
 import fi.laverca.mss.MssClient;
+import fi.laverca.mss.ws.LavercaAxis2Engine;
 import fi.laverca.util.LavercaContext;
 
 /**
@@ -70,6 +77,47 @@ class WireFormatTest {
         assertEquals(200, ctx.getHttpStatusCode());
         assertEquals(this.server.lastBody, ctx.getRawXmlRequest());
         assertTrue(ctx.getRawXmlResponse().contains("MSS_SignatureResp"));
+    }
+
+    @Test
+    void documentStyleAnswer() throws Exception {
+        final String bare = SoapServer.SIGRESP.replace("<MSS_SignatureResponse>", "").replace("</MSS_SignatureResponse>", "");
+        this.server.answer(SoapServer.Answer.ok(SoapServer.env(bare, null)));
+        final MSSSignatureResp resp = this.client.send(Calls.sig(this.client));
+        assertEquals("T1", resp.getMSSPTransID());
+        assertEquals(500L, resp.getStatus().getStatusCode().getValue());
+    }
+
+    @Test
+    void inFlowRunsOncePerAnswer() throws Exception {
+        final AtomicInteger runs = new AtomicInteger();
+        final AbstractHandler counter = new AbstractHandler() {
+            @Override
+            public InvocationResponse invoke(final MessageContext mc) {
+                runs.incrementAndGet();
+                return InvocationResponse.CONTINUE;
+            }
+        };
+        counter.init(new HandlerDescription("test-counter"));
+        final Phase phase = LavercaAxis2Engine.getConfigurationContext().getAxisConfiguration().getInFlowPhases().get(0);
+        phase.addHandler(counter);
+        try {
+            this.client.send(Calls.sig(this.client));
+            assertEquals(1, runs.get(), "in-flow handler runs");
+        } finally {
+            phase.removeHandler(counter.getHandlerDesc());
+        }
+    }
+
+    @Test
+    void redirectNotFollowed() throws Exception {
+        try (SoapServer other = SoapServer.http()) {
+            for (final int status : new int[] {301, 302, 307, 308}) {
+                this.server.answer(SoapServer.Answer.redirect(status, other.url()));
+                assertThrows(LavercaSoapFaultException.class, () -> this.client.send(Calls.sig(this.client)), "HTTP " + status);
+            }
+            assertEquals(0, other.requests, "nothing sent to the redirect target");
+        }
     }
 
     @Test

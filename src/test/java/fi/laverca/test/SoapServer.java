@@ -48,10 +48,19 @@ public final class SoapServer implements AutoCloseable {
 
     public static final String NS = "http://uri.etsi.org/TS102204/v1.1.2#";
 
-    /** A canned answer: HTTP status, body (empty for none) and an optional delay. */
-    public record Answer(int status, String body, long delayMillis) {
+    /** A canned answer: HTTP status, body (empty for none), an optional delay and an optional Location header. */
+    public record Answer(int status, String body, long delayMillis, String location) {
+        public Answer(final int status, final String body, final long delayMillis) {
+            this(status, body, delayMillis, null);
+        }
+
         public static Answer ok(final String body) {
             return new Answer(200, body, 0);
+        }
+
+        /** @return a redirect to the given URL, with no body */
+        public static Answer redirect(final int status, final String location) {
+            return new Answer(status, "", 0, location);
         }
     }
 
@@ -176,6 +185,9 @@ public final class SoapServer implements AutoCloseable {
         }
         final byte[] b = a.body().getBytes(StandardCharsets.UTF_8);
         ex.getResponseHeaders().add("Content-Type", "application/soap+xml; charset=utf-8");
+        if (a.location() != null) {
+            ex.getResponseHeaders().add("Location", a.location());
+        }
         ex.sendResponseHeaders(a.status(), (b.length == 0) ? -1 : b.length);
         if (b.length > 0) {
             ex.getResponseBody().write(b);

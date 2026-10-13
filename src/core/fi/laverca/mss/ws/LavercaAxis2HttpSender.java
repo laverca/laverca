@@ -212,7 +212,7 @@ public class LavercaAxis2HttpSender implements TransportSender {
             lavercaContext.put(LavercaContext.RAW_REQUEST_XML, requestXml);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Calling " + targetUrl);
+            log.debug("Calling " + LavercaHttpClient.withoutUserInfo(targetUrl));
         }
         if (log.isTraceEnabled()) {
             log.trace("Outbound envelope:\n" + requestXml);
@@ -251,7 +251,7 @@ public class LavercaAxis2HttpSender implements TransportSender {
             lavercaContext.put(LavercaContext.RAW_RESPONSE_XML,      new String(answer.body, StandardCharsets.UTF_8));
         }
         if (log.isDebugEnabled()) {
-            log.debug("HTTP status " + answer.status + " from " + targetUrl);
+            log.debug("HTTP status " + answer.status + " from " + LavercaHttpClient.withoutUserInfo(targetUrl));
         }
         if (log.isTraceEnabled()) {
             log.trace("Inbound envelope:\n" + new String(answer.body, StandardCharsets.UTF_8));
@@ -346,8 +346,9 @@ public class LavercaAxis2HttpSender implements TransportSender {
     }
 
     /**
-     * Hands the parsed response envelope back to the blocking ServiceClient.sendReceive() caller: builds the IN
-     * MessageContext of the operation and runs it through the engine's in flow.
+     * Hands the parsed response envelope back to the blocking ServiceClient.sendReceive() caller. Axis2's
+     * OutInAxisOperation creates the IN MessageContext before the transport runs and runs its in flow after it
+     * returns, so the envelope is only set there; without that context one is built and run through the in flow here.
      *
      * @param outMsgContext the outgoing message context
      * @param inEnv         the response envelope
@@ -369,9 +370,11 @@ public class LavercaAxis2HttpSender implements TransportSender {
             responseMC.setServiceContext(outMsgContext.getServiceContext());
             responseMC.setAxisService(outMsgContext.getAxisService());
             opCtx.addMessageContext(responseMC);
+            responseMC.setEnvelope(inEnv);
+            AxisEngine.receive(responseMC);
+            return;
         }
         responseMC.setEnvelope(inEnv);
-        AxisEngine.receive(responseMC);
     }
 
     /**
