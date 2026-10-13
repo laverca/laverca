@@ -22,9 +22,10 @@ Laverca Changelog
       Fixed the JAXB namespace prefix mapper (e.g. "mss" prefix) after the Jakarta change
       Fixed MssConf check.issuer: fromProperties() parses the value (it read a system property; unset still means true) and setCheckIssuer() honours its argument (it always set true)
       Fixed MssConf.getProperties() failing with NullPointerException on unset values; it now also writes check.issuer
-      Updated BouncyCastle to 1.85 (jdk18on: bcprov, bcpkix, bcutil); requires Java 21
+      Updated BouncyCastle to 1.86 (jdk18on: bcprov, bcpkix, bcutil); requires Java 21
       Removed the xml-apis jars: Java 21 provides those APIs
       Added a Maven pom.xml for the core library
+      Libraries: httpclient5 5.6.5, slf4j-api 2.0.20, commons-io 2.22.0, commons-logging 1.4.0; pom.xml pins commons-io and commons-logging, so Maven resolves the jars libs/ ships
       Added JUnit tests (src/test/java; mvn test, ant test): wire format, connection reuse, key choice, trust checks, answer parsing, MssConf
       Redirects are not followed: a 3xx answer is an error, so a request (AP password included) is never resent elsewhere
       Without an SSLSocketFactory (JVM default TLS) the server certificate must also name the host; Laverca's own factories check the certificate themselves

@@ -29,10 +29,10 @@ Laverca API
 
       SOAP        axis2-kernel 2.0.1, axiom-api, axiom-impl and
                   axiom-legacy-attachments 2.0.0, neethi 3.2.4, wsdl4j 1.6.3,
-                  xmlschema-core 2.3.3, commons-logging 1.2, commons-io 2.19.0
-      HTTP        httpclient5 5.6.4, httpcore5 and httpcore5-h2 5.4.4,
-                  slf4j-api 2.0.16
-      Crypto      bcprov-jdk18on 1.85.2, bcpkix-jdk18on and bcutil-jdk18on 1.85
+                  xmlschema-core 2.3.3, commons-logging 1.4.0, commons-io 2.22.0
+      HTTP        httpclient5 5.6.5, httpcore5 and httpcore5-h2 5.4.4,
+                  slf4j-api 2.0.20
+      Crypto      bcprov-jdk18on, bcpkix-jdk18on and bcutil-jdk18on 1.86
       JAXB        jakarta.xml.bind-api 4.0.5, jaxb-runtime and jaxb-core 4.0.9,
                   istack-commons-runtime 4.2.0, jakarta.activation-api 2.1.4
                   (in libs/jaxb-ri-409; the build copies these to the release's libs)
