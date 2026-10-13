@@ -31,6 +31,10 @@ Laverca Changelog
       check.issuer: a server certificate trusted through its issuer must be valid now and the issuer a CA; a certificate pinned in the truststore is accepted as before
       A changed keystore file always rebuilds the connection pool, also when only a key chosen by the server's named issuers changed
       Fixed: the Axis2 in flow ran twice per answer; a document-style answer (response element directly in the Body) was read as empty; DEBUG logs no longer show a password in the URL
+      Fixed (from 3.0): an async signature whose StatusDetail has no ServiceResponses failed in the polling loop without calling onError; MregResponse of an answer without output threw IndexOutOfBoundsException;
+        the 8-argument FiComClient constructor sent registrations to the receipt URL; ProfileQueryResponse without its extension, and certificates without KeyUsage, threw NullPointerException;
+        PersonIdAttribute.getStringValue() returned null for every attribute but the address; CmsSignature without certificates, or empty, threw NullPointerException,
+        and getCertificateChain() starts with the signer's certificate; FiComCharsetLimiter.toGSM0338() writes '?' for characters outside GSM 03.38, as limit() does
 
     2026-07-29 3.0
       Matching to forked  Methics axis14methics.jar

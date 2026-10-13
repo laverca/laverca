@@ -245,6 +245,9 @@ public abstract class MssResponse {
         
         if (this.getStatusDetail() != null) {
             ServiceResponses sresps = AdditionalServices.readServiceResponses(this.getStatusDetail());
+            if (sresps == null) {
+                return resps;
+            }
             for (ServiceResponse sr : sresps.getServiceResponses()) {
                 resps.add(new AdditionalServiceResponse(sr));
             }

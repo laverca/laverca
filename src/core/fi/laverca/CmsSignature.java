@@ -170,8 +170,18 @@ public class CmsSignature implements Signature {
      */
     public X509CertificateChain getCertificateChain() {
         X509CertificateChain certChain = new  X509CertificateChain();
+        // The signer's certificate first: the SignedData certificate SET has no order of its own
+        X509Certificate signer = null;
+        try {
+            signer = this.getSignerCert();
+            certChain.add(signer);
+        } catch (MssException e) {
+            // No single signer certificate: the certificates as they are
+        }
         for (X509Certificate cert : this.getCertificates()) {
-            certChain.add(cert);
+            if (!cert.equals(signer)) {
+                certChain.add(cert);
+            }
         }
         return certChain;
     }
@@ -201,6 +211,9 @@ public class CmsSignature implements Signature {
             }
         }
 
+        if (asn1 == null) {
+            throw new IllegalArgumentException("not a pkcs7 signature");
+        }
         ContentInfo ci = ContentInfo.getInstance(asn1);
 
         ASN1ObjectIdentifier typeId = ci.getContentType();
@@ -278,6 +291,9 @@ public class CmsSignature implements Signature {
         List<X509Certificate> certs = new ArrayList<X509Certificate>();
 
         ASN1Set certSet = sd.getCertificates();
+        if (certSet == null) {
+            return certs;
+        }
         Enumeration<?> en = certSet.getObjects();
         while (en.hasMoreElements()) {
             Object o = en.nextElement();

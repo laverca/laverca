@@ -109,7 +109,7 @@ public class FiComClient extends ClientBase<FiComRequest, FiComResponse> {
               msspSignatureUrl, 
               msspStatusUrl, 
               msspReceiptUrl,
-              msspReceiptUrl,
+              msspRegistrationUrl,
               msspProfileUrl,
               msspHandshakeUrl);
 

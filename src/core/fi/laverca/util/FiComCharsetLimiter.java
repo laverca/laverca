@@ -232,7 +232,8 @@ public class FiComCharsetLimiter {
 
         char[] inputChars  = inputString.toCharArray();
         for (char input : inputChars) {
-            String s = okChars.get(Character.valueOf(input));
+            // A character outside GSM 03.38 becomes '?', as in limit()
+            String s = okChars.getOrDefault(Character.valueOf(input), okChars.get(Character.valueOf('?')));
             for (char c : s.toCharArray()) {
                 baos.write(c);
             }
