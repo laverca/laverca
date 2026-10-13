@@ -25,6 +25,7 @@ Laverca Changelog
       Updated BouncyCastle to 1.85 (jdk18on: bcprov, bcpkix, bcutil); requires Java 21
       Removed the xml-apis jars: Java 21 provides those APIs
       Added a Maven pom.xml for the core library
+      Added JUnit tests (src/test/java; mvn test, ant test): wire format, connection reuse, key choice, trust checks, answer parsing, MssConf
 
     2026-07-29 3.0
       Matching to forked  Methics axis14methics.jar

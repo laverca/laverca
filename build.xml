@@ -22,6 +22,8 @@
 
 
   <property name="libs"      location="libs"/>
+  <property name="test-libs" location="libs/test"/>
+  <property name="test-src"  location="src/test/java"/>
   <property name="jlibs"     location="libs/jaxb-ri-409" />
   <property name="docs"      location="docs"/>
 
@@ -184,7 +186,7 @@
     
     <copy todir="${dist}/docs"><fileset dir="${docs}"/></copy>
     <copy todir="${dist}/apidocs"><fileset dir="${apidocs}"/></copy>
-    <copy todir="${dist}/libs"><fileset dir="${libs}"/></copy>
+    <copy todir="${dist}/libs"><fileset dir="${libs}" excludes="test/**"/></copy>
 
     <copy todir="${dist}/libs">
       <fileset dir="${jlibs}">
@@ -211,7 +213,36 @@
     <tar compression="gzip" longfile="gnu" destfile="${project-name}-${project-version}.tar.gz" basedir="${dist}"/>
   </target>
 
-  <target name="test" depends="build"/>
+  <!-- JUnit tests in src/test/java; Woodstox in libs/test is on the classpath as in an application server -->
+  <target name="test" depends="build"
+          description="Runs the Laverca tests.">
+    <mkdir dir="${build}/test" />
+    <javac debug="true"
+           destdir="${build}/test"
+           encoding="UTF-8"
+           release="21"
+           includeantruntime="false">
+      <src path="${test-src}"/>
+      <classpath>
+        <pathelement location="${build}/core" />
+        <path refid="laverca-libs" />
+        <fileset dir="${test-libs}" includes="*.jar" />
+      </classpath>
+    </javac>
+    <java classname="org.junit.platform.console.ConsoleLauncher"
+          fork="true"
+          failonerror="true">
+      <classpath>
+        <pathelement location="${build}/test" />
+        <pathelement location="${build}/core" />
+        <pathelement location="${core-src}" />
+        <path refid="laverca-libs" />
+        <fileset dir="${test-libs}" includes="*.jar" />
+      </classpath>
+      <arg line="execute --scan-classpath ${build}/test --fail-if-no-tests --details=tree --disable-banner" />
+      <arg value="--reports-dir=${build}/test-reports" />
+    </java>
+  </target>
   
   <target name="apidocs"
           description="Generates Laverca documentation.">

@@ -45,6 +45,11 @@ Laverca API
     With Maven, pom.xml builds the core library (fi.laverca:laverca-core) and lists the
     same runtime dependencies.
 
+    Tests: "mvn test" or "ant test" runs the JUnit tests in src/test/java against loopback
+    HTTP and HTTPS servers, with certificates generated at run time. The Ant target uses
+    the jars in libs/test (JUnit console launcher, and Woodstox as an application server
+    would register it); they are not part of the release.
+
     Laverca 4 no longer uses Axis 1.4. SOAP faults are thrown as
     fi.laverca.LavercaSoapFaultException (an IOException); use
     ErrorCodes.<CODE>.is(fault) to check the ETSI status code.
