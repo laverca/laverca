@@ -36,7 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedKeyManager;
@@ -49,7 +51,9 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * Of the keystore's private keys, the client certificate is the oldest one (earliest notBefore) that has not expired,
  * preferring keys already valid. When it expires, the next one takes over. When all have expired, the one that
- * expired last stays in use. A keystore without private keys sends no client certificate, as before 4.0.0.
+ * expired last stays in use. When the server names the certificate issuers it accepts, the same rule picks among the
+ * keys whose certificate chain matches them, as the JDK's key manager does; without a match the rule above applies.
+ * A keystore without private keys sends no client certificate, as before 4.0.0.
  * <p>
  * {@link #refresh()} re-reads the file at most once per check interval, and at once when the key in use expires.
  * {@link #getGeneration()} changes whenever the key in use changes, so connections made with the old key can be dropped.
@@ -87,8 +91,9 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
     private final String type;
     private final long   intervalMillis;
 
-    /** The keystore's private key entries. */
-    private List<Entry> entries;
+    /** The keystore's private key entries, and those before the last reload (for handshakes that chose one just before it). */
+    private volatile List<Entry> entries;
+    private volatile List<Entry> previousEntries = Collections.emptyList();
     private byte[]      digest;
     private long        nextCheck;
 
@@ -142,7 +147,9 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
                 final byte[] content = Files.readAllBytes(this.file);
                 final byte[] newDigest = sha256(content);
                 if (!Arrays.equals(newDigest, this.digest)) {
-                    this.entries = this.load(content);
+                    final List<Entry> loaded = this.load(content);
+                    this.previousEntries = this.entries;
+                    this.entries = loaded;
                     this.digest  = newDigest;
                     log.info("Reloaded " + this.file + ": " + this.entries.size() + " private key(s)");
                 }
@@ -282,35 +289,62 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
     }
 
     /**
-     * Finds an entry by alias: the key in use, or the one before it.
+     * Finds an entry by alias among the keystore's keys, or those before the last reload.
      *
      * @param alias the alias
      * @return the entry, or null
      */
     private Entry find(final String alias) {
-        final Entry s = this.selected;
-        if (s != null && s.alias.equals(alias)) {
-            return s;
+        for (final List<Entry> list : List.of(this.entries, this.previousEntries)) {
+            for (final Entry e : list) {
+                if (e.alias.equals(alias)) {
+                    return e;
+                }
+            }
         }
         final Entry p = this.previous;
-        if (p != null && p.alias.equals(alias)) {
-            return p;
-        }
-        return null;
+        return (p != null && p.alias.equals(alias)) ? p : null;
     }
 
     /**
-     * Tells whether the key in use fits one of the key types a TLS handshake asks for.
+     * Chooses the client key for a TLS handshake.
+     * With issuers named by the server: the oldest unexpired key (see {@link #choose}) among the keys of a fitting type
+     * whose certificate chain has a certificate issued by one of them. Otherwise, or without a match: the key in use.
      *
      * @param keyTypes key type names such as RSA, EC or EC_RSA
-     * @return the alias of the key in use, or null if it does not fit
+     * @param issuers the certificate issuers the server accepts; null or empty for any
+     * @return the alias, or null if no key fits
      */
-    private String aliasFor(final String... keyTypes) {
-        final Entry s = this.selected;
-        if (s == null || keyTypes == null) {
+    private String aliasFor(final String[] keyTypes, final Principal[] issuers) {
+        if (keyTypes == null) {
             return null;
         }
-        final String alg = s.key.getAlgorithm();
+        if (issuers != null && issuers.length > 0) {
+            final Set<Principal> accepted = new HashSet<>(Arrays.asList(issuers));
+            final List<Entry> matching = new ArrayList<>();
+            for (final Entry e : this.entries) {
+                if (fits(e, keyTypes) && issuedBy(e, accepted)) {
+                    matching.add(e);
+                }
+            }
+            final Entry chosen = choose(matching, System.currentTimeMillis());
+            if (chosen != null) {
+                return chosen.alias;
+            }
+        }
+        final Entry s = this.selected;
+        return (s != null && fits(s, keyTypes)) ? s.alias : null;
+    }
+
+    /**
+     * Tells whether a key fits one of the key types a TLS handshake asks for.
+     *
+     * @param e the key
+     * @param keyTypes key type names such as RSA, EC or EC_RSA
+     * @return true if it fits
+     */
+    private static boolean fits(final Entry e, final String[] keyTypes) {
+        final String alg = e.key.getAlgorithm();
         for (final String keyType : keyTypes) {
             if (keyType == null) {
                 continue;
@@ -320,26 +354,42 @@ public class ReloadingKeyManager extends X509ExtendedKeyManager {
             if (base.equalsIgnoreCase(alg)
                 || ("RSASSA-PSS".equalsIgnoreCase(base) && "RSA".equalsIgnoreCase(alg))
                 || ("EdDSA".equalsIgnoreCase(base) && alg.startsWith("Ed"))) {
-                return s.alias;
+                return true;
             }
         }
-        return null;
+        return false;
+    }
+
+    /**
+     * Tells whether a certificate in a key's chain was issued by one of the accepted issuers.
+     *
+     * @param e the key
+     * @param accepted the accepted issuers
+     * @return true if one was
+     */
+    private static boolean issuedBy(final Entry e, final Set<Principal> accepted) {
+        for (final X509Certificate c : e.chain) {
+            if (accepted.contains(c.getIssuerX500Principal())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public String[] getClientAliases(final String keyType, final Principal[] issuers) {
-        final String alias = this.aliasFor(keyType);
+        final String alias = this.aliasFor(new String[] {keyType}, issuers);
         return (alias != null) ? new String[] {alias} : null;
     }
 
     @Override
     public String chooseClientAlias(final String[] keyTypes, final Principal[] issuers, final Socket socket) {
-        return this.aliasFor(keyTypes);
+        return this.aliasFor(keyTypes, issuers);
     }
 
     @Override
     public String chooseEngineClientAlias(final String[] keyTypes, final Principal[] issuers, final SSLEngine engine) {
-        return this.aliasFor(keyTypes);
+        return this.aliasFor(keyTypes, issuers);
     }
 
     @Override

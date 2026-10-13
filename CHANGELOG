@@ -15,6 +15,7 @@ Laverca Changelog
       MssClient setters for TLS, proxy, credentials, timeouts and pool size take effect on the next call: the connection pool is rebuilt and the old one closes after its calls in progress
       Client key from a reloading keystore (MssConf, ssl.keystore.reload.interval, default 30 s): a changed file is reloaded,
         the oldest unexpired key is used, an expired key is replaced by the next one; with no newer key the last one stays in use
+        when the server names the certificate issuers it accepts, the oldest unexpired key among the matching ones is used
       Server check from a reloading truststore (ssl.truststore.reload.interval, default 30 s), per client instead of thread-local:
         exact certificate match, or with check.issuer the issuer signature and an mssp.uri SubjectAltName;
         without a truststore any server certificate is accepted, as before 4.0.0
