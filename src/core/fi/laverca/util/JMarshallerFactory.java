@@ -23,8 +23,10 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -134,6 +136,27 @@ public class JMarshallerFactory {
             this.uriInclusions.put(keyuri, adds);
         }
 
+        /**
+         * The namespaces to declare together with a namespace, as Axis1's prefix inclusions.
+         *
+         * @param uri the namespace URI
+         * @return prefix to URI of each registered inclusion that has a prefix, never null
+         */
+        synchronized Map<String, String> inclusionsOf(final String uri) {
+            final String[] adds = this.uriInclusions.get(uri);
+            if (adds == null) {
+                return Collections.emptyMap();
+            }
+            final Map<String, String> m = new LinkedHashMap<>();
+            for (final String add : adds) {
+                final String pfx = this.uri2pfx.get(add);
+                if (pfx != null) {
+                    m.put(pfx, add);
+                }
+            }
+            return m;
+        }
+
     }
 
     static {
@@ -187,6 +210,16 @@ public class JMarshallerFactory {
      */
     public static void registerPrefixInclusion( String prefix, String... additionals ) {
         nsp.setInclusion(prefix, additionals);
+    }
+
+    /**
+     * The namespaces to declare together with a namespace ({@link #registerPrefixInclusion(String, String...)}).
+     *
+     * @param uri the namespace URI
+     * @return prefix to URI of each inclusion, never null
+     */
+    static Map<String, String> inclusionsOf(final String uri) {
+        return nsp.inclusionsOf(uri);
     }
 
     private static void setNamespaceMappings(final Marshaller m)
