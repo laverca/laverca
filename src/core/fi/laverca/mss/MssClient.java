@@ -952,8 +952,9 @@ public class MssClient {
             return LavercaAxis2Client.send(operation, req, respClass, url, pool.client, timeout, header, context);
         } finally {
             this.releaseHttpClient(pool);
-            // Clear the expected server certificate set from this thread
+            // Clear the expected server certificates and MSSP URIs set from this thread
             LavercaSSLTrustManager.getInstance().setExpectedServerCerts(null);
+            IssuerTrustManager.getInstance().clearExpectedMsspURIs();
         }
     }
 

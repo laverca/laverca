@@ -97,6 +97,13 @@ public class IssuerTrustManager implements X509TrustManager {
             this.expectedServerSAN.get().add(s);
         }
     }
+
+    /**
+     * Forget the expected MSSP URIs of this thread, so that the next call on it checks only its own (MET-844).
+     */
+    public void clearExpectedMsspURIs() {
+        this.expectedServerSAN.get().clear();
+    }
     
     public List<X509Certificate> getIssuerCerts() {
         return this.expectedIssuerCerts.get();
@@ -132,7 +139,7 @@ public class IssuerTrustManager implements X509TrustManager {
     {
         final X509TrustManager tm = this.nextTrustManager.get();
         if (tm != null) {
-            tm.checkClientTrusted(((X509Certificate[])chain.toArray()), authType);
+            tm.checkClientTrusted(chain.toArray(new X509Certificate[0]), authType);
         }
     }
 

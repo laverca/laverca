@@ -102,7 +102,7 @@ public class LavercaSSLTrustManager implements X509TrustManager {
     {
         final X509TrustManager tm = this.nextTrustManager.get();
         if (tm != null) {
-            tm.checkClientTrusted(((X509Certificate[])chain.toArray()), authType);
+            tm.checkClientTrusted(chain.toArray(new X509Certificate[0]), authType);
         }
     }
 
