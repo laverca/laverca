@@ -20,14 +20,41 @@ specified in Finland.
 
 Laverca API
 
-    Java 11+ (21+)
+    Java 21+
 
     JDK SE
         http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-    Laverca requires the libraries found under libs directory in the release root.
-    All of them should be possible to update to newer versions of the same major
-    release number, except for the axis14methics.jar  which must be this version.
+    Laverca requires the libraries found under the libs directory in the release root:
+
+      SOAP        axis2-kernel 2.0.1, axiom-api, axiom-impl and
+                  axiom-legacy-attachments 2.0.0, neethi 3.2.4, wsdl4j 1.6.3,
+                  xmlschema-core 2.3.3, commons-logging 1.4.0, commons-io 2.22.0
+      HTTP        httpclient5 5.6.5, httpcore5 and httpcore5-h2 5.4.4,
+                  slf4j-api 2.0.20
+      Crypto      bcprov-jdk18on, bcpkix-jdk18on and bcutil-jdk18on 1.86
+      JAXB        jakarta.xml.bind-api 4.0.5, jaxb-runtime and jaxb-core 4.0.9,
+                  istack-commons-runtime 4.2.0, jakarta.activation-api 2.1.4
+                  (in libs/jaxb-ri-409; the build copies these to the release's libs)
+
+    The other jars in libs/jaxb-ri-409 (jaxb-xjc and its helpers) are needed only to
+    build Laverca, for generating the JAXB datatypes. Java 21 provides the XML APIs
+    (no xml-apis jar). All libraries should be possible to update to newer versions of
+    the same major release number.
+
+    With Maven, pom.xml builds the core library (fi.laverca:laverca-core) and lists the
+    same runtime dependencies.
+
+    Tests: "mvn test" or "ant test" runs the JUnit tests in src/test/java against loopback
+    HTTP and HTTPS servers, with certificates generated at run time. The Ant target uses
+    the jars in libs/test (JUnit console launcher, and Woodstox as an application server
+    would register it); they are not part of the release.
+
+    Laverca 4 no longer uses Axis 1.4. SOAP faults are thrown as
+    fi.laverca.LavercaSoapFaultException (an IOException); use
+    ErrorCodes.<CODE>.is(fault) to check the ETSI status code.
+    An Axis2 client engine configuration can be supplied as
+    laverca-axis2-client.xml on the classpath; by default a built-in one is used.
 
     Source branch "preJAXB" is possible to use on Java6.
     It is our old version.
@@ -35,9 +62,6 @@ Laverca API
     Source branch "preJava11" is before Java11+ work
 
     Laverca does not use Servlet API (callbacks), that layer the user must implement.
-    But also the javax -> jakarta changes do not affect here.
-    Should the JAXB changes (javax.xml.bind -> jakarta.xml.bind) be done, that will
-    have some visible effect on Laverca.
 
 Examples
   

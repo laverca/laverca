@@ -132,11 +132,14 @@ public class AdditionalServices {
             return null;
         }
         final ServiceResponses sr = readServiceResponses(sd);
+        if (sr == null) {
+            return null;
+        }
         // Note that this assumes only one service response for a given URI
         // It is an ok assumption in FiCom 2.0.
         for (final ServiceResponse sResp : sr.getServiceResponses()) {
             final MssURIType d = sResp.getDescription();
-            final String   dUri = d.getMssURI();
+            final String   dUri = (d != null) ? d.getMssURI() : null;
             if (serviceUri.equals(dUri)) {
                 return sResp;
             }

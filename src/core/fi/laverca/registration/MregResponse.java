@@ -145,10 +145,10 @@ public class MregResponse {
     /**
      * Get the raw {@link OperationOutput}
      * @param index Index of the output (if there are multiple)
-     * @return {@link OperationOutput} corresponding to the given index
-     * @throws IndexOutOfBoundsException if the given index is out of bounds
+     * @return {@link OperationOutput} corresponding to the given index, or null if there is none
      */
     public OperationOutput getOperationOutput(final int index) {
+        if (index < 0 || index >= this.output.size()) return null;
         RegistrationOutput output = this.output.get(index);
         if (output == null) return null;
         if (output.getMregResponses().size() <= 0) return null;
@@ -325,9 +325,10 @@ public class MregResponse {
     /**
      * Get the Operation status detail.
      * @return Status detail String providing additional details
-     * on the operation result 
+     * on the operation result, or null if there is none
      */
     public String getStatusDetail() {
+        if (this.getStatus() == null) return null;
         return this.getStatus().getOperationStatusDetail();
     }
     

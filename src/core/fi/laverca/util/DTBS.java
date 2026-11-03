@@ -20,10 +20,9 @@
 package fi.laverca.util;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 
 import fi.laverca.jaxb.mss.DataType;
-
-import methics.axis.encoding.Base64;
 
 /**
  * Dual-mode mapper class for "DataToBeSigned"
@@ -150,7 +149,7 @@ public class DTBS {
         rv.setMimeType(this.mimeType);
         
         if(this.text == null) {
-            rv.setValue(Base64.encode(this.data));
+            rv.setValue(Base64.getEncoder().encodeToString(this.data));
         } else {
         	rv.setValue(this.text);
         }

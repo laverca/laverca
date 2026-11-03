@@ -2,13 +2,12 @@ package fi.laverca.examples.registration;
 
 import java.io.IOException;
 
+import fi.laverca.LavercaSoapFaultException;
 import fi.laverca.mss.MssConf;
 import fi.laverca.registration.MregParam;
 import fi.laverca.registration.MregRequest;
 import fi.laverca.registration.MregResponse;
 import fi.laverca.registration.RegistrationClient;
-
-import methics.axis.AxisFault;
 
 /**
  * MSS Registration example for listing Mobile Users provisioned on the target MSSP.
@@ -46,7 +45,7 @@ public class ListMobileUsers {
                 }
             }
             
-        } catch (AxisFault af) {
+        } catch (LavercaSoapFaultException af) {
             System.out.println("Got a SOAP fault:");
             af.printStackTrace();
         } catch (IOException ioe) {

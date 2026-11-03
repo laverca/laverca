@@ -133,7 +133,8 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
      */
     public boolean isNonRepudiation() {
         if (this.isEmpty()) return false;
-        return this.certChain.get(0).getKeyUsage()[1];
+        final boolean[] ku = this.certChain.get(0).getKeyUsage();
+        return ku != null && ku.length > 1 && ku[1];
     }
 
     /**
@@ -142,7 +143,8 @@ public class X509CertificateChain implements Collection<X509Certificate>, Serial
      */
     public boolean isDigitalSignature() {
         if (this.isEmpty()) return false;
-        return this.certChain.get(0).getKeyUsage()[0];
+        final boolean[] ku = this.certChain.get(0).getKeyUsage();
+        return ku != null && ku.length > 0 && ku[0];
     }
     
     @Override

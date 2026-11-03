@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLSocketFactory;
 
+import fi.laverca.LavercaSoapFaultException;
 import fi.laverca.MSS_Formats;
 import fi.laverca.SignatureProfiles;
 import fi.laverca.etsi.EtsiClient;
@@ -32,9 +33,6 @@ import fi.laverca.jaxb.mss.MessagingModeType;
 import fi.laverca.mss.MssClient;
 import fi.laverca.mss.MssConf;
 import fi.laverca.util.DTBS;
-
-import methics.axis.AxisFault;
-
 
 /**
  * Simple signature request example
@@ -112,7 +110,7 @@ public class Sign {
                 System.out.println("  Signature    :");
             }
             
-        } catch(AxisFault af) {
+        } catch (LavercaSoapFaultException af) {
             System.out.println("Got a SOAP fault:");
             af.printStackTrace();
         } catch(IOException ioe) {

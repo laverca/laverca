@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Laverca's built-in Axis2 client engine configuration: Axis2's axis2_default.xml without the server parts (deployers, message receivers, transports) and without its dispatchers.
+  An answer to a client already has its service and operation, so nothing needs dispatching; the phases stay, so handlers can be placed by phase name.
+  Laverca sends with its own HttpClient 5 transport sender.
+  Put a laverca-axis2-client.xml on the classpath to use another configuration, e.g. to add handlers.
+-->
+<axisconfig name="Laverca">
+
+    <parameter name="enableMTOM">false</parameter>
+    <parameter name="enableSwA">false</parameter>
+    <parameter name="sendStacktraceDetailsWithFaults">false</parameter>
+    <parameter name="DrillDownToRootCauseForFaultReason">false</parameter>
+    <parameter name="disableREST" locked="false">true</parameter>
+
+    <phaseOrder type="InFlow">
+        <phase name="Transport"/>
+        <phase name="Addressing"/>
+        <phase name="Security"/>
+        <phase name="PreDispatch"/>
+        <phase name="Dispatch" class="org.apache.axis2.engine.DispatchPhase"/>
+        <phase name="RMPhase"/>
+        <phase name="OpPhase"/>
+        <phase name="OperationInPhase"/>
+    </phaseOrder>
+
+    <phaseOrder type="OutFlow">
+        <phase name="RMPhase"/>
+        <phase name="OpPhase"/>
+        <phase name="OperationOutPhase"/>
+        <phase name="PolicyDetermination"/>
+        <phase name="MessageOut"/>
+        <phase name="Security"/>
+    </phaseOrder>
+
+    <phaseOrder type="InFaultFlow">
+        <phase name="Transport"/>
+        <phase name="Addressing"/>
+        <phase name="Security"/>
+        <phase name="PreDispatch"/>
+        <phase name="Dispatch" class="org.apache.axis2.engine.DispatchPhase"/>
+        <phase name="RMPhase"/>
+        <phase name="OpPhase"/>
+        <phase name="OperationInFaultPhase"/>
+    </phaseOrder>
+
+    <phaseOrder type="OutFaultFlow">
+        <phase name="OperationOutFaultPhase"/>
+        <phase name="RMPhase"/>
+        <phase name="PolicyDetermination"/>
+        <phase name="MessageOut"/>
+        <phase name="Security"/>
+    </phaseOrder>
+</axisconfig>

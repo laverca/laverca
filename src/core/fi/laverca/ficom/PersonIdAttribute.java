@@ -21,6 +21,10 @@ package fi.laverca.ficom;
 
 import java.util.List;
 
+import org.w3c.dom.Node;
+
+import jakarta.xml.bind.JAXBElement;
+
 import fi.laverca.jaxb.saml2a.Attribute;
 
 /**
@@ -63,13 +67,31 @@ public class PersonIdAttribute {
                 }
                 return postalAddressToString(pa);       
             }
-
-            return null;
+            return valueToString(o);
         } catch(Throwable t) {
             return null;
         }
     }
     
+    /**
+     * The text of a simple attribute value: a String, a DOM element's text or a JAXBElement's value.
+     *
+     * @param o the attribute value
+     * @return the text, or null for none
+     */
+    private static String valueToString(final Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof JAXBElement<?> je) {
+            return valueToString(je.getValue());
+        }
+        if (o instanceof Node n) {
+            return n.getTextContent();
+        }
+        return o.toString();
+    }
+
     /**
      * Pretty print postal address 
      * <p>There is no standard way to print a postal address. 

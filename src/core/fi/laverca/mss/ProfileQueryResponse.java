@@ -104,6 +104,7 @@ public class ProfileQueryResponse {
         if (this.resp.getStatus().getStatusDetail() == null) return certs;
 
         ProfileQueryExtension ext = this.getProfileQueryExtension();
+        if (ext == null) return certs;
         for (CertificateType certType : ext.getMobileUserCertificates()) {
             certs.add(new X509CertificateChain(certType));
         }
@@ -123,6 +124,7 @@ public class ProfileQueryResponse {
 
         // Filter certs by signature profile
         ProfileQueryExtension    extension = this.getProfileQueryExtension();
+        if (extension == null) return new X509CertificateChain();
         List<X509CertificateChain> certs = extension.getMobileUserCertificates().stream()
                                                                                 .map(X509CertificateChain::new)
                                                                                 .filter(c -> c.getSignatureProfiles() != null)
