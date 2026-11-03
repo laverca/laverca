@@ -38,10 +38,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.xml.rpc.ServiceException;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.EngineConfiguration;
-import org.apache.axis.configuration.FileProvider;
-
 import fi.laverca.LavercaException;
 import fi.laverca.jaxb.mss.DataType;
 import fi.laverca.jaxb.mss.MSSHandshakeReq;
@@ -79,6 +75,10 @@ import fi.laverca.util.LavercaContext;
 import fi.laverca.util.LavercaHttpClient;
 import fi.laverca.util.LavercaSSLTrustManager;
 import fi.laverca.util.ProxySettings;
+
+import methics.axis.AxisFault;
+import methics.axis.EngineConfiguration;
+import methics.axis.configuration.FileProvider;
 
 /**
  * A raw ETSI TS 102 204 client object.
@@ -320,7 +320,7 @@ public class MssClient {
         if (s == null) {
             return false;
         } else {
-            return org.apache.axis.types.NCName.isValid(s);
+            return methics.axis.types.NCName.isValid(s);
         }
     }
     

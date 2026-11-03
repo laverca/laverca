@@ -21,20 +21,20 @@ package fi.laverca.mss.ws;
 
 import javax.xml.namespace.QName;
 
-import org.apache.axis.AxisEngine;
-import org.apache.axis.client.Call;
-import org.apache.axis.constants.Style;
-import org.apache.axis.constants.Use;
-import org.apache.axis.description.OperationDesc;
-import org.apache.axis.description.ParameterDesc;
-import org.apache.axis.soap.SOAPConstants;
-
 import fi.laverca.jaxb.mss.MSSMessageSignature;
 import fi.laverca.jaxb.mss.MSSRegistrationReq;
 import fi.laverca.jaxb.mss.MSSRegistrationResp;
 import fi.laverca.jaxb.wsssecext.Security;
 import fi.laverca.util.AbstractSoapBindingStub;
 import fi.laverca.util.JMarshallerFactory;
+
+import methics.axis.AxisEngine;
+import methics.axis.client.Call;
+import methics.axis.constants.Style;
+import methics.axis.constants.Use;
+import methics.axis.description.OperationDesc;
+import methics.axis.description.ParameterDesc;
+import methics.axis.soap.SOAPConstants;
 
 public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
     implements MSS_RegistrationType
@@ -110,7 +110,7 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
 
     public MSS_RegistrationBindingStub(javax.xml.rpc.Service service) {
         if (service == null) {
-            super.service = new org.apache.axis.client.Service();
+            super.service = new methics.axis.client.Service();
         } else {
             super.service = service;
         }
@@ -119,7 +119,7 @@ public class MSS_RegistrationBindingStub extends AbstractSoapBindingStub
     @Override
     public MSSRegistrationResp MSS_Registration(final MSSRegistrationReq req, final Security security) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
+            throw new methics.axis.NoEndPointException();
         }
         Call _call1 = this.createCall(SOAPConstants.SOAP12_CONSTANTS,
                                       null,

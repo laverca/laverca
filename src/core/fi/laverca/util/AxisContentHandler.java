@@ -24,11 +24,12 @@ import java.io.IOException;
 
 import javax.xml.namespace.QName;
 
-import org.apache.axis.MessageContext;
-import org.apache.axis.encoding.SerializationContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import methics.axis.MessageContext;
+import methics.axis.encoding.SerializationContext;
 
 /**
  * This ContentHandler delegates all serialization to an Axis SerializationContext

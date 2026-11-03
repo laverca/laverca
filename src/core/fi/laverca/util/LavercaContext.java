@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.axis.MessageContext;
+import methics.axis.MessageContext;
 
 /**
  * A wrapper container for passing stuff around (similar to Axis MessageContext)

@@ -28,9 +28,6 @@ import java.util.concurrent.FutureTask;
 
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.EngineConfiguration;
-
 import fi.laverca.jaxb.mss.MSSProfileReq;
 import fi.laverca.jaxb.mss.MSSReceiptReq;
 import fi.laverca.jaxb.mss.MSSReceiptResp;
@@ -49,6 +46,9 @@ import fi.laverca.mss.ProfileQueryResponse;
 import fi.laverca.util.LavercaContext;
 import fi.laverca.util.SynchHandler;
 import fi.laverca.util.SynchHandler.SynchHandlerException;
+
+import methics.axis.AxisFault;
+import methics.axis.EngineConfiguration;
 
 /**
  * Abstract base class for ETSI TS 102 204 Signature operations

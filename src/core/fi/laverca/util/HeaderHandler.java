@@ -19,11 +19,11 @@
 
 package fi.laverca.util;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.MessageContext;
-import org.apache.axis.handlers.BasicHandler;
-import org.apache.axis.message.SOAPEnvelope;
-import org.apache.axis.message.SOAPHeaderElement;
+import methics.axis.AxisFault;
+import methics.axis.MessageContext;
+import methics.axis.handlers.BasicHandler;
+import methics.axis.message.SOAPEnvelope;
+import methics.axis.message.SOAPHeaderElement;
 
 /**
  * Mark all SOAP headers as understood, but do nothing. 

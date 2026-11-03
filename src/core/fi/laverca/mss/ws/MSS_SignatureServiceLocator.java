@@ -27,16 +27,16 @@ import java.util.Iterator;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
 
-import org.apache.axis.client.Stub;
+import methics.axis.client.Stub;
 
 @SuppressWarnings({"serial", "rawtypes"})
-public class MSS_SignatureServiceLocator extends org.apache.axis.client.Service implements MSS_SignatureService {
+public class MSS_SignatureServiceLocator extends methics.axis.client.Service implements MSS_SignatureService {
 
     public MSS_SignatureServiceLocator() {
         super();
     }
 
-    public MSS_SignatureServiceLocator(org.apache.axis.EngineConfiguration config) {
+    public MSS_SignatureServiceLocator(methics.axis.EngineConfiguration config) {
         super(config);
     }
 

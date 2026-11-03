@@ -20,20 +20,24 @@ specified in Finland.
 
 Laverca API
 
-    Java 8
-        Oracle Java 8 SE SDK
-        OpenJDK 8
+    Java 11+ (21+)
 
     JDK SE
         http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
     Laverca requires the libraries found under libs directory in the release root.
     All of them should be possible to update to newer versions of the same major
-    release number, except for the axis-1.4.patched.jar  which must be this version.
+    release number, except for the axis14methics.jar  which must be this version.
 
     Source branch "preJAXB" is possible to use on Java6.
     It is our old version.
 
+    Source branch "preJava11" is before Java11+ work
+
+    Laverca does not use Servlet API (callbacks), that layer the user must implement.
+    But also the javax -> jakarta changes do not affect here.
+    Should the JAXB changes (javax.xml.bind -> jakarta.xml.bind) be done, that will
+    have some visible effect on Laverca.
 
 Examples
   

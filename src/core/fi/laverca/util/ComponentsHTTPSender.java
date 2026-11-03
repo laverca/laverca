@@ -52,16 +52,6 @@ import javax.xml.namespace.QName;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.MimeHeaders;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.Constants;
-import org.apache.axis.HTTPConstants;
-import org.apache.axis.Message;
-import org.apache.axis.MessageContext;
-import org.apache.axis.SocketInputStream;
-import org.apache.axis.handlers.BasicHandler;
-import org.apache.axis.message.SOAPFault;
-import org.apache.axis.utils.JavaUtils;
-import org.apache.axis.utils.NetworkUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
@@ -77,6 +67,17 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
 
 import fi.laverca.ErrorCodes;
+
+import methics.axis.AxisFault;
+import methics.axis.Constants;
+import methics.axis.HTTPConstants;
+import methics.axis.Message;
+import methics.axis.MessageContext;
+import methics.axis.SocketInputStream;
+import methics.axis.handlers.BasicHandler;
+import methics.axis.message.SOAPFault;
+import methics.axis.utils.JavaUtils;
+import methics.axis.utils.NetworkUtils;
 
 /**
  * A replacement of the default Axis Commons HTTP sender that makes it

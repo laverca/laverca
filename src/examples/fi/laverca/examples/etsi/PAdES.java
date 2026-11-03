@@ -25,6 +25,18 @@ import java.util.stream.Collectors;
 
 import org.bouncycastle.cms.CMSSignedData;
 
+import fi.laverca.CmsSignature;
+import fi.laverca.MSS_Formats;
+import fi.laverca.SignatureProfiles;
+import fi.laverca.etsi.EtsiClient;
+import fi.laverca.etsi.EtsiRequest;
+import fi.laverca.etsi.EtsiResponse;
+import fi.laverca.jaxb.mss.MessagingModeType;
+import fi.laverca.mss.MssConf;
+import fi.laverca.mss.ProfileQueryResponse;
+import fi.laverca.util.DTBS;
+import fi.laverca.util.X509CertificateChain;
+
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
@@ -37,17 +49,6 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import fi.laverca.CmsSignature;
-import fi.laverca.MSS_Formats;
-import fi.laverca.SignatureProfiles;
-import fi.laverca.etsi.EtsiClient;
-import fi.laverca.etsi.EtsiRequest;
-import fi.laverca.etsi.EtsiResponse;
-import fi.laverca.jaxb.mss.MessagingModeType;
-import fi.laverca.mss.MssConf;
-import fi.laverca.mss.ProfileQueryResponse;
-import fi.laverca.util.DTBS;
-import fi.laverca.util.X509CertificateChain;
 
 /**
  * PAdES signing example

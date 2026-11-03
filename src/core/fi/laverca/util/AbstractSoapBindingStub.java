@@ -26,16 +26,16 @@ import java.util.Enumeration;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.MessageContext;
-import org.apache.axis.client.Call;
-import org.apache.axis.client.Stub;
-import org.apache.axis.description.OperationDesc;
-import org.apache.axis.encoding.DeserializerFactory;
-import org.apache.axis.encoding.SerializerFactory;
-import org.apache.axis.soap.SOAPConstants;
-
 import fi.laverca.ErrorCodes;
+
+import methics.axis.AxisFault;
+import methics.axis.MessageContext;
+import methics.axis.client.Call;
+import methics.axis.client.Stub;
+import methics.axis.description.OperationDesc;
+import methics.axis.encoding.DeserializerFactory;
+import methics.axis.encoding.SerializerFactory;
+import methics.axis.soap.SOAPConstants;
 
 /**
  * This extends non-thread-safe Stub, therefore this is not thread-safe either!
@@ -124,7 +124,7 @@ public abstract class AbstractSoapBindingStub extends Stub {
 
     // Overrides a public method at Stub.
     @Override
-    public org.apache.axis.client.Call _createCall()
+    public methics.axis.client.Call _createCall()
         throws javax.xml.rpc.ServiceException
     {
         // Hand modification calling createCall from Stub(super) instead
@@ -199,7 +199,7 @@ public abstract class AbstractSoapBindingStub extends Stub {
                             final OperationDesc operationDesc )
         throws RemoteException
     {
-        final org.apache.axis.client.Call _call1 = this.createCall(encodingStyleURI);
+        final methics.axis.client.Call _call1 = this.createCall(encodingStyleURI);
         _call1.setSOAPVersion(soapConstants);
         // Could this be safe not to be filled?
         _call1.setEncodingStyle(encodingStyleURI);

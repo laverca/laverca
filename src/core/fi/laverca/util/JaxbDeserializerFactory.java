@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-//package org.apache.axis.encoding.ser.castor;
+//package methics.axis.encoding.ser.castor;
 package fi.laverca.util;
 
-import org.apache.axis.encoding.ser.BaseDeserializerFactory;
-import org.apache.axis.encoding.DeserializerFactory;
-
 import javax.xml.namespace.QName;
+
+import methics.axis.encoding.DeserializerFactory;
+import methics.axis.encoding.ser.BaseDeserializerFactory;
 
 
 /**

@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-//package org.apache.axis.encoding.ser.castor;
+//package methics.axis.encoding.ser.castor;
 package fi.laverca.util;
 
-import org.apache.axis.encoding.ser.BaseSerializerFactory;
-import org.apache.axis.encoding.SerializerFactory;
-
 import javax.xml.namespace.QName;
+
+import methics.axis.encoding.SerializerFactory;
+import methics.axis.encoding.ser.BaseSerializerFactory;
 
 /**
  * SerializerFactory for Jaxb objects
